@@ -1,3 +1,4 @@
+
 /*
  * -------------------------------------------------------
  * THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
@@ -8,7 +9,7 @@
 /* eslint-disable */
 
 export interface IQuery {
-  index(): string | Promise<string>;
+    index(): string | Promise<string>;
 }
 
 type Nullable<T> = T | null;
