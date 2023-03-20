@@ -13,11 +13,11 @@ import { DocumentModule } from './document/document.module';
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.graphql'),
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       playground: true,
-      definitions: {
-        path: join(process.cwd(), 'src/graphql.ts'),
-      },
+      // definitions: {
+      //   path: join(process.cwd(), 'src/graphql.ts'),
+      // },
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',

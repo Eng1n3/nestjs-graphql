@@ -31,9 +31,9 @@ export class Profile {
   @Column({ nullable: true, length: 100 })
   homepage?: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'time with time zone' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'time with time zone' })
   updatedAt: Date;
 }

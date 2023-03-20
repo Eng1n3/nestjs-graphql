@@ -20,9 +20,9 @@ export class User {
   @Column({ length: 100 })
   password: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'time with time zone' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'time with time zone' })
   updatedAt: Date;
 }

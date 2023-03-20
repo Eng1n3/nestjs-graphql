@@ -30,9 +30,9 @@ export class Document {
   @Column({ type: 'text' })
   description: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'time with time zone' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'time with time zone' })
   updatedAt: Date;
 }
