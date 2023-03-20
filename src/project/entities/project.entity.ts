@@ -4,16 +4,14 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToMany,
-  PrimaryColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
 export class Project {
-  @PrimaryColumn()
-  @ManyToMany((type) => User, (user) => user.idUser, {
+  @ManyToOne((type) => User, (user) => user.idUser, {
     nullable: false,
     cascade: true,
   })

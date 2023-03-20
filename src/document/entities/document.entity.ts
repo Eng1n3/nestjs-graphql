@@ -4,21 +4,19 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToMany,
-  PrimaryColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
 export class Document {
-  @PrimaryColumn()
-  @ManyToMany((type) => Project, (project) => project.idProject, {
+  @OneToOne((type) => Project, (project) => project.idProject, {
     nullable: false,
     cascade: true,
   })
   @JoinColumn({ name: 'idProject' })
-  idUser: string;
+  idProject: string;
 
   @PrimaryGeneratedColumn('uuid')
   idDocument: string;
