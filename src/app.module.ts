@@ -5,6 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { AppResolver } from './app.resolver';
 import { UsersModule } from './users/users.module';
+import { ProfileModule } from './profile/profile.module';
+import { ProjectModule } from './project/project.module';
+import { DocumentModule } from './document/document.module';
 
 @Module({
   imports: [
@@ -19,14 +22,17 @@ import { UsersModule } from './users/users.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
-      port: 5432,
-      username: 'eng1n3',
-      password: 'R4nsom_w4r3',
-      database: 'eng1n3',
+      port: 5433,
+      username: 'postgres',
+      password: 'mysecretpassword',
+      database: 'postgres',
       entities: [__dirname + '/**/*.entity{.js,.ts}'],
       synchronize: true,
     }),
     UsersModule,
+    ProfileModule,
+    ProjectModule,
+    DocumentModule,
   ],
   controllers: [],
   providers: [AppResolver],
