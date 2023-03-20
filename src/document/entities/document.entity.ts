@@ -21,10 +21,10 @@ export class Document {
   @PrimaryGeneratedColumn('uuid')
   idDocument: string;
 
-  @Column()
+  @Column({ length: 50 })
   documentName: string;
 
-  @Column()
+  @Column({ length: 100 })
   pathDocument: string;
 
   @Column({ type: 'text' })

@@ -11,13 +11,13 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   idUser: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, length: 50 })
   username: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, length: 100 })
   email: string;
 
-  @Column()
+  @Column({ length: 100 })
   password: string;
 
   @CreateDateColumn()

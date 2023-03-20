@@ -19,16 +19,16 @@ export class Profile {
   @JoinColumn({ name: 'idUser' })
   idUser: string;
 
-  @Column()
+  @Column({ length: 100 })
   fullname: string;
 
-  @Column()
+  @Column({ length: 100 })
   pathImage: string;
 
   @Column({ type: 'text', nullable: true })
   bio?: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, length: 100 })
   homepage?: string;
 
   @CreateDateColumn()
