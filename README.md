@@ -8,7 +8,7 @@ Aplikasi web untuk users menyimpan data profil dan project yang telah dibuat
     - postgresql
     - typeorm
 
-## Instalation
+## Installation
 Gunakan node package manager npm untuk install aplikasi.
 ``` bash
 npm i
