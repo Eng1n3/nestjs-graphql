@@ -5,9 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { AppResolver } from './app.resolver';
 import { UsersModule } from './users/users.module';
-import { ProfileModule } from './profile/profile.module';
 import { ProjectModule } from './project/project.module';
 import { DocumentModule } from './document/document.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
@@ -29,8 +29,11 @@ import { DocumentModule } from './document/document.module';
       entities: [__dirname + '/**/*.entity{.js,.ts}'],
       synchronize: true,
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
     UsersModule,
-    ProfileModule,
     ProjectModule,
     DocumentModule,
   ],

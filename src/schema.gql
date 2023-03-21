@@ -2,6 +2,43 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type User {
+  idUser: String!
+  username: String!
+  email: String!
+  fullname: String!
+  pathImage: String!
+  bio: String!
+  homepage: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type Query {
   index: String!
+  users(search: GetUserInput): [User!]!
+}
+
+input GetUserInput {
+  username: String = ""
+  email: String = ""
+  fullname: String = ""
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): String!
+}
+
+input CreateUserInput {
+  username: String!
+  email: String!
+  password: String!
+  fullname: String!
+  bio: String
+  homepage: String
 }
