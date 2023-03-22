@@ -2,6 +2,26 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type DocumentEntity {
+  idProject: Project!
+  idDocument: String!
+}
+
+type Project {
+  idUser: String!
+  idProject: String!
+  projectName: String!
+  description: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  document: [DocumentEntity!]
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type User {
   idUser: String!
   username: String!
@@ -12,26 +32,19 @@ type User {
   homepage: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+  project: [Project!]
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 type Query {
   index: String!
-  users(search: GetUserInput): [User!]!
-}
-
-input GetUserInput {
-  username: String = ""
-  email: String = ""
-  fullname: String = ""
+  users(skip: Float = 0, take: Float = 10, username: String = "", email: String = "", fullname: String = ""): [User!]!
+  usersCount: Float!
+  project: String!
 }
 
 type Mutation {
   createUser(input: CreateUserInput!): String!
+  createProject: String!
 }
 
 input CreateUserInput {

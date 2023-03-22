@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { CreateUserInput } from './input/createuser.input';
+import { CreateUserInput } from './input/create-user.input';
 import { GetUserInput } from './input/get-user.input';
 
 @Injectable()
@@ -38,19 +38,28 @@ export class UsersService {
 
   async find(getUserInput: GetUserInput) {
     try {
-      // const take = getUserInput.take || 10;
-      // const page = getUserInput.page || 1;
+      const skip = getUserInput.skip;
+      const take = getUserInput.take;
       // const skip = this._getSkip(take, page);
-      const getAll = await this.userRepository.find({
+      const getAll: Array<User> = await this.userRepository.find({
         where: {
-          username: ILike(`%${getUserInput?.username || ''}%`),
-          email: ILike(`%${getUserInput?.email || ''}%`),
-          fullname: ILike(`%${getUserInput?.fullname || ''}%`),
+          username: ILike(`%${getUserInput?.username}%`),
+          email: ILike(`%${getUserInput?.email}%`),
+          fullname: ILike(`%${getUserInput?.fullname}%`),
         },
-        // take,
-        // skip,
+        skip,
+        take,
       });
       return getAll;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async count() {
+    try {
+      const result = await this.userRepository.count();
+      return result;
     } catch (error) {
       throw error;
     }

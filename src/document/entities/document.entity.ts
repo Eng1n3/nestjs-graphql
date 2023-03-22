@@ -1,3 +1,4 @@
+import { Field, ObjectType } from '@nestjs/graphql';
 import { Project } from 'src/project/entities/project.entity';
 import {
   Column,
@@ -9,16 +10,19 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity()
-export class Document {
+@Entity({ name: 'document' })
+@ObjectType()
+export class DocumentEntity {
   @OneToOne((type) => Project, (project) => project.idProject, {
     nullable: false,
     cascade: true,
   })
   @JoinColumn({ name: 'idProject' })
+  @Field(() => Project)
   idProject: string;
 
   @PrimaryGeneratedColumn('uuid')
+  @Field()
   idDocument: string;
 
   @Column({ length: 50 })

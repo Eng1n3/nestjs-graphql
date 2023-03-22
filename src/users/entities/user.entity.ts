@@ -1,8 +1,10 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { Project } from 'src/project/entities/project.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -48,4 +50,8 @@ export class User {
   @UpdateDateColumn({ type: 'time with time zone' })
   @Field(() => Date)
   updatedAt: Date;
+
+  @ManyToMany(() => Project, (project) => project.idUser)
+  @Field(() => [Project], { nullable: true, defaultValue: [] })
+  project?: Project[];
 }

@@ -1,8 +1,9 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { ArgsType, Field } from '@nestjs/graphql';
 import { IsString } from 'class-validator';
+import { PaginationInput } from 'src/common/input/pagination.input';
 
-@InputType()
-export class GetUserInput {
+@ArgsType()
+export class GetUserInput extends PaginationInput {
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
   username?: string;
