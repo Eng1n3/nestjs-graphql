@@ -16,11 +16,11 @@ export class User {
   @Field()
   idUser: string;
 
-  @Column({ unique: true, length: 50 })
+  @Column({ length: 50, unique: true })
   @Field()
   username: string;
 
-  @Column({ unique: true, length: 100 })
+  @Column({ length: 100, unique: true })
   @Field()
   email: string;
 
@@ -35,6 +35,10 @@ export class User {
   @Field()
   pathImage: string;
 
+  @Column({ length: 50 })
+  @Field()
+  role: string;
+
   @Column({ type: 'text', nullable: true })
   @Field()
   bio?: string;
@@ -43,11 +47,11 @@ export class User {
   @Field()
   homepage?: string;
 
-  @CreateDateColumn({ type: 'time with time zone' })
+  @CreateDateColumn({ type: 'timestamp with time zone' })
   @Field(() => Date)
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'time with time zone' })
+  @UpdateDateColumn({ type: 'timestamp with time zone' })
   @Field(() => Date)
   updatedAt: Date;
 

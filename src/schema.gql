@@ -5,6 +5,10 @@
 type DocumentEntity {
   idProject: Project!
   idDocument: String!
+  documentName: String!
+  pathDocument: String!
+  description: String!
+  createdAt: Date!
 }
 
 type Project {
@@ -12,15 +16,10 @@ type Project {
   idProject: String!
   projectName: String!
   description: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  createdAt: Date!
+  updatedAt: Date!
   document: [DocumentEntity!]
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 type User {
   idUser: String!
@@ -28,21 +27,60 @@ type User {
   email: String!
   fullname: String!
   pathImage: String!
+  role: String!
   bio: String!
   homepage: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  createdAt: Date!
+  updatedAt: Date!
   project: [Project!]
 }
 
+type UsersModel {
+  count: Int
+  data: [User!]!
+}
+
+"""Date custom scalar type"""
+scalar Date
+
 type Query {
   index: String!
-  users(skip: Float = 0, take: Float = 10, username: String = "", email: String = "", fullname: String = ""): [User!]!
-  usersCount: Float!
+  users(options: GetUserInput): UsersModel!
+  totalCount: Float!
   project: String!
 }
 
+input GetUserInput {
+  pagination: PaginationInput
+
+  """
+  {key: "ASC" or "DESC" or "asc" or "desc" or 1 or -1} or {key: {direction: "ASC" or "DESC" or "asc" or "desc", nulls: "first" or "last" or "FIRST" or "LAST"}}}
+  """
+  sort: JSON
+  search: SearchUserInput
+}
+
+input PaginationInput {
+  """Start from 0"""
+  skip: Float = 0
+
+  """default take 10 data"""
+  take: Float = 10
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+input SearchUserInput {
+  username: String = ""
+  email: String = ""
+  fullname: String = ""
+}
+
 type Mutation {
+  createAdmin(input: CreateUserInput!): String!
   createUser(input: CreateUserInput!): String!
   createProject: String!
 }
@@ -51,6 +89,7 @@ input CreateUserInput {
   username: String!
   email: String!
   password: String!
+  repassword: String!
   fullname: String!
   bio: String
   homepage: String

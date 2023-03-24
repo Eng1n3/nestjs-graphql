@@ -1,5 +1,13 @@
-import { Field, InputType } from '@nestjs/graphql';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { Field, InputType, ObjectType, PartialType } from '@nestjs/graphql';
+import {
+  IsEmail,
+  IsEmpty,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator';
+import { Match } from 'src/common/decorators/match.decorator';
 
 @InputType()
 export class CreateUserInput {
@@ -16,7 +24,14 @@ export class CreateUserInput {
   @Field()
   @IsString()
   @IsNotEmpty()
+  @IsStrongPassword()
   password: string;
+
+  @Field()
+  @IsString()
+  @IsNotEmpty()
+  @Match('password', { message: 'repassword must be match to password' })
+  repassword: string;
 
   @Field()
   @IsString()
@@ -24,10 +39,19 @@ export class CreateUserInput {
   fullname: string;
 
   @Field({ nullable: true })
+  @IsOptional()
   @IsString()
   bio?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
   @IsString()
   homepage?: string;
+}
+
+@ObjectType()
+export class CreateUserInputWithRole extends PartialType(CreateUserInput) {
+  @Field()
+  @IsString()
+  role?: string;
 }

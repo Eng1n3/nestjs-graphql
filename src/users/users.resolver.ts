@@ -1,48 +1,59 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  Args,
-  Mutation,
-  Parent,
-  Query,
-  ResolveField,
-  Resolver,
-} from '@nestjs/graphql';
-import { PaginationInput } from 'src/common/input/pagination.input';
-import { DocumentEntity } from 'src/document/entities/document.entity';
-import { Project } from 'src/project/entities/project.entity';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { User } from './entities/user.entity';
-import { CreateUserInput } from './input/create-user.input';
+import {
+  CreateUserInput,
+  CreateUserInputWithRole,
+} from './input/create-user.input';
 import { GetUserInput } from './input/get-user.input';
+import { UsersModel } from './models/users.model';
 import { UsersService } from './users.service';
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(private userService: UsersService) {}
 
-  @Mutation((returns) => String)
+  @Mutation((returns) => String, { name: 'createAdmin' })
+  async createAdmin(@Args('input') createUserInput: CreateUserInput) {
+    try {
+      const createUserInputWithRole: CreateUserInputWithRole = {
+        ...createUserInput,
+        role: 'admin',
+      };
+      await this.userService.createUser(createUserInputWithRole);
+      return 'Success create admin';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation((returns) => String, { name: 'createUser' })
   async createUser(@Args('input') createUserInput: CreateUserInput) {
     try {
-      await this.userService.create(createUserInput);
+      const createUserInputWithRole: CreateUserInputWithRole = {
+        ...createUserInput,
+        role: 'user',
+      };
+      await this.userService.createUser(createUserInputWithRole);
       return 'Success create user';
     } catch (error) {
       throw error;
     }
   }
 
-  @Query((returns) => [User], { name: 'users' })
+  @Query((returns) => UsersModel, { name: 'users' })
   async findAll(
-    @Args()
-    getUserInput?: GetUserInput,
+    @Args('options', { nullable: true }) optionsInput: GetUserInput<User>,
   ) {
     try {
-      const dataAll = await this.userService.find(getUserInput);
-      return dataAll;
+      const [data, count] = await this.userService.findAndCount(optionsInput);
+      return { data, count };
     } catch (error) {
       throw error;
     }
   }
 
-  @Query((returns) => Number, { name: 'usersCount' })
+  @Query((returns) => Number, { name: 'totalCount' })
   async countAll() {
     try {
       const count = await this.userService.count();

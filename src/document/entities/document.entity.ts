@@ -26,15 +26,19 @@ export class DocumentEntity {
   idDocument: string;
 
   @Column({ length: 50 })
+  @Field()
   documentName: string;
 
   @Column({ length: 100 })
+  @Field()
   pathDocument: string;
 
   @Column({ type: 'text' })
+  @Field()
   description: string;
 
   @CreateDateColumn({ type: 'time with time zone' })
+  @Field()
   createdAt: Date;
 
   @UpdateDateColumn({ type: 'time with time zone' })
