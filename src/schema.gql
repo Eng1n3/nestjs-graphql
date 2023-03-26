@@ -3,7 +3,6 @@
 # ------------------------------------------------------
 
 type DocumentEntity {
-  idProject: Project!
   idDocument: String!
   documentName: String!
   pathDocument: String!
@@ -12,7 +11,6 @@ type DocumentEntity {
 }
 
 type Project {
-  idUser: String!
   idProject: String!
   projectName: String!
   description: String!
@@ -40,14 +38,19 @@ type UsersModel {
   data: [User!]!
 }
 
+type LoginModel {
+  token: String!
+}
+
 """Date custom scalar type"""
 scalar Date
 
 type Query {
   index: String!
+  user: User!
   users(options: GetUserInput): UsersModel!
   totalCount: Float!
-  project: String!
+  project: Project!
 }
 
 input GetUserInput {
@@ -80,12 +83,26 @@ input SearchUserInput {
 }
 
 type Mutation {
-  createAdmin(input: CreateUserInput!): String!
-  createUser(input: CreateUserInput!): String!
-  createProject: String!
+  createProject(input: CreateProjectInput!): String!
+  loginAdmin(usernameOrEmail: String!, password: String!): LoginModel!
+  loginUser(usernameOrEmail: String!, password: String!): LoginModel!
+  registerAdmin(input: RegisterAdminInput!): String!
+  registerUser(input: RegisterUserInput!): String!
 }
 
-input CreateUserInput {
+input CreateProjectInput {
+  projectName: String!
+  description: String!
+}
+
+input RegisterAdminInput {
+  username: String!
+  email: String!
+  password: String!
+  repassword: String!
+}
+
+input RegisterUserInput {
   username: String!
   email: String!
   password: String!

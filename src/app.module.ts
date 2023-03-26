@@ -8,26 +8,36 @@ import { UsersModule } from './users/users.module';
 import { ProjectModule } from './project/project.module';
 import { DocumentModule } from './document/document.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { AuthModule } from './auth/auth.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { getEnvPath } from './common/functions/env.function';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: getEnvPath({ folder: './config' }),
+    }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       playground: true,
-      // definitions: {
-      //   path: join(process.cwd(), 'src/graphql.ts'),
-      // },
+      context: ({ req }) => ({ req }),
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5433,
-      username: 'postgres',
-      password: 'mysecretpassword',
-      database: 'postgres',
-      entities: [__dirname + '/**/*.entity{.js,.ts}'],
-      synchronize: true,
+
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DATABASE_HOST'),
+        port: +configService.get('DATABASE_PORT'),
+        username: configService.get('DATABASE_USERNAME'),
+        password: configService.get('DATABASE_PASSWORD'),
+        database: configService.get('DATABASE'),
+        entities: [__dirname + '/**/*.entity{.js,.ts}'],
+        synchronize: true,
+      }),
+      inject: [ConfigService],
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
@@ -36,6 +46,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     UsersModule,
     ProjectModule,
     DocumentModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [AppResolver],

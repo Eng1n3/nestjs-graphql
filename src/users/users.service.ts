@@ -1,40 +1,64 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  RegisterAdminInput,
+  RegisterUserInput,
+} from 'src/auth/dto/register.input';
 import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { CreateUserInputWithRole } from './input/create-user.input';
-import { GetUserInput } from './input/get-user.input';
+import { GetUserInput } from './dto/get-user.input';
+import { ProjectService } from 'src/project/project.service';
+import { Project } from 'src/project/entities/project.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private projectService: ProjectService,
   ) {}
 
-  async createUser(
-    createUserInputWithRole: CreateUserInputWithRole,
-  ): Promise<void> {
+  async projectFind(idUser: string): Promise<Project[]> {
+    try {
+      return await this.projectService.userFind(idUser);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findOne(usernameOrEmail: string): Promise<User> {
+    try {
+      const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+      if (expression.test(usernameOrEmail)) {
+        return await this.userRepository.findOne({
+          where: { email: usernameOrEmail },
+        });
+      }
+      return await this.userRepository.findOne({
+        where: { username: usernameOrEmail },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createAdmin(registerAdminInput: RegisterAdminInput): Promise<void> {
     try {
       const pathImage = 'default-image.jpg';
-      const value = { ...createUserInputWithRole, pathImage };
+      const value = { ...registerAdminInput, pathImage, role: 'admin' };
       await this.userRepository.save(value);
     } catch (error) {
-      if (
-        error.message.includes('duplicate key value') &&
-        error?.detail?.includes('username')
-      ) {
-        throw new BadRequestException('Username has been used!', error);
-      } else if (
-        error.message.includes('duplicate key value') &&
-        error?.detail?.includes('email')
-      ) {
-        throw new BadRequestException('email has been used!', error);
-      }
-      throw new InternalServerErrorException(error.message);
+      throw error;
+    }
+  }
+
+  async createUser(registerUserInput: RegisterUserInput): Promise<void> {
+    try {
+      const pathImage = 'default-image.jpg';
+      const value = { ...registerUserInput, pathImage, role: 'user' };
+      await this.userRepository.save(value);
+    } catch (error) {
+      throw error;
     }
   }
 
@@ -45,6 +69,7 @@ export class UsersService {
       const take = getUserInput?.pagination?.take;
       const result = await this.userRepository.findAndCount({
         where: {
+          role: 'user',
           username: ILike(`%${getUserInput?.search?.username || ''}%`),
           email: ILike(`%${getUserInput?.search?.email || ''}%`),
           fullname: ILike(`%${getUserInput?.search?.fullname || ''}%`),
@@ -61,7 +86,9 @@ export class UsersService {
 
   async count() {
     try {
-      const result = await this.userRepository.count();
+      const result = await this.userRepository.count({
+        where: { role: 'user' },
+      });
       return result;
     } catch (error) {
       throw error;

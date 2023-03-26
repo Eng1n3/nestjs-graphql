@@ -6,8 +6,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToMany,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -15,19 +14,18 @@ import {
 @Entity()
 @ObjectType()
 export class Project {
-  @ManyToMany((type) => User, (user) => user.idUser, {
-    nullable: false,
+  @OneToOne((type) => User, (user) => user.idUser, {
+    nullable: true,
     cascade: true,
   })
   @JoinColumn({ name: 'idUser' })
-  @Field()
-  idUser: string;
+  idUser?: string;
 
   @PrimaryGeneratedColumn('uuid')
   @Field()
   idProject: string;
 
-  @Column()
+  @Column({ unique: true })
   @Field()
   projectName: string;
 
@@ -35,15 +33,15 @@ export class Project {
   @Field()
   description: string;
 
-  @CreateDateColumn({ type: 'time with time zone' })
+  @CreateDateColumn({ type: 'timestamp with time zone' })
   @Field()
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'time with time zone' })
+  @UpdateDateColumn({ type: 'timestamp with time zone' })
   @Field()
   updatedAt: Date;
 
-  @ManyToOne((type) => DocumentEntity, (doc) => doc.idProject)
+  @OneToOne((type) => DocumentEntity, (doc) => doc.idProject)
   @Field(() => [DocumentEntity], { nullable: true, defaultValue: [] })
   document?: DocumentEntity[];
 }

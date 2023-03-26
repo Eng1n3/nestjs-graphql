@@ -1,7 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsOptional, IsString } from 'class-validator';
-import { PaginationInput } from 'src/common/input/pagination.input';
-import { Sort } from '../enums/sort.enum';
+import { PaginationInput } from 'src/common/dto/pagination.input';
 import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
 

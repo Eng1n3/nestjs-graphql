@@ -1,7 +1,6 @@
-import { Field, InputType, ObjectType, PartialType } from '@nestjs/graphql';
+import { Field, InputType, OmitType } from '@nestjs/graphql';
 import {
   IsEmail,
-  IsEmpty,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -10,7 +9,7 @@ import {
 import { Match } from 'src/common/decorators/match.decorator';
 
 @InputType()
-export class CreateUserInput {
+export class RegisterUserInput {
   @Field()
   @IsString()
   @IsNotEmpty()
@@ -49,9 +48,9 @@ export class CreateUserInput {
   homepage?: string;
 }
 
-@ObjectType()
-export class CreateUserInputWithRole extends PartialType(CreateUserInput) {
-  @Field()
-  @IsString()
-  role?: string;
-}
+@InputType()
+export class RegisterAdminInput extends OmitType(RegisterUserInput, [
+  'bio',
+  'fullname',
+  'homepage',
+]) {}

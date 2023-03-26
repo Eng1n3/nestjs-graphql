@@ -1,10 +1,12 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { IsOptional } from 'class-validator';
 import { Project } from 'src/project/entities/project.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -27,9 +29,10 @@ export class User {
   @Column({ length: 100 })
   password: string;
 
-  @Column({ length: 100 })
+  @Column({ length: 100, nullable: true })
   @Field()
-  fullname: string;
+  @IsOptional()
+  fullname?: string;
 
   @Column({ length: 100 })
   @Field()
@@ -55,7 +58,7 @@ export class User {
   @Field(() => Date)
   updatedAt: Date;
 
-  @ManyToMany(() => Project, (project) => project.idUser)
+  @OneToMany(() => Project, (project) => project.idUser)
   @Field(() => [Project], { nullable: true, defaultValue: [] })
   project?: Project[];
 }

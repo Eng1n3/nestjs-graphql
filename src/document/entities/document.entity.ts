@@ -14,11 +14,10 @@ import {
 @ObjectType()
 export class DocumentEntity {
   @OneToOne((type) => Project, (project) => project.idProject, {
-    nullable: false,
+    nullable: true,
     cascade: true,
   })
   @JoinColumn({ name: 'idProject' })
-  @Field(() => Project)
   idProject: string;
 
   @PrimaryGeneratedColumn('uuid')
@@ -37,10 +36,10 @@ export class DocumentEntity {
   @Field()
   description: string;
 
-  @CreateDateColumn({ type: 'time with time zone' })
+  @CreateDateColumn({ type: 'timestamp with time zone' })
   @Field()
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'time with time zone' })
+  @UpdateDateColumn({ type: 'timestamp with time zone' })
   updatedAt: Date;
 }
