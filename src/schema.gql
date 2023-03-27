@@ -50,7 +50,9 @@ type Query {
   user: User!
   users(options: GetUserInput): UsersModel!
   totalCount: Float!
-  project: Project!
+  projects: Project!
+  documents: [DocumentEntity!]
+  document: DocumentEntity
 }
 
 input GetUserInput {
@@ -83,11 +85,25 @@ input SearchUserInput {
 }
 
 type Mutation {
+  deleteProject(idProject: String!): String!
+  updateProject(input: UpdateProjectInput!): String!
   createProject(input: CreateProjectInput!): String!
+  deleteDocument(idDocument: String!): String!
+  updateDocument(input: UpdateDocumentInput!): String!
+  uploadDocument(input: UploadDocumentInput!): String!
+  deleteUser(idUser: String!): String!
+  forgotUser(usernameOrEmail: String!): String!
+  forgotAdmin(usernameOrEmail: String!): String!
+  updateAdmin(input: UpdateAdminInput!): String!
+  updateUser(input: UpdateUserInput!): String!
   loginAdmin(usernameOrEmail: String!, password: String!): LoginModel!
   loginUser(usernameOrEmail: String!, password: String!): LoginModel!
   registerAdmin(input: RegisterAdminInput!): String!
   registerUser(input: RegisterUserInput!): String!
+}
+
+input UpdateProjectInput {
+  description: String
 }
 
 input CreateProjectInput {
@@ -95,11 +111,41 @@ input CreateProjectInput {
   description: String!
 }
 
+input UpdateDocumentInput {
+  documentDescription: String
+  document: Upload
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input UploadDocumentInput {
+  documentName: String!
+  documentDescription: String!
+  document: Upload!
+}
+
+input UpdateAdminInput {
+  password: String
+  repassword: String
+  images: Upload
+}
+
+input UpdateUserInput {
+  password: String
+  repassword: String
+  fullname: String
+  bio: String
+  homepage: String
+  images: Upload
+}
+
 input RegisterAdminInput {
   username: String!
   email: String!
   password: String!
   repassword: String!
+  images: Upload
 }
 
 input RegisterUserInput {
@@ -110,4 +156,5 @@ input RegisterUserInput {
   fullname: String!
   bio: String
   homepage: String
+  images: Upload
 }

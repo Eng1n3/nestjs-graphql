@@ -11,6 +11,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getEnvPath } from './common/functions/env.function';
+import * as depthLimit from 'graphql-depth-limit';
 
 @Module({
   imports: [
@@ -23,8 +24,9 @@ import { getEnvPath } from './common/functions/env.function';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       playground: true,
       context: ({ req }) => ({ req }),
+      csrfPrevention: false,
+      validationRules: [depthLimit(5)],
     }),
-
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

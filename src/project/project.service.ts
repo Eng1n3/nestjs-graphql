@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Project } from './entities/project.entity';
 import { CreateProjectInput } from './dto/create-project.input';
 import { CreateProjectModel } from './models/create-project.model';
+import { mkdirSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class ProjectService {
@@ -22,9 +24,23 @@ export class ProjectService {
     }
   }
 
-  async create(CreateProjectModel: CreateProjectModel): Promise<void | any> {
+  async create(createProjectModel: CreateProjectModel): Promise<void | any> {
     try {
-      await this.projectRepository.save(CreateProjectModel);
+      // await this.projectRepository.save(createProjectModel);
+      // const { idProject } = await this.projectRepository.findOne({
+      //   where: { idUser: createProjectModel.idUser },
+      // });
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      const pathFolder = `${join(
+        __dirname,
+        '/../../../',
+        'uploads/',
+        'projects/',
+        uniqueSuffix,
+      )}`;
+      console.log(pathFolder, 41);
+
+      // mkdirSync(pathFolder);
     } catch (error) {
       if (
         error.message.includes('duplicate key value') &&

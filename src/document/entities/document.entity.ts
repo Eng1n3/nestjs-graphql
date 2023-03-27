@@ -24,7 +24,7 @@ export class DocumentEntity {
   @Field()
   idDocument: string;
 
-  @Column({ length: 50 })
+  @Column({ length: 50, unique: true })
   @Field()
   documentName: string;
 

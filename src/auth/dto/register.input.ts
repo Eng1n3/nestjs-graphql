@@ -6,6 +6,7 @@ import {
   IsString,
   IsStrongPassword,
 } from 'class-validator';
+import { FileUpload, GraphQLUpload } from 'graphql-upload-ts';
 import { Match } from 'src/common/decorators/match.decorator';
 
 @InputType()
@@ -46,6 +47,10 @@ export class RegisterUserInput {
   @IsOptional()
   @IsString()
   homepage?: string;
+
+  @Field(() => GraphQLUpload, { nullable: true })
+  @IsOptional()
+  images?: FileUpload;
 }
 
 @InputType()

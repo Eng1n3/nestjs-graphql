@@ -8,16 +8,40 @@ import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
+import { UpdateProjectInput } from './dto/update-project.input';
 
-@Roles(Role.User)
-@UseGuards(JwtAuthGuard)
-@Resolver(() => Project)
+@Resolver((of) => Project)
 export class ProjectResolver {
   constructor(private projectService: ProjectService) {}
 
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String)
+  async deleteProject(@Args('idProject') idProject: string) {
+    try {
+      return 'Success delete project';
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation(() => String)
+  @Mutation((returns) => String)
+  async updateProject(
+    @CurrentUser() user: User,
+    @Args('input') updateProjectInput: UpdateProjectInput,
+  ) {
+    try {
+      return 'Success create user';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String)
   async createProject(
     @CurrentUser() user: User,
     @Args('input') createProjectInput: CreateProjectInput,
@@ -31,13 +55,11 @@ export class ProjectResolver {
     }
   }
 
-  @Roles(Role.Admin, Role.User)
+  @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query(() => Project)
-  async project(@CurrentUser() user: User) {
+  @Query((returns) => Project)
+  async projects(@CurrentUser() user: User) {
     try {
-      const result = await this.projectService.userFind(user.idUser);
-      return result;
     } catch (error) {
       throw error;
     }
