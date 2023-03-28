@@ -12,6 +12,8 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getEnvPath } from './common/functions/env.function';
 import * as depthLimit from 'graphql-depth-limit';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
 
 @Module({
   imports: [
@@ -51,6 +53,9 @@ import * as depthLimit from 'graphql-depth-limit';
     AuthModule,
   ],
   controllers: [],
-  providers: [AppResolver],
+  providers: [
+    AppResolver,
+    { provide: APP_INTERCEPTOR, useClass: SentryInterceptor },
+  ],
 })
 export class AppModule {}

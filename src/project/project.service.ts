@@ -1,11 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Project } from './entities/project.entity';
-import { CreateProjectInput } from './dto/create-project.input';
-import { CreateProjectModel } from './models/create-project.model';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
+import { Repository } from 'typeorm';
+import { Project } from './entities/project.entity';
+import { CreateProjectModel } from './models/create-project.model';
 
 @Injectable()
 export class ProjectService {
@@ -13,7 +12,9 @@ export class ProjectService {
     @InjectRepository(Project) private projectRepository: Repository<Project>,
   ) {}
 
-  async userFind(idUser: string): Promise<Project[]> {
+  // async deleteProject() {}
+
+  async findByUser(idUser: string): Promise<Project[]> {
     try {
       const result = await this.projectRepository.find({
         where: { idUser },
@@ -24,23 +25,12 @@ export class ProjectService {
     }
   }
 
-  async create(createProjectModel: CreateProjectModel): Promise<void | any> {
+  async create(createProjectModel: CreateProjectModel): Promise<Project | any> {
     try {
-      // await this.projectRepository.save(createProjectModel);
-      // const { idProject } = await this.projectRepository.findOne({
-      //   where: { idUser: createProjectModel.idUser },
-      // });
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      const pathFolder = `${join(
-        __dirname,
-        '/../../../',
-        'uploads/',
-        'projects/',
-        uniqueSuffix,
-      )}`;
-      console.log(pathFolder, 41);
-
-      // mkdirSync(pathFolder);
+      const value = await this.projectRepository.create(createProjectModel);
+      await this.projectRepository.save(value);
+      mkdirSync(join(process.cwd(), '/uploads/projects/', value.idProject));
+      return value;
     } catch (error) {
       if (
         error.message.includes('duplicate key value') &&

@@ -3,7 +3,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { RegisterAdminInput, RegisterUserInput } from './dto/register.input';
 import * as bcrypt from 'bcrypt';
 import * as postmark from 'postmark';
 import { JwtService } from '@nestjs/jwt';
@@ -18,6 +17,15 @@ export class AuthService {
   ) {}
 
   private getSalt = bcrypt.genSaltSync();
+
+  async updatePassword(idUser: string, password: string) {
+    try {
+      const hashPassword = await bcrypt.hash(password, this.getSalt);
+      await this.usersService.updatePassword(idUser, password);
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async sendEmail(user: User) {
     try {
@@ -39,33 +47,29 @@ export class AuthService {
         secret,
         expiresIn,
       });
+
       client.sendEmail({
         From: 'dev@optimap.id',
         To: user.email,
         Subject: 'Forgot password',
-        TextBody: 'Coba kirim',
-        // TextBody: `Use this link to reset your password. The link is only valid for 24 hours.
+        // TextBody: 'Coba kirim',
+        TextBody: `Use this link to reset your password. The link is only valid for ${this.configService.get<string>(
+          'JWT_FORGOT_PASSWORD_EXPIRES_IN',
+        )}.
 
-        // [Product Name] ( https://example.com )
+        ************
+        Hi ${user.username},
+        ************
 
-        // ************
-        // Hi ${user.username},
-        // ************
+        You recently requested to reset your password for your account. Use the TOKEN. This password reset is only valid for the next ${this.configService.get<string>(
+          'JWT_FORGOT_PASSWORD_EXPIRES_IN',
+        )} with header authorization and mutation { changePassword(password: string, repassword: string) }
 
-        // You recently requested to reset your password for your account. Use the TOKEN. This password reset is only valid for the next ${this.configService.get<string>(
-        //   'JWT_FORGOT_PASSWORD_EXPIRES_IN',
-        // )} with authorization and mutation { changePassword(password: string, repassword: string) }
+        Reset your password ( ${this.configService.get<string>(
+          'DOMAIN',
+        )}/graphql ) and token (${tokenForgotPassword})
 
-        // Reset your password ( ${this.configService.get<string>(
-        //   'DOMAIN',
-        // )} ) and token (${tokenForgotPassword})
-
-        // For security, this request was received from a {{operating_system}} device using {{browser_name}}. If you did not request a password reset, please ignore this email or contact support ( {{ support_url }} ) if you have questions.
-
-        // Thanks,
-        // The [Product Name] team
-
-        // [Company Name, LLC]`,
+        Thanks`,
       });
     } catch (error) {
       throw error;
@@ -81,60 +85,6 @@ export class AuthService {
     };
     const token = this.jwtService.sign(payload);
     return token;
-  }
-
-  async createUser(registerUserInput: RegisterUserInput): Promise<void | any> {
-    try {
-      const hashPassword = await bcrypt.hash(
-        registerUserInput.password,
-        this.getSalt,
-      );
-      await this.usersService.createUser({
-        ...registerUserInput,
-        password: hashPassword,
-      });
-    } catch (error) {
-      if (
-        error.message.includes('duplicate key value') &&
-        error?.detail?.includes('username')
-      ) {
-        throw new BadRequestException('Username has been used!');
-      } else if (
-        error.message.includes('duplicate key value') &&
-        error?.detail?.includes('email')
-      ) {
-        throw new BadRequestException('email has been used!');
-      }
-      throw error;
-    }
-  }
-
-  async createAdmin(
-    registerAdminInput: RegisterAdminInput,
-  ): Promise<void | any> {
-    try {
-      const hashPassword = await bcrypt.hash(
-        registerAdminInput.password,
-        this.getSalt,
-      );
-      await this.usersService.createAdmin({
-        ...registerAdminInput,
-        password: hashPassword,
-      });
-    } catch (error) {
-      if (
-        error.message.includes('duplicate key value') &&
-        error?.detail?.includes('username')
-      ) {
-        throw new BadRequestException('Username has been used!');
-      } else if (
-        error.message.includes('duplicate key value') &&
-        error?.detail?.includes('email')
-      ) {
-        throw new BadRequestException('email has been used!');
-      }
-      throw error;
-    }
   }
 
   async findUser(usernameOrEmail: string): Promise<User> {

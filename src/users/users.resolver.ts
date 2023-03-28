@@ -13,14 +13,73 @@ import { UsersModel } from './models/users.model';
 import { UsersService } from './users.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import { UseGuards } from '@nestjs/common';
+import { forwardRef, Inject, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Project } from 'src/project/entities/project.entity';
+import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
+import { RegisterAdminInput, RegisterUserInput } from './dto/register.input';
+import { ProjectService } from 'src/project/project.service';
 
 @Resolver(() => User)
 export class UsersResolver {
-  constructor(private userService: UsersService) {}
+  constructor(
+    private userService: UsersService,
+    @Inject(forwardRef(() => ProjectService))
+    private projectService: ProjectService,
+  ) {}
+
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'deleteUser' })
+  async deleteUser(@Args('idUser') idUser: string) {
+    try {
+      await this.userService.deleteUser(idUser);
+      return 'Success delete user';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'updateAdmin' })
+  async updateAdmin(@Args('input') updateAdminInput: UpdateAdminInput) {
+    try {
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'updateUser' })
+  async updateUser(@Args('input') updateUserInput: UpdateUserInput) {
+    try {
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation((returns) => String, { name: 'registerAdmin' })
+  async registerAdmin(@Args('input') registerAdminInput: RegisterAdminInput) {
+    try {
+      await this.userService.createAdmin(registerAdminInput);
+      return 'Success create admin';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation((returns) => String, { name: 'registerUser' })
+  async registerUser(@Args('input') registerUserInput: RegisterUserInput) {
+    try {
+      await this.userService.createUser(registerUserInput);
+      return 'Success create user';
+    } catch (error) {
+      throw error;
+    }
+  }
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
@@ -65,7 +124,7 @@ export class UsersResolver {
   @ResolveField(() => [Project], { nullable: true, defaultValue: [] })
   async project(@Parent() user: User) {
     try {
-      const result = await this.userService.projectFind(user.idUser);
+      const result = await this.projectService.findByUser(user.idUser);
       return result;
     } catch (error) {
       throw error;

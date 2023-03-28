@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -14,7 +14,7 @@ import {
 @Entity()
 @ObjectType()
 export class Project {
-  @OneToOne((type) => User, (user) => user.idUser, {
+  @ManyToOne((type) => User, (user) => user.idUser, {
     nullable: true,
     cascade: true,
   })
@@ -25,7 +25,7 @@ export class Project {
   @Field()
   idProject: string;
 
-  @Column({ unique: true })
+  @Column()
   @Field()
   projectName: string;
 
@@ -41,7 +41,7 @@ export class Project {
   @Field()
   updatedAt: Date;
 
-  @OneToOne((type) => DocumentEntity, (doc) => doc.idProject)
+  @ManyToOne((type) => DocumentEntity, (doc) => doc.idProject)
   @Field(() => [DocumentEntity], { nullable: true, defaultValue: [] })
   document?: DocumentEntity[];
 }

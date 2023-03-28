@@ -6,13 +6,20 @@ import { FileUpload, GraphQLUpload } from 'graphql-upload-ts';
 export class UploadDocumentInput {
   @Field()
   @IsString()
+  @IsNotEmpty()
+  idProject: string;
+
+  @Field()
+  @IsString()
+  @IsNotEmpty()
   documentName: string;
 
   @Field()
   @IsString()
-  documentDescription: string;
+  @IsNotEmpty()
+  description: string;
 
   @Field(() => GraphQLUpload)
   @IsNotEmpty()
-  document: Promise<FileUpload>;
+  file: FileUpload;
 }

@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -13,7 +13,7 @@ import {
 @Entity({ name: 'document' })
 @ObjectType()
 export class DocumentEntity {
-  @OneToOne((type) => Project, (project) => project.idProject, {
+  @ManyToOne((type) => Project, (project) => project.idProject, {
     nullable: true,
     cascade: true,
   })
@@ -24,11 +24,11 @@ export class DocumentEntity {
   @Field()
   idDocument: string;
 
-  @Column({ length: 50, unique: true })
+  @Column({ length: 50 })
   @Field()
   documentName: string;
 
-  @Column({ length: 100 })
+  @Column({ type: 'text' })
   @Field()
   pathDocument: string;
 
