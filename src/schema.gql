@@ -3,6 +3,7 @@
 # ------------------------------------------------------
 
 type DocumentEntity {
+  project: Project!
   idDocument: String!
   documentName: String!
   pathDocument: String!
@@ -11,6 +12,7 @@ type DocumentEntity {
 }
 
 type Project {
+  user: User!
   idProject: String!
   projectName: String!
   description: String!
@@ -38,6 +40,11 @@ type UsersModel {
   data: [User!]!
 }
 
+type DocumentsAndCountModel {
+  count: Int
+  data: [DocumentEntity!]!
+}
+
 type LoginModel {
   token: String!
 }
@@ -52,8 +59,8 @@ type Query {
   totalCount: Float!
   project: [Project!]
   projects: [Project!]!
-  documents: [DocumentEntity!]
-  document: [DocumentEntity!]
+  documents(options: GetDocumentsInput): DocumentsAndCountModel
+  document(options: GetDocumentsInput): DocumentsAndCountModel
 }
 
 input GetUserInput {
@@ -85,6 +92,23 @@ input SearchUserInput {
   fullname: String = ""
 }
 
+input GetDocumentsInput {
+  pagination: PaginationInput
+
+  """
+  {key: "ASC" or "DESC" or "asc" or "desc" or 1 or -1} or {key: {direction: "ASC" or "DESC" or "asc" or "desc", nulls: "first" or "last" or "FIRST" or "LAST"}}}
+  """
+  sort: JSON
+  search: SearchDocumentsInput
+}
+
+input SearchDocumentsInput {
+  idDocument: String = ""
+  documentName: String = ""
+  description: String = ""
+  pathDocument: String = ""
+}
+
 type Mutation {
   deleteUser(idUser: String!): String!
   updateAdmin(input: UpdateAdminInput!): String!
@@ -105,21 +129,25 @@ type Mutation {
 }
 
 input UpdateAdminInput {
+  username: String
+  email: String
   password: String
   repassword: String
-  images: Upload
+  image: Upload
 }
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
 
 input UpdateUserInput {
+  username: String
+  email: String
   password: String
   repassword: String
   fullname: String
   bio: String
   homepage: String
-  images: Upload
+  image: Upload
 }
 
 input RegisterAdminInput {
@@ -127,7 +155,7 @@ input RegisterAdminInput {
   email: String!
   password: String!
   repassword: String!
-  images: Upload
+  image: Upload
 }
 
 input RegisterUserInput {
@@ -138,11 +166,13 @@ input RegisterUserInput {
   fullname: String!
   bio: String
   homepage: String
-  images: Upload
+  image: Upload
 }
 
 input UpdateProjectInput {
+  projectName: String
   description: String
+  idProject: String!
 }
 
 input CreateProjectInput {
@@ -152,8 +182,10 @@ input CreateProjectInput {
 
 input UpdateDocumentInput {
   idProject: String
+  documentName: String
   description: String
   file: Upload
+  idDocument: String!
 }
 
 input UploadDocumentInput {

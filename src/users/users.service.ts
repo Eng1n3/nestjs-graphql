@@ -13,6 +13,9 @@ import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { GetUserInput } from './dto/get-user.input';
 import * as bcrypt from 'bcrypt';
+import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
+import { mkdirSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +24,37 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
+
+  async updateUser(
+    idUser: string,
+    registerUserInput: UpdateUserInput | UpdateAdminInput,
+  ): Promise<void> {
+    try {
+      const hashPassword = await bcrypt.hash(
+        registerUserInput.password,
+        this.getSalt,
+      );
+      const pathImage = 'default-image.jpg';
+      await this.userRepository.update(idUser, {
+        ...registerUserInput,
+        pathImage,
+        password: hashPassword,
+      });
+    } catch (error) {
+      if (
+        error.message.includes('duplicate key value') &&
+        error?.detail?.includes('username')
+      ) {
+        throw new BadRequestException('Username has been used!');
+      } else if (
+        error.message.includes('duplicate key value') &&
+        error?.detail?.includes('email')
+      ) {
+        throw new BadRequestException('email has been used!');
+      }
+      throw error;
+    }
+  }
 
   async deleteUser(idUser: string) {
     try {
@@ -58,50 +92,26 @@ export class UsersService {
     }
   }
 
-  async createAdmin(registerAdminInput: RegisterAdminInput): Promise<void> {
-    try {
-      const hashPassword = await bcrypt.hash(
-        registerAdminInput.password,
-        this.getSalt,
-      );
-      const pathImage = 'default-image.jpg';
-      const value = {
-        ...registerAdminInput,
-        pathImage,
-        password: hashPassword,
-        role: 'admin',
-      };
-      await this.userRepository.save(value);
-    } catch (error) {
-      if (
-        error.message.includes('duplicate key value') &&
-        error?.detail?.includes('username')
-      ) {
-        throw new BadRequestException('Username has been used!');
-      } else if (
-        error.message.includes('duplicate key value') &&
-        error?.detail?.includes('email')
-      ) {
-        throw new BadRequestException('email has been used!');
-      }
-      throw error;
-    }
-  }
-
-  async createUser(registerUserInput: RegisterUserInput): Promise<void> {
+  async createUser(
+    role: string,
+    registerUserInput: RegisterUserInput | RegisterAdminInput,
+  ): Promise<void> {
     try {
       const hashPassword = await bcrypt.hash(
         registerUserInput.password,
         this.getSalt,
       );
       const pathImage = 'default-image.jpg';
-      const value = {
+      const value = await this.userRepository.create({
         ...registerUserInput,
         pathImage,
         password: hashPassword,
-        role: 'user',
-      };
+        role,
+      });
       await this.userRepository.save(value);
+      mkdirSync(join(process.cwd(), `/uploads/profiles/${value.idUser}`), {
+        recursive: true,
+      });
     } catch (error) {
       if (
         error.message.includes('duplicate key value') &&

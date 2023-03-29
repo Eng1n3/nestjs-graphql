@@ -5,7 +5,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -58,7 +57,7 @@ export class User {
   @Field(() => Date)
   updatedAt: Date;
 
-  @OneToMany(() => Project, (project) => project.idUser)
+  @OneToMany(() => Project, (project) => project.user)
   @Field(() => [Project], { nullable: true, defaultValue: [] })
   project?: Project[];
 }

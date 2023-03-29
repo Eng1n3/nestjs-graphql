@@ -18,7 +18,8 @@ export class DocumentEntity {
     cascade: true,
   })
   @JoinColumn({ name: 'idProject' })
-  idProject: string;
+  @Field(() => Project)
+  project: Project;
 
   @PrimaryGeneratedColumn('uuid')
   @Field()

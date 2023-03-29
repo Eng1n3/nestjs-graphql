@@ -50,7 +50,7 @@ export class RegisterUserInput {
 
   @Field(() => GraphQLUpload, { nullable: true })
   @IsOptional()
-  images?: FileUpload;
+  image?: FileUpload;
 }
 
 @InputType()

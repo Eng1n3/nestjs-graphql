@@ -13,9 +13,11 @@ import { Project } from 'src/project/entities/project.entity';
 import { ProjectService } from 'src/project/project.service';
 import { User } from 'src/users/entities/user.entity';
 import { DocumentService } from './document.service';
+import { GetDocumentsInput } from './dto/get-documents.input';
 import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
+import { DocumentsAndCountModel } from './models/documents-and-count.model';
 
 @Resolver((of) => DocumentEntity)
 export class DocumentResolver {
@@ -47,19 +49,32 @@ export class DocumentResolver {
     @CurrentUser() user: User,
     @Args('input') updateDocumentInput: UpdateDocumentInput,
   ) {
+    const projects: Project[] = await this.projectService.findByUser(
+      user.idUser,
+    );
+    const project = projects.find(
+      ({ idProject }) => updateDocumentInput.idProject === idProject,
+    );
+    if (!project) throw new NotFoundException('project not found');
+    await this.documentService.updateDocument(updateDocumentInput);
     return 'Success update document';
   }
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => [DocumentEntity], {
+  @Query((returns) => DocumentsAndCountModel, {
     name: 'documents',
     nullable: true,
     defaultValue: [],
   })
-  async documents(@CurrentUser() user: User) {
+  async documents(
+    @CurrentUser() user: User,
+    @Args('options', { nullable: true })
+    optionsInput: GetDocumentsInput<DocumentEntity>,
+  ) {
     try {
-      return [];
+      const [data, count] = await this.documentService.findAll(optionsInput);
+      return { data, count };
     } catch (error) {
       throw error;
     }
@@ -67,16 +82,23 @@ export class DocumentResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => [DocumentEntity], {
+  @Query((returns) => DocumentsAndCountModel, {
     name: 'document',
     nullable: true,
   })
-  async document(@CurrentUser() user: User) {
+  async document(
+    @CurrentUser() user: User,
+    @Args('options', { nullable: true })
+    optionsInput: GetDocumentsInput<DocumentEntity>,
+  ) {
     try {
       const projects = await this.projectService.findByUser(user.idUser);
       const idProjects = projects?.map((project) => project.idProject);
-      const documents = await this.documentService.findAll(idProjects);
-      return documents;
+      const [data, count] = await this.documentService.findByMultipleIdProject(
+        idProjects,
+        optionsInput,
+      );
+      return { data, count };
     } catch (error) {
       throw error;
     }

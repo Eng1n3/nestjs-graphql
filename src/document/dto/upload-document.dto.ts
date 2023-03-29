@@ -21,5 +21,5 @@ export class UploadDocumentInput {
 
   @Field(() => GraphQLUpload)
   @IsNotEmpty()
-  file: FileUpload;
+  file: Promise<FileUpload>;
 }

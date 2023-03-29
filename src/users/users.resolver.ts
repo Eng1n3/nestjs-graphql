@@ -44,8 +44,12 @@ export class UsersResolver {
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Mutation((returns) => String, { name: 'updateAdmin' })
-  async updateAdmin(@Args('input') updateAdminInput: UpdateAdminInput) {
+  async updateAdmin(
+    @CurrentUser() user: User,
+    @Args('input') updateAdminInput: UpdateAdminInput,
+  ) {
     try {
+      await this.userService.updateUser(user.idUser, updateAdminInput);
     } catch (error) {
       throw error;
     }
@@ -54,8 +58,12 @@ export class UsersResolver {
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
   @Mutation((returns) => String, { name: 'updateUser' })
-  async updateUser(@Args('input') updateUserInput: UpdateUserInput) {
+  async updateUser(
+    @CurrentUser() user: User,
+    @Args('input') updateUserInput: UpdateUserInput,
+  ) {
     try {
+      await this.userService.updateUser(user.idUser, updateUserInput);
     } catch (error) {
       throw error;
     }
@@ -64,7 +72,7 @@ export class UsersResolver {
   @Mutation((returns) => String, { name: 'registerAdmin' })
   async registerAdmin(@Args('input') registerAdminInput: RegisterAdminInput) {
     try {
-      await this.userService.createAdmin(registerAdminInput);
+      await this.userService.createUser('admin', registerAdminInput);
       return 'Success create admin';
     } catch (error) {
       throw error;
@@ -74,7 +82,7 @@ export class UsersResolver {
   @Mutation((returns) => String, { name: 'registerUser' })
   async registerUser(@Args('input') registerUserInput: RegisterUserInput) {
     try {
-      await this.userService.createUser(registerUserInput);
+      await this.userService.createUser('user', registerUserInput);
       return 'Success create user';
     } catch (error) {
       throw error;

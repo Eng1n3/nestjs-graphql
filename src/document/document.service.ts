@@ -1,13 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadGatewayException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createWriteStream, rmSync } from 'fs';
+import { createWriteStream, readdirSync, rmSync } from 'fs';
 import { FileUpload } from 'graphql-upload-ts';
 import { join } from 'path';
-import { In, Repository } from 'typeorm';
+import { ILike, In, Repository } from 'typeorm';
+import { GetDocumentsInput } from './dto/get-documents.input';
+import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
 
@@ -18,12 +21,81 @@ export class DocumentService {
     private documentRepository: Repository<DocumentEntity>,
   ) {}
 
-  async findAll(idProjects: string[]) {
+  async count(idProjects: string[]) {
     try {
-      const result = await this.documentRepository.find({
+      const result = await this.documentRepository.count({
+        where: { project: { idProject: In(idProjects) } },
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateDocument(updateDocumentInput: UpdateDocumentInput) {
+    try {
+      const document = await updateDocumentInput.file;
+      const existDocument = await this.documentRepository.findOne({
+        where: { idDocument: updateDocumentInput.idDocument },
+      });
+      if (!existDocument) throw new NotFoundException('Document not found!');
+      const pathName = `/uploads/projects/${updateDocumentInput.idProject}`;
+      const pathDocumentToSave = await this.saveDocumentToDir(
+        document,
+        pathName,
+      );
+      const { idProject, idDocument, file, ...values } = updateDocumentInput;
+      const value = await this.documentRepository.create({
+        ...values,
+        pathDocument: pathDocumentToSave,
+      });
+      await this.documentRepository.update(idDocument, value);
+      rmSync(join(process.cwd(), existDocument.pathDocument));
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findAll(optionsInput: GetDocumentsInput<DocumentEntity>) {
+    try {
+      const order = optionsInput.sort;
+      const skip = optionsInput?.pagination?.skip;
+      const take = optionsInput?.pagination?.take;
+      const result = await this.documentRepository.findAndCount({
         where: {
-          idProject: In(idProjects),
+          documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),
+          description: ILike(`%${optionsInput?.search?.description || ''}%`),
+          pathDocument: ILike(`%${optionsInput?.search?.pathDocument || ''}%`),
         },
+        // },
+        skip,
+        take,
+        order,
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findByMultipleIdProject(
+    idProjects: string[],
+    optionsInput: GetDocumentsInput<DocumentEntity>,
+  ) {
+    try {
+      const order = optionsInput.sort;
+      const skip = optionsInput?.pagination?.skip;
+      const take = optionsInput?.pagination?.take;
+      const result = await this.documentRepository.findAndCount({
+        where: {
+          project: { idProject: In(idProjects) },
+          documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),
+          description: ILike(`%${optionsInput?.search?.description || ''}%`),
+          pathDocument: ILike(`%${optionsInput?.search?.pathDocument || ''}%`),
+        },
+        skip,
+        take,
+        order,
       });
       return result;
     } catch (error) {
@@ -34,7 +106,7 @@ export class DocumentService {
   async getByIdProject(idProject: string) {
     try {
       const result = await this.documentRepository.find({
-        where: { idProject },
+        where: { project: { idProject } },
       });
       return result;
     } catch (error) {
@@ -44,7 +116,7 @@ export class DocumentService {
 
   async deleteByIdProject(idProject: string) {
     try {
-      await this.documentRepository.delete({ idProject });
+      await this.documentRepository.delete({ project: { idProject } });
     } catch (error) {
       throw error;
     }
@@ -96,6 +168,7 @@ export class DocumentService {
         pathName,
       );
       const value = await this.documentRepository.create({
+        project: { idProject: uploadDocumentInput.idProject },
         ...uploadDocumentInput,
         pathDocument: pathDocumentToSave,
       });

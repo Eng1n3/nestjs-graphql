@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
 import { Repository } from 'typeorm';
+import { CreateProjectInput } from './dto/create-project.input';
+import { UpdateProjectInput } from './dto/update-project.input';
 import { Project } from './entities/project.entity';
 import { CreateProjectModel } from './models/create-project.model';
 
@@ -12,12 +14,22 @@ export class ProjectService {
     @InjectRepository(Project) private projectRepository: Repository<Project>,
   ) {}
 
-  // async deleteProject() {}
-
-  async findByUser(idUser: string): Promise<Project[]> {
+  async updateByIdProject(
+    idUser: string,
+    updateProjectInput: UpdateProjectInput,
+  ) {
     try {
-      const result = await this.projectRepository.find({
-        where: { idUser },
+      const { idProject, ...value } = updateProjectInput;
+      await this.projectRepository.update(idProject, value);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findByIdProject(idProject: string) {
+    try {
+      const result = await this.projectRepository.findOne({
+        where: { idProject },
       });
       return result;
     } catch (error) {
@@ -25,11 +37,47 @@ export class ProjectService {
     }
   }
 
-  async create(createProjectModel: CreateProjectModel): Promise<Project | any> {
+  async deleteProject(idProject: string) {
     try {
-      const value = await this.projectRepository.create(createProjectModel);
+      await this.projectRepository.delete(idProject);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findAll(): Promise<Project[]> {
+    try {
+      const result = await this.projectRepository.find();
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findByUser(idUser: string): Promise<Project[]> {
+    try {
+      const result = await this.projectRepository.find({
+        where: { user: { idUser } },
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async create(
+    idUser: string,
+    createProjectModel: CreateProjectInput,
+  ): Promise<Project | any> {
+    try {
+      const value = this.projectRepository.create({
+        user: { idUser },
+        ...createProjectModel,
+      });
       await this.projectRepository.save(value);
-      mkdirSync(join(process.cwd(), '/uploads/projects/', value.idProject));
+      mkdirSync(join(process.cwd(), '/uploads/projects/', value.idProject), {
+        recursive: true,
+      });
       return value;
     } catch (error) {
       if (
