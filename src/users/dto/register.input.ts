@@ -1,4 +1,5 @@
 import { Field, InputType, OmitType } from '@nestjs/graphql';
+import { Transform, TransformFnParams } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -14,6 +15,7 @@ export class RegisterUserInput {
   @Field()
   @IsString()
   @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
   username: string;
 
   @Field()
@@ -50,7 +52,7 @@ export class RegisterUserInput {
 
   @Field(() => GraphQLUpload, { nullable: true })
   @IsOptional()
-  image?: FileUpload;
+  image?: Promise<FileUpload>;
 }
 
 @InputType()

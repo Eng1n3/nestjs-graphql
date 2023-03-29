@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createWriteStream, readdirSync, rmSync } from 'fs';
+import { createWriteStream, rmSync } from 'fs';
 import { FileUpload } from 'graphql-upload-ts';
 import { join } from 'path';
 import { ILike, In, Repository } from 'typeorm';
@@ -21,7 +21,16 @@ export class DocumentService {
     private documentRepository: Repository<DocumentEntity>,
   ) {}
 
-  async count(idProjects: string[]) {
+  async countAll() {
+    try {
+      const result = await this.documentRepository.count();
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async countByUser(idProjects: string[]) {
     try {
       const result = await this.documentRepository.count({
         where: { project: { idProject: In(idProjects) } },
@@ -67,7 +76,6 @@ export class DocumentService {
           description: ILike(`%${optionsInput?.search?.description || ''}%`),
           pathDocument: ILike(`%${optionsInput?.search?.pathDocument || ''}%`),
         },
-        // },
         skip,
         take,
         order,

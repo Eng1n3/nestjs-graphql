@@ -33,7 +33,7 @@ export class User {
   @IsOptional()
   fullname?: string;
 
-  @Column({ length: 100 })
+  @Column({ type: 'text' })
   @Field()
   pathImage: string;
 

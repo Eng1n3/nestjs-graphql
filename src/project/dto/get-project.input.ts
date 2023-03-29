@@ -5,27 +5,23 @@ import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
 
 @InputType()
-class SearchDocumentsInput {
+class SearchProjectInput {
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
-  documentName?: string;
+  projectName?: string;
 
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
   description?: string;
-
-  @Field({ nullable: true, defaultValue: '' })
-  @IsString()
-  pathDocument?: string;
 }
 
 @InputType()
-export class GetDocumentsInput<T> {
+export class GetProjectsInput<T> {
   @Field((types) => PaginationInput, { nullable: true })
   @IsOptional()
   pagination?: PaginationInput;
 
-  @Field(() => GraphQLJSON, {
+  @Field((types) => GraphQLJSON, {
     nullable: true,
     description:
       '{key: "ASC" or "DESC" or "asc" or "desc" or 1 or -1} or {key: {direction: "ASC" or "DESC" or "asc" or "desc", nulls: "first" or "last" or "FIRST" or "LAST"}}}',
@@ -33,7 +29,7 @@ export class GetDocumentsInput<T> {
   @IsOptional()
   sort?: FindOptionsOrder<T>;
 
-  @Field((types) => SearchDocumentsInput, { nullable: true })
+  @Field((types) => SearchProjectInput, { nullable: true })
   @IsOptional()
-  search?: SearchDocumentsInput;
+  search?: SearchProjectInput;
 }

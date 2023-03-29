@@ -1,4 +1,4 @@
-import { Field, ObjectType, OmitType, PartialType } from '@nestjs/graphql';
+import { Field, ObjectType, PartialType } from '@nestjs/graphql';
 import { CountModel } from 'src/common/models/count.model';
 import { DocumentEntity } from '../entities/document.entity';
 

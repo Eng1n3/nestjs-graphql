@@ -2,17 +2,48 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CreateProjectInput } from './dto/create-project.input';
+import { GetProjectsInput } from './dto/get-project.input';
 import { UpdateProjectInput } from './dto/update-project.input';
 import { Project } from './entities/project.entity';
-import { CreateProjectModel } from './models/create-project.model';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project) private projectRepository: Repository<Project>,
   ) {}
+
+  async findByIdUser(idUser: string): Promise<Project[]> {
+    try {
+      const result = await this.projectRepository.find({
+        where: { user: { idUser } },
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async countAll() {
+    try {
+      const result = await this.projectRepository.count();
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async countByUser(idUser: string) {
+    try {
+      const result = await this.projectRepository.count({
+        where: { user: { idUser } },
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async updateByIdProject(
     idUser: string,
@@ -45,19 +76,51 @@ export class ProjectService {
     }
   }
 
-  async findAll(): Promise<Project[]> {
+  async findAll(getProjectsInput: GetProjectsInput<Project>) {
     try {
-      const result = await this.projectRepository.find();
+      const order = getProjectsInput?.sort;
+      const skip = getProjectsInput?.pagination?.skip;
+      const take = getProjectsInput?.pagination?.take;
+      const result = await this.projectRepository.findAndCount({
+        where: {
+          projectName: ILike(
+            `%${getProjectsInput?.search?.projectName || ''}%`,
+          ),
+          description: ILike(
+            `%${getProjectsInput?.search?.description || ''}%`,
+          ),
+        },
+        skip,
+        take,
+        order,
+      });
       return result;
     } catch (error) {
       throw error;
     }
   }
 
-  async findByUser(idUser: string): Promise<Project[]> {
+  async findByUser(
+    idUser: string,
+    getProjectsInput?: GetProjectsInput<Project>,
+  ) {
     try {
-      const result = await this.projectRepository.find({
-        where: { user: { idUser } },
+      const order = getProjectsInput?.sort;
+      const skip = getProjectsInput?.pagination?.skip;
+      const take = getProjectsInput?.pagination?.take;
+      const result = await this.projectRepository.findAndCount({
+        where: {
+          user: { idUser },
+          projectName: ILike(
+            `%${getProjectsInput?.search?.projectName || ''}%`,
+          ),
+          description: ILike(
+            `%${getProjectsInput?.search?.description || ''}%`,
+          ),
+        },
+        skip,
+        take,
+        order,
       });
       return result;
     } catch (error) {

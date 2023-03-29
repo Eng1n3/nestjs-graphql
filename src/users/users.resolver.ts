@@ -50,6 +50,7 @@ export class UsersResolver {
   ) {
     try {
       await this.userService.updateUser(user.idUser, updateAdminInput);
+      return 'Success update admin account';
     } catch (error) {
       throw error;
     }
@@ -64,6 +65,7 @@ export class UsersResolver {
   ) {
     try {
       await this.userService.updateUser(user.idUser, updateUserInput);
+      return 'Success update user account';
     } catch (error) {
       throw error;
     }
@@ -117,7 +119,7 @@ export class UsersResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => Number, { name: 'totalCount' })
+  @Query((returns) => Number, { name: 'countAccountAll' })
   async countAll() {
     try {
       const count = await this.userService.count();

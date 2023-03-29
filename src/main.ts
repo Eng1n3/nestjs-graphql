@@ -16,10 +16,10 @@ async function bootstrap() {
   );
   app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }));
   const configService = app.get(ConfigService);
-  Sentry.init({
-    dsn: configService.get('SENTRY_DSN'),
-    tracesSampleRate: 1.0,
-  });
+  // Sentry.init({
+  //   dsn: configService.get('SENTRY_DSN'),
+  //   tracesSampleRate: 1.0,
+  // });
   const port = configService.get('PORT');
   await app.listen(port);
 }

@@ -25,6 +25,8 @@ import { DocumentEntity } from 'src/document/entities/document.entity';
 import { DocumentService } from 'src/document/document.service';
 import { rmSync } from 'fs';
 import { join } from 'path';
+import { ProjectsAndCountModel } from './models/projects-and-count.input';
+import { GetProjectsInput } from './dto/get-project.input';
 
 @Resolver((of) => Project)
 export class ProjectResolver {
@@ -33,6 +35,37 @@ export class ProjectResolver {
     @Inject(forwardRef(() => DocumentService))
     private documentService: DocumentService,
   ) {}
+
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Query((returns) => Number, {
+    name: 'countProjectsAll',
+    nullable: true,
+    defaultValue: [],
+  })
+  async countAll() {
+    try {
+      const count = await this.projectService.countAll();
+      return count;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Query((returns) => Number, {
+    name: 'countProjectsByUser',
+    nullable: true,
+  })
+  async countByUser(@CurrentUser() user: User) {
+    try {
+      const count = await this.projectService.countByUser(user.idUser);
+      return count;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -88,15 +121,21 @@ export class ProjectResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => [Project], {
+  @Query((returns) => ProjectsAndCountModel, {
     name: 'project',
     nullable: true,
     defaultValue: [],
   })
-  async project(@CurrentUser() user: User) {
+  async project(
+    @CurrentUser() user: User,
+    @Args('options') getProjectsInput?: GetProjectsInput<Project>,
+  ) {
     try {
-      const projects = await this.projectService.findByUser(user.idUser);
-      return projects;
+      const [data, count] = await this.projectService.findByUser(
+        user.idUser,
+        getProjectsInput,
+      );
+      return { data, count };
     } catch (error) {
       throw error;
     }
@@ -104,11 +143,18 @@ export class ProjectResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => [Project])
-  async projects(@CurrentUser() user: User) {
+  @Query((returns) => ProjectsAndCountModel, {
+    name: 'projects',
+    nullable: true,
+    defaultValue: [],
+  })
+  async projects(
+    @CurrentUser() user: User,
+    @Args('options') getProjectsInput?: GetProjectsInput<Project>,
+  ) {
     try {
-      const result = await this.projectService.findAll();
-      return result;
+      const [data, count] = await this.projectService.findAll(getProjectsInput);
+      return { data, count };
     } catch (error) {
       throw error;
     }

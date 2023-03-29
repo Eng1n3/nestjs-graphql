@@ -29,6 +29,39 @@ export class DocumentResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
+  @Query((returns) => Number, {
+    name: 'countDocumentsAll',
+    nullable: true,
+    defaultValue: [],
+  })
+  async countByUser() {
+    try {
+      const count = await this.documentService.countAll();
+      return count;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Query((returns) => Number, {
+    name: 'countDocumentsByUser',
+    nullable: true,
+  })
+  async countByAll(@CurrentUser() user: User) {
+    try {
+      const projects = await this.projectService.findByIdUser(user.idUser);
+      const idProjects = projects?.map((project) => project.idProject);
+      const count = await this.documentService.countByUser(idProjects);
+      return count;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
   @Mutation((returns) => String, {
     name: 'deleteDocument',
   })
@@ -49,7 +82,7 @@ export class DocumentResolver {
     @CurrentUser() user: User,
     @Args('input') updateDocumentInput: UpdateDocumentInput,
   ) {
-    const projects: Project[] = await this.projectService.findByUser(
+    const projects: Project[] = await this.projectService.findByIdUser(
       user.idUser,
     );
     const project = projects.find(
@@ -92,7 +125,7 @@ export class DocumentResolver {
     optionsInput: GetDocumentsInput<DocumentEntity>,
   ) {
     try {
-      const projects = await this.projectService.findByUser(user.idUser);
+      const projects = await this.projectService.findByIdUser(user.idUser);
       const idProjects = projects?.map((project) => project.idProject);
       const [data, count] = await this.documentService.findByMultipleIdProject(
         idProjects,
@@ -114,7 +147,7 @@ export class DocumentResolver {
     @Args('input') uploadDocumentInput: UploadDocumentInput,
   ) {
     try {
-      const projects: Project[] = await this.projectService.findByUser(
+      const projects: Project[] = await this.projectService.findByIdUser(
         user.idUser,
       );
       const project = projects.find(

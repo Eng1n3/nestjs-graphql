@@ -40,6 +40,11 @@ type UsersModel {
   data: [User!]!
 }
 
+type ProjectsAndCountModel {
+  count: Int
+  data: [Project!]!
+}
+
 type DocumentsAndCountModel {
   count: Int
   data: [DocumentEntity!]!
@@ -56,9 +61,13 @@ type Query {
   index: String!
   user: User!
   users(options: GetUserInput): UsersModel!
-  totalCount: Float!
-  project: [Project!]
-  projects: [Project!]!
+  countAccountAll: Float!
+  countProjectsAll: Float
+  countProjectsByUser: Float
+  project(options: GetProjectsInput!): ProjectsAndCountModel
+  projects(options: GetProjectsInput!): ProjectsAndCountModel
+  countDocumentsAll: Float
+  countDocumentsByUser: Float
   documents(options: GetDocumentsInput): DocumentsAndCountModel
   document(options: GetDocumentsInput): DocumentsAndCountModel
 }
@@ -92,6 +101,21 @@ input SearchUserInput {
   fullname: String = ""
 }
 
+input GetProjectsInput {
+  pagination: PaginationInput
+
+  """
+  {key: "ASC" or "DESC" or "asc" or "desc" or 1 or -1} or {key: {direction: "ASC" or "DESC" or "asc" or "desc", nulls: "first" or "last" or "FIRST" or "LAST"}}}
+  """
+  sort: JSON
+  search: SearchProjectInput
+}
+
+input SearchProjectInput {
+  projectName: String = ""
+  description: String = ""
+}
+
 input GetDocumentsInput {
   pagination: PaginationInput
 
@@ -103,7 +127,6 @@ input GetDocumentsInput {
 }
 
 input SearchDocumentsInput {
-  idDocument: String = ""
   documentName: String = ""
   description: String = ""
   pathDocument: String = ""
