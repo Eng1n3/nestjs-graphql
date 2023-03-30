@@ -27,7 +27,6 @@ export class AuthResolver {
     @Args('input') changePasswordInput: ChangePasswordInput,
   ) {
     try {
-      console.log(user);
       await this.authService.updatePassword(
         user.idUser,
         changePasswordInput.password,

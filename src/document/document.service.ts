@@ -14,6 +14,7 @@ import { GetDocumentsInput } from './dto/get-documents.input';
 import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
+import { v4 as uuid4 } from 'uuid';
 
 @Injectable()
 export class DocumentService {
@@ -179,6 +180,7 @@ export class DocumentService {
       );
       const value = await this.documentRepository.create({
         project: { idProject: uploadDocumentInput.idProject },
+        idDocument: uuid4(),
         ...uploadDocumentInput,
         pathDocument: pathDocumentToSave,
       });

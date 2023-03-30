@@ -149,7 +149,6 @@ export class DocumentResolver {
     @Args('input') uploadDocumentInput: UploadDocumentInput,
   ) {
     try {
-      console.log(uploadDocumentInput);
       const projects: Project[] = await this.projectService.findByIdUser(
         user.idUser,
       );

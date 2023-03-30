@@ -6,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -21,7 +22,7 @@ export class DocumentEntity {
   @Field(() => Project)
   project: Project;
 
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn()
   @Field()
   idDocument: string;
 

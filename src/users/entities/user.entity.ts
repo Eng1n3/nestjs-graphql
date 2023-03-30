@@ -6,14 +6,14 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
 @ObjectType()
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn()
   @Field()
   idUser: string;
 

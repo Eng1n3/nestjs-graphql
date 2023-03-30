@@ -8,7 +8,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -23,8 +23,7 @@ export class Project {
   @Field(() => User)
   user?: User;
 
-  @PrimaryGeneratedColumn('uuid')
-  @Field()
+  @PrimaryColumn()
   idProject: string;
 
   @Column()

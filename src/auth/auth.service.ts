@@ -48,8 +48,6 @@ export class AuthService {
         expiresIn,
       });
 
-      console.log(tokenForgotPassword, 51);
-
       client.sendEmail({
         From: 'dev@optimap.id',
         To: user.email,

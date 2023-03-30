@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 import {
-  BadGatewayException,
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   RegisterAdminInput,
@@ -46,7 +46,7 @@ export class UsersService {
         )
         .on('finish', () => resolve(`${pathName}/${convertFilename}`))
         .on('error', () => {
-          new BadGatewayException('Could not save image');
+          new BadRequestException('Could not save image');
         });
     });
   }
@@ -81,6 +81,7 @@ export class UsersService {
       }
       const value = this.userRepository.create({
         ...registerUserInput,
+        idUser: uuidv4(),
         pathImage: pathImageToSave,
       });
       await this.userRepository.update(idUser, value);
@@ -147,6 +148,7 @@ export class UsersService {
       );
       const pathImage = 'default-image.jpg';
       const value = await this.userRepository.create({
+        idUser: uuidv4(),
         ...registerUserInput,
         pathImage,
         password: hashPassword,

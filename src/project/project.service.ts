@@ -7,6 +7,7 @@ import { CreateProjectInput } from './dto/create-project.input';
 import { GetProjectsInput } from './dto/get-project.input';
 import { UpdateProjectInput } from './dto/update-project.input';
 import { Project } from './entities/project.entity';
+import { v4 as uuid4 } from 'uuid';
 
 @Injectable()
 export class ProjectService {
@@ -135,6 +136,7 @@ export class ProjectService {
     try {
       const value = this.projectRepository.create({
         user: { idUser },
+        idProject: uuid4(),
         ...createProjectModel,
       });
       await this.projectRepository.save(value);

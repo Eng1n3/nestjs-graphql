@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'adam-onboard-app',
       script: './dist/main.js',
-      watch: true,
+      watch: false,
       env: {
         PORT: 3000,
         NODE_ENV: 'development',
