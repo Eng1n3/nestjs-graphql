@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'adam-onboard-app',
-      script: './adam-onboard/dist/main.js',
+      script: './dist/main.js',
       watch: true,
       env: {
         PORT: 3000,
