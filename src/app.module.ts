@@ -9,17 +9,18 @@ import { ProjectModule } from './project/project.module';
 import { DocumentModule } from './document/document.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { getEnvPath } from './common/functions/env.function';
 import * as depthLimit from 'graphql-depth-limit';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
+import { dataSourceOptions } from 'db/data-source';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
       envFilePath: getEnvPath({ folder: './config' }),
+      isGlobal: true,
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -29,20 +30,7 @@ import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
       csrfPrevention: false,
       validationRules: [depthLimit(5)],
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DATABASE_HOST'),
-        port: +configService.get('DATABASE_PORT'),
-        username: configService.get('DATABASE_USERNAME'),
-        password: configService.get('DATABASE_PASSWORD'),
-        database: configService.get('DATABASE'),
-        entities: [__dirname + '/**/*.entity{.js,.ts}'],
-        synchronize: true,
-      }),
-      inject: [ConfigService],
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
