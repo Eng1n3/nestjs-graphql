@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createWriteStream, rmSync } from 'fs';
 import { FileUpload } from 'graphql-upload-ts';
@@ -19,6 +20,7 @@ export class DocumentService {
   constructor(
     @InjectRepository(DocumentEntity)
     private documentRepository: Repository<DocumentEntity>,
+    private configService: ConfigService,
   ) {}
 
   async countAll() {

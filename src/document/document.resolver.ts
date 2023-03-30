@@ -131,6 +131,8 @@ export class DocumentResolver {
         idProjects,
         optionsInput,
       );
+      // return domain/sjajdspajp
+      // const changeData = data.map(doc => {})
       return { data, count };
     } catch (error) {
       throw error;
@@ -147,6 +149,7 @@ export class DocumentResolver {
     @Args('input') uploadDocumentInput: UploadDocumentInput,
   ) {
     try {
+      console.log(uploadDocumentInput);
       const projects: Project[] = await this.projectService.findByIdUser(
         user.idUser,
       );

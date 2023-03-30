@@ -21,7 +21,7 @@ export class AuthService {
   async updatePassword(idUser: string, password: string) {
     try {
       const hashPassword = await bcrypt.hash(password, this.getSalt);
-      await this.usersService.updatePassword(idUser, password);
+      await this.usersService.updatePassword(idUser, hashPassword);
     } catch (error) {
       throw error;
     }
@@ -47,6 +47,8 @@ export class AuthService {
         secret,
         expiresIn,
       });
+
+      console.log(tokenForgotPassword, 51);
 
       client.sendEmail({
         From: 'dev@optimap.id',

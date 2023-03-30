@@ -96,7 +96,9 @@ export class UsersResolver {
   @Query((returns) => User, { name: 'user' })
   async findOne(@CurrentUser() user: User) {
     try {
+      console.log(user);
       const result = await this.userService.findOne(user.username);
+      console.log(result, 101);
       return result;
     } catch (error) {
       throw error;
@@ -134,7 +136,8 @@ export class UsersResolver {
   @ResolveField(() => [Project], { nullable: true, defaultValue: [] })
   async project(@Parent() user: User) {
     try {
-      const result = await this.projectService.findByUser(user.idUser);
+      const result = await this.projectService.findByIdUser(user.idUser);
+      console.log(result);
       return result;
     } catch (error) {
       throw error;
