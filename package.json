@@ -19,9 +19,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "npm run build && typeorm -d dist/database/data-source.js",
-    "migration:generate": "npm run typeorm -- migration:generate",
-    "migration:run": "npm run typeorm -- migration:run",
-    "migration:revert": "npm run typeorm -- migration:revert"
+    "migration:generate": "NODE_ENV=production npm run typeorm -- migration:generate",
+    "migration:run": "NODE_ENV=production npm run typeorm -- migration:run",
+    "migration:revert": "NODE_ENV=production npm run typeorm -- migration:revert"
   },
   "dependencies": {
     "@apollo/server": "^4.5.0",
