@@ -14,7 +14,7 @@ import { getEnvPath } from './common/functions/env.function';
 import * as depthLimit from 'graphql-depth-limit';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
-import { dataSourceOptions } from 'db/data-source';
+import { dataSourceOptions } from './database/data-source';
 
 @Module({
   imports: [
