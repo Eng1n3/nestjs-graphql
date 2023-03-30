@@ -13,7 +13,7 @@ export const dataSourceOptions: DataSourceOptions = {
   database: configService.get('DATABASE'),
   entities: ['dist/**/*.entity{.js,.ts}'],
   synchronize: false,
-  migrations: ['dist/db/migrations/*{.ts,.js}'],
+  migrations: ['dist/database/migrations/*{.ts,.js}'],
 };
 
 const dataSource = new DataSource(dataSourceOptions);
