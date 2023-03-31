@@ -4,6 +4,8 @@ module.exports = {
       name: 'adam-onboard-app',
       script: './dist/main.js',
       watch: false,
+      instances: 1,
+      exec_mode: 'cluster',
       env: {
         PORT: 3000,
         NODE_ENV: 'development',
