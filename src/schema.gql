@@ -13,7 +13,6 @@ type DocumentEntity {
 
 type Project {
   user: User!
-  idProject: String!
   projectName: String!
   description: String!
   createdAt: Date!

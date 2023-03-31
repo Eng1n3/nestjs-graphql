@@ -15,6 +15,7 @@ import * as depthLimit from 'graphql-depth-limit';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
 import { dataSourceOptions } from './database/data-source';
+import GraphQLJSON from 'graphql-type-json';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { dataSourceOptions } from './database/data-source';
       context: ({ req }) => ({ req }),
       csrfPrevention: false,
       validationRules: [depthLimit(5)],
+      resolvers: { JSON: GraphQLJSON },
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
     ServeStaticModule.forRoot({
