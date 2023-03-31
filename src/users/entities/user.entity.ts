@@ -42,11 +42,11 @@ export class User {
   role: string;
 
   @Column({ type: 'text', nullable: true })
-  @Field()
+  @Field({ nullable: true, defaultValue: '' })
   bio?: string;
 
   @Column({ nullable: true, length: 100 })
-  @Field()
+  @Field({ nullable: true, defaultValue: '' })
   homepage?: string;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })

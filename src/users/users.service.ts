@@ -12,7 +12,7 @@ import {
 } from 'src/users/dto/register.input';
 import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { GetUserInput } from './dto/get-user.input';
+import { GetUserInput, SearchUserInput } from './dto/get-user.input';
 import * as bcrypt from 'bcrypt';
 import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
 import { createWriteStream, mkdirSync, readdirSync, rmSync } from 'fs';
@@ -127,10 +127,20 @@ export class UsersService {
       if (expression.test(usernameOrEmail)) {
         return await this.userRepository.findOne({
           where: { email: usernameOrEmail },
+          relations: {
+            project: {
+              document: true,
+            },
+          },
         });
       }
       return await this.userRepository.findOne({
         where: { username: usernameOrEmail },
+        relations: {
+          project: {
+            document: true,
+          },
+        },
       });
     } catch (error) {
       throw error;
@@ -174,17 +184,22 @@ export class UsersService {
     }
   }
 
-  async findAndCount(getUserInput: GetUserInput<User>) {
+  async find(getUserInput: GetUserInput<User>) {
     try {
-      const order = getUserInput.sort;
+      const order = getUserInput?.sort;
       const skip = getUserInput?.pagination?.skip;
       const take = getUserInput?.pagination?.take;
-      const result = await this.userRepository.findAndCount({
+      const result = await this.userRepository.find({
         where: {
           role: 'user',
           username: ILike(`%${getUserInput?.search?.username || ''}%`),
           email: ILike(`%${getUserInput?.search?.email || ''}%`),
           fullname: ILike(`%${getUserInput?.search?.fullname || ''}%`),
+        },
+        relations: {
+          project: {
+            document: true,
+          },
         },
         skip,
         take,
@@ -196,10 +211,15 @@ export class UsersService {
     }
   }
 
-  async count() {
+  async count(searchUserInput: SearchUserInput) {
     try {
       const result = await this.userRepository.count({
-        where: { role: 'user' },
+        where: {
+          role: 'user',
+          username: ILike(`%${searchUserInput?.username || ''}%`),
+          email: ILike(`%${searchUserInput?.email || ''}%`),
+          fullname: ILike(`%${searchUserInput?.fullname || ''}%`),
+        },
       });
       return result;
     } catch (error) {

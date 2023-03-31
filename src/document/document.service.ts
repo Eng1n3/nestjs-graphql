@@ -10,7 +10,10 @@ import { createWriteStream, rmSync } from 'fs';
 import { FileUpload } from 'graphql-upload-ts';
 import { join } from 'path';
 import { ILike, In, Repository } from 'typeorm';
-import { GetDocumentsInput } from './dto/get-documents.input';
+import {
+  GetDocumentsInput,
+  SearchDocumentsInput,
+} from './dto/get-documents.input';
 import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
@@ -21,22 +24,20 @@ export class DocumentService {
   constructor(
     @InjectRepository(DocumentEntity)
     private documentRepository: Repository<DocumentEntity>,
-    private configService: ConfigService,
   ) {}
 
-  async countAll() {
-    try {
-      const result = await this.documentRepository.count();
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async countByUser(idProjects: string[]) {
+  async countDocument(
+    idUser: string | null,
+    searchDocumentsInput: SearchDocumentsInput,
+  ) {
     try {
       const result = await this.documentRepository.count({
-        where: { project: { idProject: In(idProjects) } },
+        where: {
+          project: { user: { idUser } },
+          documentName: ILike(`%${searchDocumentsInput?.documentName || ''}%`),
+          description: ILike(`%${searchDocumentsInput?.description || ''}%`),
+          pathDocument: ILike(`%${searchDocumentsInput?.pathDocument || ''}%`),
+        },
       });
       return result;
     } catch (error) {
@@ -68,41 +69,23 @@ export class DocumentService {
     }
   }
 
-  async findAll(optionsInput: GetDocumentsInput<DocumentEntity>) {
+  async findAll(
+    idUser: string | null,
+    optionsInput: GetDocumentsInput<DocumentEntity>,
+  ) {
     try {
-      const order = optionsInput.sort;
+      const order = optionsInput?.sort;
       const skip = optionsInput?.pagination?.skip;
       const take = optionsInput?.pagination?.take;
-      const result = await this.documentRepository.findAndCount({
+      const result = await this.documentRepository.find({
         where: {
+          project: { user: { idUser } },
           documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),
           description: ILike(`%${optionsInput?.search?.description || ''}%`),
           pathDocument: ILike(`%${optionsInput?.search?.pathDocument || ''}%`),
         },
-        skip,
-        take,
-        order,
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async findByMultipleIdProject(
-    idProjects: string[],
-    optionsInput: GetDocumentsInput<DocumentEntity>,
-  ) {
-    try {
-      const order = optionsInput.sort;
-      const skip = optionsInput?.pagination?.skip;
-      const take = optionsInput?.pagination?.take;
-      const result = await this.documentRepository.findAndCount({
-        where: {
-          project: { idProject: In(idProjects) },
-          documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),
-          description: ILike(`%${optionsInput?.search?.description || ''}%`),
-          pathDocument: ILike(`%${optionsInput?.search?.pathDocument || ''}%`),
+        relations: {
+          project: { user: true },
         },
         skip,
         take,

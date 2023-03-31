@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
-import { AppResolver } from './app.resolver';
 import { UsersModule } from './users/users.module';
 import { ProjectModule } from './project/project.module';
 import { DocumentModule } from './document/document.module';
@@ -11,11 +10,12 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { getEnvPath } from './common/functions/env.function';
-import * as depthLimit from 'graphql-depth-limit';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
 import { dataSourceOptions } from './database/data-source';
 import GraphQLJSON from 'graphql-type-json';
+import * as depthLimit from 'graphql-depth-limit';
+import { ComplexityPlugin } from './common/plugins/complexity.plugin';
 
 @Module({
   imports: [
@@ -29,7 +29,7 @@ import GraphQLJSON from 'graphql-type-json';
       playground: true,
       context: ({ req }) => ({ req }),
       csrfPrevention: false,
-      validationRules: [depthLimit(5)],
+      validationRules: [depthLimit(3)],
       resolvers: { JSON: GraphQLJSON },
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
@@ -44,7 +44,7 @@ import GraphQLJSON from 'graphql-type-json';
   ],
   controllers: [],
   providers: [
-    AppResolver,
+    ComplexityPlugin,
     { provide: APP_INTERCEPTOR, useClass: SentryInterceptor },
   ],
 })

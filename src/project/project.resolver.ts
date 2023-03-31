@@ -1,51 +1,41 @@
-import {
-  Args,
-  Mutation,
-  Parent,
-  Query,
-  ResolveField,
-  Resolver,
-} from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Project } from './entities/project.entity';
 import { CreateProjectInput } from './dto/create-project.input';
 import { ProjectService } from './project.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import {
-  forwardRef,
-  Inject,
-  NotFoundException,
-  UseGuards,
-} from '@nestjs/common';
+import { NotFoundException, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { UpdateProjectInput } from './dto/update-project.input';
-import { DocumentEntity } from 'src/document/entities/document.entity';
 import { DocumentService } from 'src/document/document.service';
 import { rmSync } from 'fs';
 import { join } from 'path';
-import { ProjectsAndCountModel } from './models/projects-and-count.input';
-import { GetProjectsInput } from './dto/get-project.input';
+import { GetProjectsInput, SearchProjectInput } from './dto/get-project.input';
 
 @Resolver((of) => Project)
 export class ProjectResolver {
   constructor(
     private projectService: ProjectService,
-    @Inject(forwardRef(() => DocumentService))
     private documentService: DocumentService,
   ) {}
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => Number, {
-    name: 'countProjectsAll',
+    name: 'countProjectAdmin',
     nullable: true,
-    defaultValue: [],
   })
-  async countAll() {
+  async projectAdminCount(
+    @Args('search', { nullable: true, defaultValue: {} })
+    searchProjectInput?: SearchProjectInput,
+  ) {
     try {
-      const count = await this.projectService.countAll();
+      const count = await this.projectService.projectCount(
+        null,
+        searchProjectInput,
+      );
       return count;
     } catch (error) {
       throw error;
@@ -55,12 +45,19 @@ export class ProjectResolver {
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => Number, {
-    name: 'countProjectsByUser',
+    name: 'countProjectUser',
     nullable: true,
   })
-  async countByUser(@CurrentUser() user: User) {
+  async projectCount(
+    @CurrentUser() user: User,
+    @Args('search', { nullable: true, defaultValue: {} })
+    searchProjectInput?: SearchProjectInput,
+  ) {
     try {
-      const count = await this.projectService.countByUser(user.idUser);
+      const count = await this.projectService.projectCount(
+        user.idUser,
+        searchProjectInput,
+      );
       return count;
     } catch (error) {
       throw error;
@@ -121,21 +118,22 @@ export class ProjectResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => ProjectsAndCountModel, {
+  @Query((returns) => [Project], {
     name: 'project',
     nullable: true,
     defaultValue: [],
   })
   async project(
     @CurrentUser() user: User,
-    @Args('options') getProjectsInput?: GetProjectsInput<Project>,
+    @Args('options', { nullable: true, defaultValue: {} })
+    getProjectsInput?: GetProjectsInput<Project>,
   ) {
     try {
-      const [data, count] = await this.projectService.findByUser(
+      const result = await this.projectService.findAll(
         user.idUser,
         getProjectsInput,
       );
-      return { data, count };
+      return result;
     } catch (error) {
       throw error;
     }
@@ -143,31 +141,18 @@ export class ProjectResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => ProjectsAndCountModel, {
+  @Query((returns) => [Project], {
     name: 'projects',
     nullable: true,
     defaultValue: [],
   })
   async projects(
     @CurrentUser() user: User,
-    @Args('options') getProjectsInput?: GetProjectsInput<Project>,
+    @Args('options', { nullable: true, defaultValue: {} })
+    getProjectsInput?: GetProjectsInput<Project>,
   ) {
     try {
-      const [data, count] = await this.projectService.findAll(getProjectsInput);
-      return { data, count };
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Roles(Role.Admin, Role.User)
-  @UseGuards(JwtAuthGuard)
-  @ResolveField(() => [DocumentEntity], { nullable: true, defaultValue: [] })
-  async document(@Parent() projectParent: Project) {
-    try {
-      const result = await this.documentService.getByIdProject(
-        projectParent.idProject,
-      );
+      const result = await this.projectService.findAll(null, getProjectsInput);
       return result;
     } catch (error) {
       throw error;

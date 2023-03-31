@@ -1,8 +1,10 @@
 import {
+  ClassSerializerInterceptor,
   forwardRef,
   Inject,
   NotFoundException,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -13,11 +15,13 @@ import { Project } from 'src/project/entities/project.entity';
 import { ProjectService } from 'src/project/project.service';
 import { User } from 'src/users/entities/user.entity';
 import { DocumentService } from './document.service';
-import { GetDocumentsInput } from './dto/get-documents.input';
+import {
+  GetDocumentsInput,
+  SearchDocumentsInput,
+} from './dto/get-documents.input';
 import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
-import { DocumentsAndCountModel } from './models/documents-and-count.model';
 
 @Resolver((of) => DocumentEntity)
 export class DocumentResolver {
@@ -30,13 +34,20 @@ export class DocumentResolver {
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => Number, {
-    name: 'countDocumentsAll',
+    name: 'countDocumentAdmin',
     nullable: true,
     defaultValue: [],
   })
-  async countByUser() {
+  async countDocumentAdmin(
+    @CurrentUser() user: User,
+    @Args('search', { nullable: true, defaultValue: {} })
+    searchDocumentsInput: SearchDocumentsInput,
+  ) {
     try {
-      const count = await this.documentService.countAll();
+      const count = await this.documentService.countDocument(
+        null,
+        searchDocumentsInput,
+      );
       return count;
     } catch (error) {
       throw error;
@@ -46,14 +57,19 @@ export class DocumentResolver {
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => Number, {
-    name: 'countDocumentsByUser',
+    name: 'countDocumentUser',
     nullable: true,
   })
-  async countByAll(@CurrentUser() user: User) {
+  async countByAll(
+    @CurrentUser() user: User,
+    @Args('search', { nullable: true, defaultValue: {} })
+    searchDocumentsInput: SearchDocumentsInput,
+  ) {
     try {
-      const projects = await this.projectService.findByIdUser(user.idUser);
-      const idProjects = projects?.map((project) => project.idProject);
-      const count = await this.documentService.countByUser(idProjects);
+      const count = await this.documentService.countDocument(
+        user.idUser,
+        searchDocumentsInput,
+      );
       return count;
     } catch (error) {
       throw error;
@@ -95,7 +111,7 @@ export class DocumentResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => DocumentsAndCountModel, {
+  @Query((returns) => [DocumentEntity], {
     name: 'documents',
     nullable: true,
     defaultValue: [],
@@ -106,8 +122,8 @@ export class DocumentResolver {
     optionsInput: GetDocumentsInput<DocumentEntity>,
   ) {
     try {
-      const [data, count] = await this.documentService.findAll(optionsInput);
-      return { data, count };
+      const result = await this.documentService.findAll(null, optionsInput);
+      return result;
     } catch (error) {
       throw error;
     }
@@ -115,25 +131,22 @@ export class DocumentResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => DocumentsAndCountModel, {
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Query((returns) => [DocumentEntity], {
     name: 'document',
     nullable: true,
   })
   async document(
     @CurrentUser() user: User,
-    @Args('options', { nullable: true })
+    @Args('options', { nullable: true, defaultValue: {} })
     optionsInput: GetDocumentsInput<DocumentEntity>,
   ) {
     try {
-      const projects = await this.projectService.findByIdUser(user.idUser);
-      const idProjects = projects?.map((project) => project.idProject);
-      const [data, count] = await this.documentService.findByMultipleIdProject(
-        idProjects,
+      const result = await this.documentService.findAll(
+        user.idUser,
         optionsInput,
       );
-      // return domain/sjajdspajp
-      // const changeData = data.map(doc => {})
-      return { data, count };
+      return result;
     } catch (error) {
       throw error;
     }

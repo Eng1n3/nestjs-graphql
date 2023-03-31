@@ -5,17 +5,20 @@ import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
 
 @InputType()
-class SearchDocumentsInput {
+export class SearchDocumentsInput {
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
+  @IsOptional()
   documentName?: string;
 
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
+  @IsOptional()
   description?: string;
 
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
+  @IsOptional()
   pathDocument?: string;
 }
 

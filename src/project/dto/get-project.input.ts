@@ -5,13 +5,20 @@ import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
 
 @InputType()
-class SearchProjectInput {
+export class SearchProjectInput {
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
+  @IsOptional()
+  idProject?: string;
+
+  @Field({ nullable: true, defaultValue: '' })
+  @IsString()
+  @IsOptional()
   projectName?: string;
 
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
+  @IsOptional()
   description?: string;
 }
 

@@ -24,6 +24,7 @@ export class Project {
   user?: User;
 
   @PrimaryColumn()
+  @Field()
   idProject: string;
 
   @Column()

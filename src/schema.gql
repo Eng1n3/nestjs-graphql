@@ -13,6 +13,7 @@ type DocumentEntity {
 
 type Project {
   user: User!
+  idProject: String!
   projectName: String!
   description: String!
   createdAt: Date!
@@ -27,26 +28,11 @@ type User {
   fullname: String!
   pathImage: String!
   role: String!
-  bio: String!
-  homepage: String!
+  bio: String
+  homepage: String
   createdAt: Date!
   updatedAt: Date!
   project: [Project!]
-}
-
-type UsersModel {
-  count: Int
-  data: [User!]!
-}
-
-type ProjectsAndCountModel {
-  count: Int
-  data: [Project!]!
-}
-
-type DocumentsAndCountModel {
-  count: Int
-  data: [DocumentEntity!]!
 }
 
 type LoginModel {
@@ -57,18 +43,17 @@ type LoginModel {
 scalar Date
 
 type Query {
-  index: String!
   user: User!
-  users(options: GetUserInput): UsersModel!
-  countAccountAll: Float!
-  countProjectsAll: Float
-  countProjectsByUser: Float
-  project(options: GetProjectsInput!): ProjectsAndCountModel
-  projects(options: GetProjectsInput!): ProjectsAndCountModel
-  countDocumentsAll: Float
-  countDocumentsByUser: Float
-  documents(options: GetDocumentsInput): DocumentsAndCountModel
-  document(options: GetDocumentsInput): DocumentsAndCountModel
+  users(options: GetUserInput = {}): [User!]!
+  countAccount(search: SearchUserInput = {}): Float!
+  countProjectAdmin(search: SearchProjectInput = {}): Float
+  countProjectUser(search: SearchProjectInput = {}): Float
+  project(options: GetProjectsInput = {}): [Project!]
+  projects(options: GetProjectsInput = {}): [Project!]
+  countDocumentAdmin(search: SearchDocumentsInput = {}): Float
+  countDocumentUser(search: SearchDocumentsInput = {}): Float
+  documents(options: GetDocumentsInput): [DocumentEntity!]
+  document(options: GetDocumentsInput = {}): [DocumentEntity!]
 }
 
 input GetUserInput {
@@ -100,6 +85,12 @@ input SearchUserInput {
   fullname: String = ""
 }
 
+input SearchProjectInput {
+  idProject: String = ""
+  projectName: String = ""
+  description: String = ""
+}
+
 input GetProjectsInput {
   pagination: PaginationInput
 
@@ -110,9 +101,10 @@ input GetProjectsInput {
   search: SearchProjectInput
 }
 
-input SearchProjectInput {
-  projectName: String = ""
+input SearchDocumentsInput {
+  documentName: String = ""
   description: String = ""
+  pathDocument: String = ""
 }
 
 input GetDocumentsInput {
@@ -123,12 +115,6 @@ input GetDocumentsInput {
   """
   sort: JSON
   search: SearchDocumentsInput
-}
-
-input SearchDocumentsInput {
-  documentName: String = ""
-  description: String = ""
-  pathDocument: String = ""
 }
 
 type Mutation {

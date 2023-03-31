@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { Transform } from 'class-transformer';
 import { Project } from 'src/project/entities/project.entity';
 import {
   Column,
@@ -7,9 +8,12 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
-  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import '../../common/config/config.env';
+import { ConfigService } from '@nestjs/config';
+
+const configService = new ConfigService();
 
 @Entity({ name: 'document' })
 @ObjectType()
@@ -31,6 +35,7 @@ export class DocumentEntity {
   documentName: string;
 
   @Column({ type: 'text' })
+  @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`)
   @Field()
   pathDocument: string;
 

@@ -1,33 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  Args,
-  Mutation,
-  Parent,
-  Query,
-  ResolveField,
-  Resolver,
-} from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { User } from './entities/user.entity';
-import { GetUserInput } from './dto/get-user.input';
-import { UsersModel } from './models/users.model';
+import { GetUserInput, SearchUserInput } from './dto/get-user.input';
 import { UsersService } from './users.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import { forwardRef, Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { Project } from 'src/project/entities/project.entity';
 import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
 import { RegisterAdminInput, RegisterUserInput } from './dto/register.input';
-import { ProjectService } from 'src/project/project.service';
+import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 
 @Resolver(() => User)
 export class UsersResolver {
-  constructor(
-    private userService: UsersService,
-    @Inject(forwardRef(() => ProjectService))
-    private projectService: ProjectService,
-  ) {}
+  constructor(private userService: UsersService) {}
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -93,7 +80,11 @@ export class UsersResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => User, { name: 'user' })
+  @Query((returns) => User, {
+    name: 'user',
+    complexity: (options: ComplexityEstimatorArgs) =>
+      options.args.count * options.childComplexity,
+  })
   async findOne(@CurrentUser() user: User) {
     try {
       const result = await this.userService.findOne(user.username);
@@ -105,13 +96,18 @@ export class UsersResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => UsersModel, { name: 'users' })
+  @Query((returns) => [User], {
+    name: 'users',
+    complexity: (options: ComplexityEstimatorArgs) =>
+      options.args.count * options.childComplexity,
+  })
   async findAll(
-    @Args('options', { nullable: true }) optionsInput: GetUserInput<User>,
+    @Args('options', { nullable: true, defaultValue: {} })
+    optionsInput: GetUserInput<User>,
   ) {
     try {
-      const [data, count] = await this.userService.findAndCount(optionsInput);
-      return { data, count };
+      const result = await this.userService.find(optionsInput);
+      return result;
     } catch (error) {
       throw error;
     }
@@ -119,23 +115,14 @@ export class UsersResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => Number, { name: 'countAccountAll' })
-  async countAll() {
+  @Query((returns) => Number, { name: 'countAccount' })
+  async userCount(
+    @Args('search', { nullable: true, defaultValue: {} })
+    searchUserInput: SearchUserInput,
+  ) {
     try {
-      const count = await this.userService.count();
+      const count = await this.userService.count(searchUserInput);
       return count;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Roles(Role.Admin, Role.User)
-  @UseGuards(JwtAuthGuard)
-  @ResolveField(() => [Project], { nullable: true, defaultValue: [] })
-  async project(@Parent() user: User) {
-    try {
-      const result = await this.projectService.findByIdUser(user.idUser);
-      return result;
     } catch (error) {
       throw error;
     }

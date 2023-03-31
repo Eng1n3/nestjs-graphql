@@ -5,17 +5,20 @@ import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
 
 @InputType()
-class SearchUserInput {
+export class SearchUserInput {
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
+  @IsOptional()
   username?: string;
 
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
+  @IsOptional()
   email?: string;
 
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
+  @IsOptional()
   fullname?: string;
 }
 

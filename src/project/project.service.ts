@@ -4,10 +4,11 @@ import { mkdirSync } from 'fs';
 import { join } from 'path';
 import { ILike, Repository } from 'typeorm';
 import { CreateProjectInput } from './dto/create-project.input';
-import { GetProjectsInput } from './dto/get-project.input';
+import { GetProjectsInput, SearchProjectInput } from './dto/get-project.input';
 import { UpdateProjectInput } from './dto/update-project.input';
 import { Project } from './entities/project.entity';
 import { v4 as uuid4 } from 'uuid';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ProjectService {
@@ -26,19 +27,35 @@ export class ProjectService {
     }
   }
 
-  async countAll() {
+  async projectAdminCount(
+    idUser: string,
+    searchProjectInput: SearchProjectInput,
+  ) {
     try {
-      const result = await this.projectRepository.count();
+      const result = await this.projectRepository.count({
+        where: {
+          projectName: ILike(`%${searchProjectInput?.projectName || ''}%`),
+          description: ILike(`%${searchProjectInput?.description || ''}%`),
+        },
+      });
       return result;
     } catch (error) {
       throw error;
     }
   }
 
-  async countByUser(idUser: string) {
+  async projectCount(
+    idUser: string | null,
+    searchProjectInput?: SearchProjectInput,
+  ) {
     try {
       const result = await this.projectRepository.count({
-        where: { user: { idUser } },
+        where: {
+          user: { idUser },
+          idProject: ILike(`%${searchProjectInput?.idProject || ''}%`),
+          projectName: ILike(`%${searchProjectInput?.projectName || ''}%`),
+          description: ILike(`%${searchProjectInput?.description || ''}%`),
+        },
       });
       return result;
     } catch (error) {
@@ -77,13 +94,18 @@ export class ProjectService {
     }
   }
 
-  async findAll(getProjectsInput: GetProjectsInput<Project>) {
+  async findAll(
+    idUser: string | null,
+    getProjectsInput?: GetProjectsInput<Project>,
+  ) {
     try {
       const order = getProjectsInput?.sort;
       const skip = getProjectsInput?.pagination?.skip;
       const take = getProjectsInput?.pagination?.take;
-      const result = await this.projectRepository.findAndCount({
+      const result = await this.projectRepository.find({
         where: {
+          user: { idUser },
+          idProject: ILike(`%${getProjectsInput?.search?.idProject || ''}%`),
           projectName: ILike(
             `%${getProjectsInput?.search?.projectName || ''}%`,
           ),
@@ -91,33 +113,9 @@ export class ProjectService {
             `%${getProjectsInput?.search?.description || ''}%`,
           ),
         },
-        skip,
-        take,
-        order,
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async findByUser(
-    idUser: string,
-    getProjectsInput?: GetProjectsInput<Project>,
-  ) {
-    try {
-      const order = getProjectsInput?.sort;
-      const skip = getProjectsInput?.pagination?.skip;
-      const take = getProjectsInput?.pagination?.take;
-      const result = await this.projectRepository.findAndCount({
-        where: {
-          user: { idUser },
-          projectName: ILike(
-            `%${getProjectsInput?.search?.projectName || ''}%`,
-          ),
-          description: ILike(
-            `%${getProjectsInput?.search?.description || ''}%`,
-          ),
+        relations: {
+          user: true,
+          document: true,
         },
         skip,
         take,
