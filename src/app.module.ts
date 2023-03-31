@@ -31,6 +31,7 @@ import { ComplexityPlugin } from './common/plugins/complexity.plugin';
       csrfPrevention: false,
       validationRules: [depthLimit(3)],
       resolvers: { JSON: GraphQLJSON },
+      introspection: true,
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
     ServeStaticModule.forRoot({
