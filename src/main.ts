@@ -15,7 +15,7 @@ async function bootstrap() {
     }),
   );
   app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }));
-  app.enableCors();
+  app.enableCors({ credentials: true, origin: '*' });
   // Sentry.init({
   //   dsn: configService.get('SENTRY_DSN'),
   //   tracesSampleRate: 1.0,
