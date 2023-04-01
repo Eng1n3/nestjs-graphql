@@ -35,8 +35,8 @@ export class DocumentEntity {
   documentName: string;
 
   @Column({ type: 'text' })
-  @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`)
   @Field()
+  @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`)
   pathDocument: string;
 
   @Column({ type: 'text' })

@@ -5,7 +5,11 @@ import { GetUserInput, SearchUserInput } from './dto/get-user.input';
 import { UsersService } from './users.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import { UseGuards } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
@@ -80,6 +84,7 @@ export class UsersResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @Query((returns) => User, {
     name: 'user',
     complexity: (options: ComplexityEstimatorArgs) =>

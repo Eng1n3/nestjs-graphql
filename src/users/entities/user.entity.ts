@@ -1,5 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { Project } from 'src/project/entities/project.entity';
 import {
   Column,
@@ -9,6 +10,10 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import '../../common/config/config.env';
+import { ConfigService } from '@nestjs/config';
+
+const configService = new ConfigService();
 
 @Entity()
 @ObjectType()
@@ -34,6 +39,7 @@ export class User {
   fullname?: string;
 
   @Column({ type: 'text' })
+  @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`)
   @Field()
   pathImage: string;
 

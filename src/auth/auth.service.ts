@@ -49,7 +49,7 @@ export class AuthService {
       });
 
       client.sendEmail({
-        From: 'dev@optimap.id',
+        From: this.configService.get<string>('POSTMARKAPP_FROM'),
         To: user.email,
         Subject: 'Forgot password',
         // TextBody: 'Coba kirim',
