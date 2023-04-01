@@ -1,3 +1,8 @@
+## [1.0.1] - 2023-01-04
+
+- Fix: bug path image profile
+
+
 ## [1.0.0] - 2023-01-04
 
 - Buat setup framework #setup framework

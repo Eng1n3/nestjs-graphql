@@ -156,7 +156,7 @@ export class UsersService {
         registerUserInput.password,
         this.getSalt,
       );
-      const pathImage = '/default-image.jpg';
+      const pathImage = '/uploads/default-image.jpg';
       const value = await this.userRepository.create({
         idUser: uuidv4(),
         ...registerUserInput,
