@@ -110,7 +110,7 @@ export class ProjectResolver {
   ) {
     try {
       await this.projectService.create(user.idUser, createProjectInput);
-      return 'Success create user';
+      return 'Success create project';
     } catch (error) {
       throw error;
     }
