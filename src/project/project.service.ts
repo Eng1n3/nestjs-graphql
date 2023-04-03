@@ -27,23 +27,6 @@ export class ProjectService {
     }
   }
 
-  async projectAdminCount(
-    idUser: string,
-    searchProjectInput: SearchProjectInput,
-  ) {
-    try {
-      const result = await this.projectRepository.count({
-        where: {
-          projectName: ILike(`%${searchProjectInput?.projectName || ''}%`),
-          description: ILike(`%${searchProjectInput?.description || ''}%`),
-        },
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   async projectCount(
     idUser: string | null,
     searchProjectInput?: SearchProjectInput,

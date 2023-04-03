@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { User } from './entities/user.entity';
 import { GetUserInput, SearchUserInput } from './dto/get-user.input';
 import { UsersService } from './users.service';
@@ -15,10 +22,16 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
 import { RegisterAdminInput, RegisterUserInput } from './dto/register.input';
 import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
+import { GetProjectsInput } from 'src/project/dto/get-project.input';
+import { ProjectService } from 'src/project/project.service';
+import { Project } from 'src/project/entities/project.entity';
 
 @Resolver(() => User)
 export class UsersResolver {
-  constructor(private userService: UsersService) {}
+  constructor(
+    private userService: UsersService,
+    private projectService: ProjectService,
+  ) {}
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -82,7 +95,7 @@ export class UsersResolver {
     }
   }
 
-  @Roles(Role.User)
+  @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Query((returns) => User, {
@@ -131,5 +144,22 @@ export class UsersResolver {
     } catch (error) {
       throw error;
     }
+  }
+
+  @ResolveField(() => [Project], {
+    nullable: true,
+    defaultValue: [],
+    name: 'project',
+  })
+  async project(
+    @Parent() parent: User,
+    @Args('options', { nullable: true, defaultValue: {} })
+    getProjectsINput?: GetProjectsInput<Project>,
+  ) {
+    const result = await this.projectService.findAll(
+      parent.idUser,
+      getProjectsINput,
+    );
+    return result;
   }
 }

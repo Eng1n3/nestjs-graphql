@@ -1,20 +1,18 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, InputType, OmitType, PartialType } from '@nestjs/graphql';
 import { IsOptional, IsString } from 'class-validator';
 import { PaginationInput } from 'src/common/dto/pagination.input';
 import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
+import { UploadDocumentInput } from './upload-document.dto';
 
 @InputType()
-export class SearchDocumentsInput {
+export class SearchDocumentsInput extends PartialType(
+  OmitType(UploadDocumentInput, ['file']),
+) {
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
   @IsOptional()
-  documentName?: string;
-
-  @Field({ nullable: true, defaultValue: '' })
-  @IsString()
-  @IsOptional()
-  description?: string;
+  idDocument?: string;
 
   @Field({ nullable: true, defaultValue: '' })
   @IsString()

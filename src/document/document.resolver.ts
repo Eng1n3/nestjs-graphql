@@ -46,6 +46,7 @@ export class DocumentResolver {
     try {
       const count = await this.documentService.countDocument(
         null,
+        null,
         searchDocumentsInput,
       );
       return count;
@@ -68,6 +69,7 @@ export class DocumentResolver {
     try {
       const count = await this.documentService.countDocument(
         user.idUser,
+        null,
         searchDocumentsInput,
       );
       return count;
@@ -122,28 +124,9 @@ export class DocumentResolver {
     optionsInput: GetDocumentsInput<DocumentEntity>,
   ) {
     try {
-      const result = await this.documentService.findAll(null, optionsInput);
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Roles(Role.User)
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
-  @Query((returns) => [DocumentEntity], {
-    name: 'document',
-    nullable: true,
-  })
-  async document(
-    @CurrentUser() user: User,
-    @Args('options', { nullable: true, defaultValue: {} })
-    optionsInput: GetDocumentsInput<DocumentEntity>,
-  ) {
-    try {
       const result = await this.documentService.findAll(
-        user.idUser,
+        null,
+        null,
         optionsInput,
       );
       return result;

@@ -1,4 +1,11 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { Project } from './entities/project.entity';
 import { CreateProjectInput } from './dto/create-project.input';
 import { ProjectService } from './project.service';
@@ -13,6 +20,8 @@ import { DocumentService } from 'src/document/document.service';
 import { rmSync } from 'fs';
 import { join } from 'path';
 import { GetProjectsInput, SearchProjectInput } from './dto/get-project.input';
+import { DocumentEntity } from 'src/document/entities/document.entity';
+import { GetDocumentsInput } from 'src/document/dto/get-documents.input';
 
 @Resolver((of) => Project)
 export class ProjectResolver {
@@ -116,29 +125,6 @@ export class ProjectResolver {
     }
   }
 
-  @Roles(Role.User)
-  @UseGuards(JwtAuthGuard)
-  @Query((returns) => [Project], {
-    name: 'project',
-    nullable: true,
-    defaultValue: [],
-  })
-  async project(
-    @CurrentUser() user: User,
-    @Args('options', { nullable: true, defaultValue: {} })
-    getProjectsInput?: GetProjectsInput<Project>,
-  ) {
-    try {
-      const result = await this.projectService.findAll(
-        user.idUser,
-        getProjectsInput,
-      );
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [Project], {
@@ -157,5 +143,23 @@ export class ProjectResolver {
     } catch (error) {
       throw error;
     }
+  }
+
+  @ResolveField(() => [DocumentEntity], {
+    nullable: true,
+    defaultValue: [],
+    name: 'document',
+  })
+  async document(
+    @Parent() parent: Project,
+    @Args('options', { nullable: true, defaultValue: {} })
+    getDocumentsInput?: GetDocumentsInput<DocumentEntity>,
+  ) {
+    const result = await this.documentService.findAll(
+      parent.user.idUser,
+      parent.idProject,
+      getDocumentsInput,
+    );
+    return result;
   }
 }

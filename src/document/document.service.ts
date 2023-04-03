@@ -28,12 +28,19 @@ export class DocumentService {
 
   async countDocument(
     idUser: string | null,
+    idProject: string | null,
     searchDocumentsInput: SearchDocumentsInput,
   ) {
     try {
       const result = await this.documentRepository.count({
         where: {
-          project: { user: { idUser } },
+          project: {
+            user: { idUser },
+            idProject: idProject
+              ? idProject
+              : ILike(`%${searchDocumentsInput?.idProject || ''}%`),
+          },
+          idDocument: ILike(`%${searchDocumentsInput?.idDocument || ''}%`),
           documentName: ILike(`%${searchDocumentsInput?.documentName || ''}%`),
           description: ILike(`%${searchDocumentsInput?.description || ''}%`),
           pathDocument: ILike(`%${searchDocumentsInput?.pathDocument || ''}%`),
@@ -64,6 +71,7 @@ export class DocumentService {
       });
       await this.documentRepository.update(idDocument, value);
       rmSync(join(process.cwd(), existDocument.pathDocument));
+      return value;
     } catch (error) {
       throw error;
     }
@@ -71,6 +79,7 @@ export class DocumentService {
 
   async findAll(
     idUser: string | null,
+    idProject: string | null,
     optionsInput: GetDocumentsInput<DocumentEntity>,
   ) {
     try {
@@ -79,7 +88,13 @@ export class DocumentService {
       const take = optionsInput?.pagination?.take;
       const result = await this.documentRepository.find({
         where: {
-          project: { user: { idUser } },
+          project: {
+            user: { idUser },
+            idProject: idProject
+              ? idProject
+              : ILike(`%${optionsInput?.search.idProject || ''}%`),
+          },
+          idDocument: ILike(`%${optionsInput?.search?.idDocument || ''}%`),
           documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),
           description: ILike(`%${optionsInput?.search?.description || ''}%`),
           pathDocument: ILike(`%${optionsInput?.search?.pathDocument || ''}%`),

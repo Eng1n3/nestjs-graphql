@@ -1,25 +1,21 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, InputType, PartialType } from '@nestjs/graphql';
 import { IsOptional, IsString } from 'class-validator';
 import { PaginationInput } from 'src/common/dto/pagination.input';
 import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
+import { CreateProjectInput } from './create-project.input';
 
 @InputType()
-export class SearchProjectInput {
+export class SearchProjectInput extends PartialType(CreateProjectInput) {
+  @Field({ nullable: true, defaultValue: '' })
+  @IsString()
+  @IsOptional()
+  idUser?: string;
+
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
   @IsOptional()
   idProject?: string;
-
-  @Field({ nullable: true, defaultValue: '' })
-  @IsString()
-  @IsOptional()
-  projectName?: string;
-
-  @Field({ nullable: true, defaultValue: '' })
-  @IsString()
-  @IsOptional()
-  description?: string;
 }
 
 @InputType()
