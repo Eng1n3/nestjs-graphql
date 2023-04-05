@@ -8,13 +8,41 @@ import { GetProjectsInput, SearchProjectInput } from './dto/get-project.input';
 import { UpdateProjectInput } from './dto/update-project.input';
 import { Project } from './entities/project.entity';
 import { v4 as uuid4 } from 'uuid';
-import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project) private projectRepository: Repository<Project>,
   ) {}
+
+  async restFindAll(
+    idUser: string | null,
+    getProjectsInput?: GetProjectsInput<Project>,
+  ) {
+    try {
+      const order = getProjectsInput?.sort;
+      const skip = getProjectsInput?.pagination?.skip;
+      const take = getProjectsInput?.pagination?.take;
+      const result = await this.projectRepository.find({
+        where: {
+          user: { idUser },
+          idProject: ILike(`%${getProjectsInput?.search?.idProject || ''}%`),
+          projectName: ILike(
+            `%${getProjectsInput?.search?.projectName || ''}%`,
+          ),
+          description: ILike(
+            `%${getProjectsInput?.search?.description || ''}%`,
+          ),
+        },
+        skip,
+        take: 1,
+        order,
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async findByIdUser(idUser: string): Promise<Project[]> {
     try {

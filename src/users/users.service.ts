@@ -27,6 +27,27 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
+  async restFindAll(usernameOrEmail: string): Promise<User> {
+    try {
+      const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+      if (expression.test(usernameOrEmail)) {
+        return await this.userRepository.findOne({
+          where: { email: usernameOrEmail },
+          relations: {
+            project: {
+              document: true,
+            },
+          },
+        });
+      }
+      return await this.userRepository.findOne({
+        where: { username: usernameOrEmail },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   private saveDocumentToDir(
     document: FileUpload,
     pathName: string,
@@ -150,7 +171,7 @@ export class UsersService {
   async createUser(
     role: string,
     registerUserInput: RegisterUserInput | RegisterAdminInput,
-  ): Promise<void> {
+  ): Promise<User> {
     try {
       const hashPassword = await bcrypt.hash(
         registerUserInput.password,
@@ -168,6 +189,7 @@ export class UsersService {
       mkdirSync(join(process.cwd(), `/uploads/profiles/${value.idUser}`), {
         recursive: true,
       });
+      return value;
     } catch (error) {
       if (
         error.message.includes('duplicate key value') &&

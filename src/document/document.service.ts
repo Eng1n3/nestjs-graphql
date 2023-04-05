@@ -26,6 +26,38 @@ export class DocumentService {
     private documentRepository: Repository<DocumentEntity>,
   ) {}
 
+  async restFindAll(
+    idUser?: string | null,
+    idProject?: string | null,
+    optionsInput?: GetDocumentsInput<DocumentEntity>,
+  ) {
+    try {
+      const order = optionsInput?.sort;
+      const skip = optionsInput?.pagination?.skip;
+      const take = optionsInput?.pagination?.take;
+      const result = await this.documentRepository.find({
+        where: {
+          project: {
+            user: { idUser },
+            idProject: idProject
+              ? idProject
+              : ILike(`%${optionsInput?.search.idProject || ''}%`),
+          },
+          idDocument: ILike(`%${optionsInput?.search?.idDocument || ''}%`),
+          documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),
+          description: ILike(`%${optionsInput?.search?.description || ''}%`),
+          pathDocument: ILike(`%${optionsInput?.search?.pathDocument || ''}%`),
+        },
+        skip,
+        take: 1,
+        order,
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async countDocument(
     idUser: string | null,
     idProject: string | null,
@@ -78,9 +110,9 @@ export class DocumentService {
   }
 
   async findAll(
-    idUser: string | null,
-    idProject: string | null,
-    optionsInput: GetDocumentsInput<DocumentEntity>,
+    idUser?: string | null,
+    idProject?: string | null,
+    optionsInput?: GetDocumentsInput<DocumentEntity>,
   ) {
     try {
       const order = optionsInput?.sort;

@@ -123,7 +123,7 @@ type Mutation {
   updateAdmin(input: UpdateAdminInput!): String!
   updateUser(input: UpdateUserInput!): String!
   registerAdmin(input: RegisterAdminInput!): String!
-  registerUser(input: RegisterUserInput!): String!
+  registerUser(input: RegisterUserInput!): User!
   deleteProject(idProject: String!): String!
   updateProject(input: UpdateProjectInput!): String!
   createProject(input: CreateProjectInput!): String!
@@ -207,4 +207,9 @@ input UploadDocumentInput {
 input ChangePasswordInput {
   password: String!
   repassword: String!
+}
+
+type Subscription {
+  users: [User!]!
+  userAdded: User!
 }
