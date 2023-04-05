@@ -1,5 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { DocumentEntity } from 'src/document/entities/document.entity';
+import { Priority } from 'src/priority/entities/priority.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
@@ -34,6 +35,17 @@ export class Project {
   @Column({ type: 'text' })
   @Field()
   description: string;
+
+  @ManyToOne((type) => Priority, (priority) => priority.idPriority, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'idPriority' })
+  @Field(() => Priority)
+  priority?: Priority;
+
+  @Column({ type: 'timestamp with time zone' })
+  @Field()
+  deadLine: Date;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   @Field()

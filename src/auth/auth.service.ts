@@ -31,7 +31,6 @@ export class AuthService {
     try {
       const payload = {
         idUser: user.idUser,
-        username: user.username,
         email: user.email,
         role: user.role,
       };
@@ -58,7 +57,7 @@ export class AuthService {
         )}.
 
         ************
-        Hi ${user.username},
+        Hi ${user.email},
         ************
 
         You recently requested to reset your password for your account. Use the TOKEN. This password reset is only valid for the next ${this.configService.get<string>(
@@ -79,7 +78,6 @@ export class AuthService {
   async login(user: User): Promise<string> {
     const payload = {
       idUser: user.idUser,
-      username: user.username,
       email: user.email,
       role: user.role,
     };
@@ -87,9 +85,9 @@ export class AuthService {
     return token;
   }
 
-  async findUser(usernameOrEmail: string): Promise<User> {
+  async findUser(email: string): Promise<User> {
     try {
-      const user = await this.usersService.findOne(usernameOrEmail);
+      const user = await this.usersService.findOne(email);
       if (user) return user;
       return null;
     } catch (error) {
@@ -97,12 +95,9 @@ export class AuthService {
     }
   }
 
-  async validateAdmin(
-    usernameOrEmail: string,
-    password: string,
-  ): Promise<User> {
+  async validateAdmin(email: string, password: string): Promise<User> {
     try {
-      const user = await this.usersService.findOne(usernameOrEmail);
+      const user = await this.usersService.findOne(email);
       if (user && user.role === 'admin') {
         const comparePassword = await bcrypt.compare(password, user.password);
         if (comparePassword) {
@@ -115,9 +110,9 @@ export class AuthService {
     }
   }
 
-  async validateUser(usernameOrEmail: string, password: string): Promise<User> {
+  async validateUser(email: string, password: string): Promise<User> {
     try {
-      const user = await this.usersService.findOne(usernameOrEmail);
+      const user = await this.usersService.findOne(email);
       if (user && user.role === 'user') {
         const comparePassword = await bcrypt.compare(password, user.password);
         if (comparePassword) {

@@ -27,8 +27,8 @@ import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 import { GetProjectsInput } from 'src/project/dto/get-project.input';
 import { ProjectService } from 'src/project/project.service';
 import { Project } from 'src/project/entities/project.entity';
-import { PUB_SUB } from 'src/pubsub/pubsub.module';
-import { RedisPubSub } from 'graphql-redis-subscriptions';
+// import { PUB_SUB } from 'src/pubsub/pubsub.module';
+// import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 const USERS_EVENT = 'users';
 const USER_ADDED_EVENT = 'userAdded';
@@ -37,23 +37,22 @@ const USER_ADDED_EVENT = 'userAdded';
 export class UsersResolver {
   constructor(
     private userService: UsersService,
-    private projectService: ProjectService,
-    @Inject(PUB_SUB) private pubSub: RedisPubSub,
+    private projectService: ProjectService, // @Inject(PUB_SUB) private pubSub: RedisPubSub,
   ) {}
 
-  @Subscription((returns) => [User], {
-    name: 'users',
-  })
-  wsUsers() {
-    return this.pubSub.asyncIterator(USERS_EVENT);
-  }
+  // @Subscription((returns) => [User], {
+  //   name: 'users',
+  // })
+  // wsUsers() {
+  //   return this.pubSub.asyncIterator(USERS_EVENT);
+  // }
 
-  @Subscription((returns) => User, {
-    name: 'userAdded',
-  })
-  wsUserAdded() {
-    return this.pubSub.asyncIterator(USER_ADDED_EVENT);
-  }
+  // @Subscription((returns) => User, {
+  //   name: 'userAdded',
+  // })
+  // wsUserAdded() {
+  //   return this.pubSub.asyncIterator(USER_ADDED_EVENT);
+  // }
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -69,14 +68,17 @@ export class UsersResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'updateAdmin' })
+  @Mutation((returns) => User, { name: 'updateAdmin' })
   async updateAdmin(
     @CurrentUser() user: User,
     @Args('input') updateAdminInput: UpdateAdminInput,
   ) {
     try {
-      await this.userService.updateUser(user.idUser, updateAdminInput);
-      return 'Success update admin account';
+      const result = await this.userService.updateUser(
+        user.idUser,
+        updateAdminInput,
+      );
+      return result;
     } catch (error) {
       throw error;
     }
@@ -84,24 +86,30 @@ export class UsersResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'updateUser' })
+  @Mutation((returns) => User, { name: 'updateUser' })
   async updateUser(
     @CurrentUser() user: User,
     @Args('input') updateUserInput: UpdateUserInput,
   ) {
     try {
-      await this.userService.updateUser(user.idUser, updateUserInput);
-      return 'Success update user account';
+      const result = await this.userService.updateUser(
+        user.idUser,
+        updateUserInput,
+      );
+      return result;
     } catch (error) {
       throw error;
     }
   }
 
-  @Mutation((returns) => String, { name: 'registerAdmin' })
+  @Mutation((returns) => User, { name: 'registerAdmin' })
   async registerAdmin(@Args('input') registerAdminInput: RegisterAdminInput) {
     try {
-      await this.userService.createUser('admin', registerAdminInput);
-      return 'Success create admin';
+      const result = await this.userService.createUser(
+        'admin',
+        registerAdminInput,
+      );
+      return result;
     } catch (error) {
       throw error;
     }
@@ -114,7 +122,7 @@ export class UsersResolver {
         'user',
         registerUserInput,
       );
-      this.pubSub.publish(USER_ADDED_EVENT, { userAdded: result });
+      // this.pubSub.publish(USER_ADDED_EVENT, { userAdded: result });
       return result;
     } catch (error) {
       throw error;
@@ -131,7 +139,7 @@ export class UsersResolver {
   })
   async findOne(@CurrentUser() user: User) {
     try {
-      const result = await this.userService.findOne(user.username);
+      const result = await this.userService.findOne(user.email);
       return result;
     } catch (error) {
       throw error;
@@ -151,7 +159,7 @@ export class UsersResolver {
   ) {
     try {
       const result = await this.userService.find(optionsInput);
-      this.pubSub.publish(USERS_EVENT, { users: result });
+      // this.pubSub.publish(USERS_EVENT, { users: result });
       return result;
     } catch (error) {
       throw error;

@@ -21,10 +21,12 @@
     "typeorm-config": "npm run build && typeorm -d dist/database/data-source.js",
     "migration:generate": "npm run typeorm-config -- migration:generate",
     "migration:run": "npm run typeorm-config -- migration:run",
-    "migration:revert": "npm run typeorm-config -- migration:revert"
+    "migration:revert": "npm run typeorm-config -- migration:revert",
+    "seed:run": "npm run build && typeorm-seeding seed -d dist/database/data-source.js dist/database/seeds/*.js"
   },
   "dependencies": {
     "@apollo/server": "^4.5.0",
+    "@jorgebodega/typeorm-seeding": "^6.0.1",
     "@nestjs/apollo": "^11.0.4",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",

@@ -10,15 +10,12 @@ export class LocalAdmintrategy extends PassportStrategy(
   'localAdmin',
 ) {
   constructor(private authService: AuthService) {
-    super({ usernameField: 'usernameOrEmail', passwordField: 'password' });
+    super({ usernameField: 'email', passwordField: 'password' });
   }
 
-  async validate(usernameOrEmail: string, password: string): Promise<User> {
+  async validate(email: string, password: string): Promise<User> {
     try {
-      const user = await this.authService.validateAdmin(
-        usernameOrEmail,
-        password,
-      );
+      const user = await this.authService.validateAdmin(email, password);
       if (!user) {
         throw new UnauthorizedException();
       }

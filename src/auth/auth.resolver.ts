@@ -38,9 +38,9 @@ export class AuthResolver {
   }
 
   @Mutation((returns) => String, { name: 'forgotAdmin' })
-  async forgotAdmin(@Args('usernameOrEmail') usernameOrEmail: string) {
+  async forgotAdmin(@Args('email') email: string) {
     try {
-      const user = await this.authService.findUser(usernameOrEmail);
+      const user = await this.authService.findUser(email);
       if (!user || (user && user.role !== 'admin'))
         throw new UnauthorizedException('User not found!');
       await this.authService.sendEmail(user);
@@ -51,9 +51,9 @@ export class AuthResolver {
   }
 
   @Mutation((returns) => String, { name: 'forgotUser' })
-  async forgotUser(@Args('usernameOrEmail') usernameOrEmail: string) {
+  async forgotUser(@Args('email') email: string) {
     try {
-      const user = await this.authService.findUser(usernameOrEmail);
+      const user = await this.authService.findUser(email);
       if (!user || (user && user.role !== 'user'))
         throw new UnauthorizedException('User not found!');
       await this.authService.sendEmail(user);
@@ -67,7 +67,7 @@ export class AuthResolver {
   @UseGuards(LocalAdminAuthGuard)
   async loginAdmin(
     @CurrentUser() user: User,
-    @Args('usernameOrEmail') usernameOrPassword: string,
+    @Args('email') email: string,
     @Args('password') password: string,
   ) {
     try {
@@ -82,7 +82,7 @@ export class AuthResolver {
   @UseGuards(LocalUserAuthGuard)
   async loginUser(
     @CurrentUser() user: User,
-    @Args('usernameOrEmail') usernameOrPassword: string,
+    @Args('email') email: string,
     @Args('password') password: string,
   ) {
     try {

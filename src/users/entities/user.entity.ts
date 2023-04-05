@@ -22,9 +22,9 @@ export class User {
   @Field()
   idUser: string;
 
-  @Column({ length: 50, unique: true })
-  @Field()
-  username: string;
+  // @Column({ length: 50, unique: true })
+  // @Field()
+  // username: string;
 
   @Column({ length: 100, unique: true })
   @Field()
@@ -37,6 +37,11 @@ export class User {
   @Field()
   @IsOptional()
   fullname?: string;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Field()
+  @IsOptional()
+  birthDay?: Date;
 
   @Column({ type: 'text' })
   @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`)

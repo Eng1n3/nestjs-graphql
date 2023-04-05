@@ -13,12 +13,6 @@ import { Match } from 'src/common/decorators/match.decorator';
 @InputType()
 export class RegisterUserInput {
   @Field()
-  @IsString()
-  @IsNotEmpty()
-  @Transform(({ value }: TransformFnParams) => value?.trim())
-  username: string;
-
-  @Field()
   @IsEmail()
   @IsNotEmpty()
   email: string;

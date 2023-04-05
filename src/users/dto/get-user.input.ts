@@ -9,11 +9,6 @@ export class SearchUserInput {
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
   @IsOptional()
-  username?: string;
-
-  @Field({ nullable: true, defaultValue: '' })
-  @IsString()
-  @IsOptional()
   email?: string;
 
   @Field({ nullable: true, defaultValue: '' })

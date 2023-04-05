@@ -75,7 +75,7 @@ export class ProjectResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String)
+  @Mutation((returns) => Project)
   async deleteProject(@Args('idProject') idProject: string) {
     try {
       const existProject = await this.projectService.findByIdProject(idProject);
@@ -86,7 +86,7 @@ export class ProjectResolver {
         recursive: true,
         force: true,
       });
-      return 'Success delete project';
+      return existProject;
     } catch (error) {
       throw error;
     }
@@ -94,17 +94,17 @@ export class ProjectResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String)
+  @Mutation((returns) => Project)
   async updateProject(
     @CurrentUser() user: User,
     @Args('input') updateProjectInput: UpdateProjectInput,
   ) {
     try {
-      await this.projectService.updateByIdProject(
+      const result = await this.projectService.updateByIdProject(
         user.idUser,
         updateProjectInput,
       );
-      return 'Success update project';
+      return result;
     } catch (error) {
       throw error;
     }
@@ -118,8 +118,11 @@ export class ProjectResolver {
     @Args('input') createProjectInput: CreateProjectInput,
   ) {
     try {
-      await this.projectService.create(user.idUser, createProjectInput);
-      return 'Success create project';
+      const result = await this.projectService.create(
+        user.idUser,
+        createProjectInput,
+      );
+      return result;
     } catch (error) {
       throw error;
     }

@@ -84,20 +84,30 @@ export class DocumentService {
     }
   }
 
-  async updateDocument(updateDocumentInput: UpdateDocumentInput) {
+  async updateDocument(
+    idUser: string,
+    updateDocumentInput: UpdateDocumentInput,
+  ) {
     try {
       const document = await updateDocumentInput.file;
       const existDocument = await this.documentRepository.findOne({
-        where: { idDocument: updateDocumentInput.idDocument },
+        where: {
+          project: { user: { idUser } },
+          idDocument: updateDocumentInput.idDocument,
+        },
+        relations: {
+          project: true,
+        },
       });
       if (!existDocument) throw new NotFoundException('Document not found!');
-      const pathName = `/uploads/projects/${updateDocumentInput.idProject}`;
+      const pathName = `/uploads/projects/${existDocument?.project?.idProject}`;
       const pathDocumentToSave = await this.saveDocumentToDir(
         document,
         pathName,
       );
-      const { idProject, idDocument, file, ...values } = updateDocumentInput;
+      const { idDocument, file, ...values } = updateDocumentInput;
       const value = await this.documentRepository.create({
+        idDocument,
         ...values,
         pathDocument: pathDocumentToSave,
       });
@@ -171,6 +181,7 @@ export class DocumentService {
       if (!document) throw new NotFoundException('Document not found!');
       rmSync(join(process.cwd(), document.pathDocument));
       await this.documentRepository.delete(idDocument);
+      return document;
     } catch (error) {
       throw error;
     }

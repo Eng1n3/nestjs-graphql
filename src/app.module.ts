@@ -18,6 +18,7 @@ import * as depthLimit from 'graphql-depth-limit';
 import { ComplexityPlugin } from './common/plugins/complexity.plugin';
 import { PubsubModule } from './pubsub/pubsub.module';
 import { Context } from 'graphql-ws';
+import { PriorityModule } from './priority/priority.module';
 
 @Module({
   imports: [
@@ -31,18 +32,18 @@ import { Context } from 'graphql-ws';
       inject: [ConfigService],
       // installSubscriptionHandlers: true,
       useFactory: (configService: ConfigService) => ({
-        subscriptions: {
-          'graphql-ws': {
-            onConnect: (context: Context<any>) => {
-              const { connectionParams, extra } = context;
-              // user validation will remain the same as in the example above
-              // when using with graphql-ws, additional context value should be stored in the extra field
-              // extra.user = { user: {} };
-              console.log('Redis connect');
-            },
-          },
-          'subscriptions-transport-ws': true,
-        },
+        // subscriptions: {
+        //   'graphql-ws': {
+        //     onConnect: (context: Context<any>) => {
+        //       const { connectionParams, extra } = context;
+        //       // user validation will remain the same as in the example above
+        //       // when using with graphql-ws, additional context value should be stored in the extra field
+        //       // extra.user = { user: {} };
+        //       console.log('Redis connect');
+        //     },
+        //   },
+        //   'subscriptions-transport-ws': true,
+        // },
         autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
         playground: true,
         context: ({ req }) => ({ req }),
@@ -62,7 +63,8 @@ import { Context } from 'graphql-ws';
     ProjectModule,
     DocumentModule,
     AuthModule,
-    PubsubModule,
+    // PubsubModule,
+    PriorityModule,
   ],
   controllers: [],
   providers: [

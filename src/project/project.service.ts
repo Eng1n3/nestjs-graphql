@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
@@ -14,35 +18,6 @@ export class ProjectService {
   constructor(
     @InjectRepository(Project) private projectRepository: Repository<Project>,
   ) {}
-
-  async restFindAll(
-    idUser: string | null,
-    getProjectsInput?: GetProjectsInput<Project>,
-  ) {
-    try {
-      const order = getProjectsInput?.sort;
-      const skip = getProjectsInput?.pagination?.skip;
-      const take = getProjectsInput?.pagination?.take;
-      const result = await this.projectRepository.find({
-        where: {
-          user: { idUser },
-          idProject: ILike(`%${getProjectsInput?.search?.idProject || ''}%`),
-          projectName: ILike(
-            `%${getProjectsInput?.search?.projectName || ''}%`,
-          ),
-          description: ILike(
-            `%${getProjectsInput?.search?.description || ''}%`,
-          ),
-        },
-        skip,
-        take: 1,
-        order,
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
 
   async findByIdUser(idUser: string): Promise<Project[]> {
     try {
@@ -79,8 +54,17 @@ export class ProjectService {
     updateProjectInput: UpdateProjectInput,
   ) {
     try {
-      const { idProject, ...value } = updateProjectInput;
+      const { idProject, ...project } = updateProjectInput;
+      const existProject = await this.projectRepository.findOne({
+        where: { user: { idUser } },
+      });
+      if (!existProject) throw new NotFoundException('Project not found!');
+      const value = this.projectRepository.create({
+        idProject,
+        ...project,
+      });
       await this.projectRepository.update(idProject, value);
+      return value;
     } catch (error) {
       throw error;
     }

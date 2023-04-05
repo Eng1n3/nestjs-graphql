@@ -27,21 +27,15 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
-  async restFindAll(usernameOrEmail: string): Promise<User> {
+  async restFindAll(email: string): Promise<User> {
     try {
-      const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-      if (expression.test(usernameOrEmail)) {
-        return await this.userRepository.findOne({
-          where: { email: usernameOrEmail },
-          relations: {
-            project: {
-              document: true,
-            },
-          },
-        });
-      }
       return await this.userRepository.findOne({
-        where: { username: usernameOrEmail },
+        where: { email: email },
+        relations: {
+          project: {
+            document: true,
+          },
+        },
       });
     } catch (error) {
       throw error;
@@ -75,12 +69,11 @@ export class UsersService {
   async updateUser(
     idUser: string,
     registerUserInput: UpdateUserInput | UpdateAdminInput,
-  ): Promise<void> {
+  ): Promise<User> {
     try {
       let pathImageToSave;
       const validImage = /(png|jpeg|image|img)/g;
       const images = await registerUserInput?.image;
-
       const existUser = await this.userRepository.findOne({
         where: { idUser },
       });
@@ -106,13 +99,9 @@ export class UsersService {
         pathImage: pathImageToSave,
       });
       await this.userRepository.update(idUser, value);
+      return value;
     } catch (error) {
       if (
-        error.message.includes('duplicate key value') &&
-        error?.detail?.includes('username')
-      ) {
-        throw new BadRequestException('Username has been used!');
-      } else if (
         error.message.includes('duplicate key value') &&
         error?.detail?.includes('email')
       ) {
@@ -142,21 +131,10 @@ export class UsersService {
     }
   }
 
-  async findOne(usernameOrEmail: string): Promise<User> {
+  async findOne(email: string): Promise<User> {
     try {
-      const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-      if (expression.test(usernameOrEmail)) {
-        return await this.userRepository.findOne({
-          where: { email: usernameOrEmail },
-          relations: {
-            project: {
-              document: true,
-            },
-          },
-        });
-      }
       return await this.userRepository.findOne({
-        where: { username: usernameOrEmail },
+        where: { email: email },
         relations: {
           project: {
             document: true,
@@ -193,11 +171,6 @@ export class UsersService {
     } catch (error) {
       if (
         error.message.includes('duplicate key value') &&
-        error?.detail?.includes('username')
-      ) {
-        throw new BadRequestException('Username has been used!');
-      } else if (
-        error.message.includes('duplicate key value') &&
         error?.detail?.includes('email')
       ) {
         throw new BadRequestException('email has been used!');
@@ -214,7 +187,6 @@ export class UsersService {
       const result = await this.userRepository.find({
         where: {
           role: 'user',
-          username: ILike(`%${getUserInput?.search?.username || ''}%`),
           email: ILike(`%${getUserInput?.search?.email || ''}%`),
           fullname: ILike(`%${getUserInput?.search?.fullname || ''}%`),
         },
@@ -238,7 +210,6 @@ export class UsersService {
       const result = await this.userRepository.count({
         where: {
           role: 'user',
-          username: ILike(`%${searchUserInput?.username || ''}%`),
           email: ILike(`%${searchUserInput?.email || ''}%`),
           fullname: ILike(`%${searchUserInput?.fullname || ''}%`),
         },

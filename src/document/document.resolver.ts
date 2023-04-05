@@ -87,28 +87,24 @@ export class DocumentResolver {
     @CurrentUser() user: User,
     @Args('idDocument') idDocument: string,
   ) {
-    await this.documentService.deleteById(idDocument);
-    return 'Success delete document';
+    const result = await this.documentService.deleteById(idDocument);
+    return result;
   }
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, {
+  @Mutation((returns) => DocumentEntity, {
     name: 'updateDocument',
   })
   async updateDocument(
     @CurrentUser() user: User,
     @Args('input') updateDocumentInput: UpdateDocumentInput,
   ) {
-    const projects: Project[] = await this.projectService.findByIdUser(
+    const result = await this.documentService.updateDocument(
       user.idUser,
+      updateDocumentInput,
     );
-    const project = projects.find(
-      ({ idProject }) => updateDocumentInput.idProject === idProject,
-    );
-    if (!project) throw new NotFoundException('project not found');
-    await this.documentService.updateDocument(updateDocumentInput);
-    return 'Success update document';
+    return result;
   }
 
   @Roles(Role.Admin)
