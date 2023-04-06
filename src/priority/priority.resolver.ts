@@ -2,7 +2,11 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { PriorityService } from './priority.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import { UseGuards } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Priority } from './entities/priority.entity';
 
@@ -36,6 +40,7 @@ export class PriorityResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @Query((returns) => [Priority], { name: 'priorities', defaultValue: [] })
   async find() {
     const result = await this.priorityService.find();

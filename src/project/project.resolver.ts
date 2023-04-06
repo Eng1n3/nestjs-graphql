@@ -11,7 +11,12 @@ import { CreateProjectInput } from './dto/create-project.input';
 import { ProjectService } from './project.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import { NotFoundException, UseGuards } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  NotFoundException,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
@@ -23,6 +28,7 @@ import { GetProjectsInput, SearchProjectInput } from './dto/get-project.input';
 import { DocumentEntity } from 'src/document/entities/document.entity';
 import { GetDocumentsInput } from 'src/document/dto/get-documents.input';
 
+@UseInterceptors(ClassSerializerInterceptor)
 @Resolver((of) => Project)
 export class ProjectResolver {
   constructor(
@@ -73,14 +79,13 @@ export class ProjectResolver {
     }
   }
 
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => Project)
+  @Mutation((returns) => Project, { name: 'deleteProject' })
   async deleteProject(@Args('idProject') idProject: string) {
     try {
       const existProject = await this.projectService.findByIdProject(idProject);
       if (!existProject) throw new NotFoundException('project not found!');
-      await this.documentService.deleteByIdProject(idProject);
       await this.projectService.deleteProject(idProject);
       rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
         recursive: true,
@@ -112,7 +117,7 @@ export class ProjectResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String)
+  @Mutation((returns) => Project, { name: 'createProject' })
   async createProject(
     @CurrentUser() user: User,
     @Args('input') createProjectInput: CreateProjectInput,
@@ -148,7 +153,8 @@ export class ProjectResolver {
     }
   }
 
-  @ResolveField(() => [DocumentEntity], {
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ResolveField((returns) => [DocumentEntity], {
     nullable: true,
     defaultValue: [],
     name: 'document',

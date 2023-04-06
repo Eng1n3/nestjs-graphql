@@ -18,6 +18,7 @@ import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
 import { createWriteStream, mkdirSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
 import { FileUpload } from 'graphql-upload-ts';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class UsersService {
@@ -133,7 +134,7 @@ export class UsersService {
 
   async findOne(email: string): Promise<User> {
     try {
-      return await this.userRepository.findOne({
+      const user = await this.userRepository.findOne({
         where: { email: email },
         relations: {
           project: {
@@ -141,6 +142,8 @@ export class UsersService {
           },
         },
       });
+      const result = plainToInstance(User, user);
+      return result;
     } catch (error) {
       throw error;
     }

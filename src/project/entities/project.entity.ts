@@ -19,6 +19,7 @@ export class Project {
   @ManyToOne((type) => User, (user) => user.idUser, {
     nullable: true,
     cascade: true,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'idUser' })
   @Field(() => User)
@@ -39,8 +40,8 @@ export class Project {
   @ManyToOne((type) => Priority, (priority) => priority.idPriority, {
     nullable: true,
   })
-  @JoinColumn({ name: 'idPriority' })
-  @Field(() => Priority)
+  @JoinColumn({ name: 'priority' })
+  @Field(() => Priority, { nullable: true, defaultValue: null })
   priority?: Priority;
 
   @Column({ type: 'timestamp with time zone' })

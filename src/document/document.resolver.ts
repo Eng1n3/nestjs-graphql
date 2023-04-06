@@ -24,6 +24,7 @@ import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
 
 @Resolver((of) => DocumentEntity)
+// @UseInterceptors(ClassSerializerInterceptor)
 export class DocumentResolver {
   constructor(
     private documentService: DocumentService,
@@ -87,7 +88,10 @@ export class DocumentResolver {
     @CurrentUser() user: User,
     @Args('idDocument') idDocument: string,
   ) {
-    const result = await this.documentService.deleteById(idDocument);
+    const result = await this.documentService.deleteById(
+      user.idUser,
+      idDocument,
+    );
     return result;
   }
 
@@ -133,7 +137,7 @@ export class DocumentResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, {
+  @Mutation((returns) => DocumentEntity, {
     name: 'uploadDocument',
   })
   async uploadDocument(
@@ -148,8 +152,10 @@ export class DocumentResolver {
         ({ idProject }) => uploadDocumentInput.idProject === idProject,
       );
       if (!project) throw new NotFoundException('project not found');
-      await this.documentService.createDocument(uploadDocumentInput);
-      return 'Success upload document';
+      const result = await this.documentService.createDocument(
+        uploadDocumentInput,
+      );
+      return result;
     } catch (error) {
       throw error;
     }

@@ -1,5 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Transform } from 'class-transformer';
+import { capitalizeFirstLetter } from 'src/common/functions/capitalize-first-letter.function';
 import { Project } from 'src/project/entities/project.entity';
 import {
   Column,
@@ -17,9 +18,9 @@ export class Priority {
   @Field()
   idPriority: string;
 
-  @Column()
+  @Column({ unique: true })
   @Field()
-  @Transform(({ value }) => `${value?.capitalize()}`)
+  @Transform(({ value }) => `${capitalizeFirstLetter(value)}`)
   name: string;
 
   @Column({ type: 'text' })
@@ -34,7 +35,7 @@ export class Priority {
   @Field()
   updatedAt: Date;
 
-  @OneToMany((type) => Project, (project) => project.idProject)
+  @OneToMany((type) => Project, (project) => project.priority)
   @Field(() => [Project], { nullable: true, defaultValue: [] })
   project?: Project[];
 }

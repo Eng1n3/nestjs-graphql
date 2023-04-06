@@ -21,6 +21,7 @@ export class DocumentEntity {
   @ManyToOne((type) => Project, (project) => project.idProject, {
     nullable: true,
     cascade: true,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'idProject' })
   @Field(() => Project)
@@ -35,8 +36,10 @@ export class DocumentEntity {
   documentName: string;
 
   @Column({ type: 'text' })
+  @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`, {
+    toClassOnly: true,
+  })
   @Field()
-  @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`)
   pathDocument: string;
 
   @Column({ type: 'text' })

@@ -34,17 +34,19 @@ export class User {
   password: string;
 
   @Column({ length: 100, nullable: true })
-  @Field()
+  @Field({ nullable: true, defaultValue: '' })
   @IsOptional()
   fullname?: string;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  @Field()
+  @Field({ nullable: true, defaultValue: '' })
   @IsOptional()
   birthDay?: Date;
 
   @Column({ type: 'text' })
-  @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`)
+  @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`, {
+    toClassOnly: true,
+  })
   @Field()
   pathImage: string;
 

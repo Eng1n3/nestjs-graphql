@@ -12,6 +12,7 @@ import { GetProjectsInput, SearchProjectInput } from './dto/get-project.input';
 import { UpdateProjectInput } from './dto/update-project.input';
 import { Project } from './entities/project.entity';
 import { v4 as uuid4 } from 'uuid';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ProjectService {
@@ -97,7 +98,7 @@ export class ProjectService {
       const order = getProjectsInput?.sort;
       const skip = getProjectsInput?.pagination?.skip;
       const take = getProjectsInput?.pagination?.take;
-      const result = await this.projectRepository.find({
+      const project = await this.projectRepository.find({
         where: {
           user: { idUser },
           idProject: ILike(`%${getProjectsInput?.search?.idProject || ''}%`),
@@ -116,6 +117,7 @@ export class ProjectService {
         take,
         order,
       });
+      const result = plainToInstance(Project, project);
       return result;
     } catch (error) {
       throw error;
@@ -127,10 +129,12 @@ export class ProjectService {
     createProjectModel: CreateProjectInput,
   ): Promise<Project | any> {
     try {
+      const { idPriority, ...projectInput } = createProjectModel;
       const value = this.projectRepository.create({
         user: { idUser },
+        priority: { idPriority },
         idProject: uuid4(),
-        ...createProjectModel,
+        ...projectInput,
       });
       await this.projectRepository.save(value);
       mkdirSync(join(process.cwd(), '/uploads/projects/', value.idProject), {
@@ -138,12 +142,6 @@ export class ProjectService {
       });
       return value;
     } catch (error) {
-      if (
-        error.message.includes('duplicate key value') &&
-        error?.detail?.includes('projectName')
-      ) {
-        throw new BadRequestException('project name has been used!');
-      }
       throw error;
     }
   }

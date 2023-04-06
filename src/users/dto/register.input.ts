@@ -1,6 +1,6 @@
 import { Field, InputType, OmitType } from '@nestjs/graphql';
-import { Transform, TransformFnParams } from 'class-transformer';
 import {
+  IsDateString,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -8,6 +8,7 @@ import {
   IsStrongPassword,
 } from 'class-validator';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-ts';
+import { IsOnlyDate } from 'src/common/decorators/is-only-date.decorator';
 import { Match } from 'src/common/decorators/match.decorator';
 
 @InputType()
@@ -34,6 +35,10 @@ export class RegisterUserInput {
   @IsNotEmpty()
   fullname: string;
 
+  @Field()
+  @IsOnlyDate()
+  birthDay: string;
+
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
@@ -54,4 +59,5 @@ export class RegisterAdminInput extends OmitType(RegisterUserInput, [
   'bio',
   'fullname',
   'homepage',
+  'birthDay',
 ]) {}

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadGatewayException,
+  ClassSerializerInterceptor,
   Injectable,
   NotFoundException,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createWriteStream, rmSync } from 'fs';
 import { FileUpload } from 'graphql-upload-ts';
@@ -18,7 +19,9 @@ import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
 import { v4 as uuid4 } from 'uuid';
+import { plainToInstance } from 'class-transformer';
 
+@UseInterceptors(ClassSerializerInterceptor)
 @Injectable()
 export class DocumentService {
   constructor(
@@ -128,13 +131,13 @@ export class DocumentService {
       const order = optionsInput?.sort;
       const skip = optionsInput?.pagination?.skip;
       const take = optionsInput?.pagination?.take;
-      const result = await this.documentRepository.find({
+      const document = await this.documentRepository.find({
         where: {
           project: {
             user: { idUser },
             idProject: idProject
               ? idProject
-              : ILike(`%${optionsInput?.search.idProject || ''}%`),
+              : ILike(`%${optionsInput?.search?.idProject || ''}%`),
           },
           idDocument: ILike(`%${optionsInput?.search?.idDocument || ''}%`),
           documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),
@@ -148,6 +151,7 @@ export class DocumentService {
         take,
         order,
       });
+      const result = plainToInstance(DocumentEntity, document);
       return result;
     } catch (error) {
       throw error;
@@ -173,13 +177,16 @@ export class DocumentService {
     }
   }
 
-  async deleteById(idDocument: string) {
+  async deleteById(idUser: string, idDocument: string) {
     try {
       const document = await this.documentRepository.findOne({
-        where: { idDocument },
+        where: { project: { user: { idUser } }, idDocument },
       });
       if (!document) throw new NotFoundException('Document not found!');
-      rmSync(join(process.cwd(), document.pathDocument));
+      rmSync(join(process.cwd(), document.pathDocument), {
+        force: true,
+        recursive: true,
+      });
       await this.documentRepository.delete(idDocument);
       return document;
     } catch (error) {
@@ -219,13 +226,14 @@ export class DocumentService {
         document,
         pathName,
       );
-      const value = await this.documentRepository.create({
+      const value = this.documentRepository.create({
         project: { idProject: uploadDocumentInput.idProject },
         idDocument: uuid4(),
         ...uploadDocumentInput,
         pathDocument: pathDocumentToSave,
       });
       await this.documentRepository.save(value);
+      return value;
     } catch (error) {
       throw error;
     }

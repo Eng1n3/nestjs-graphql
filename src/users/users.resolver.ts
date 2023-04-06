@@ -13,12 +13,7 @@ import { GetUserInput, SearchUserInput } from './dto/get-user.input';
 import { UsersService } from './users.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import {
-  ClassSerializerInterceptor,
-  Inject,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
@@ -27,12 +22,14 @@ import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 import { GetProjectsInput } from 'src/project/dto/get-project.input';
 import { ProjectService } from 'src/project/project.service';
 import { Project } from 'src/project/entities/project.entity';
+import { plainToClass } from 'class-transformer';
 // import { PUB_SUB } from 'src/pubsub/pubsub.module';
 // import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 const USERS_EVENT = 'users';
 const USER_ADDED_EVENT = 'userAdded';
 
+// @UseInterceptors(ClassSerializerInterceptor)
 @Resolver(() => User)
 export class UsersResolver {
   constructor(
@@ -131,7 +128,6 @@ export class UsersResolver {
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
   @Query((returns) => User, {
     name: 'user',
     complexity: (options: ComplexityEstimatorArgs) =>

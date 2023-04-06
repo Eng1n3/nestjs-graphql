@@ -25,7 +25,7 @@ type Project {
   idProject: String!
   projectName: String!
   description: String!
-  priority: Priority!
+  priority: Priority
   deadLine: Date!
   createdAt: Date!
   updatedAt: Date!
@@ -66,8 +66,8 @@ input SearchDocumentsInput {
 type User {
   idUser: String!
   email: String!
-  fullname: String!
-  birthDay: Date!
+  fullname: String
+  birthDay: Date
   pathImage: String!
   role: String!
   bio: String
@@ -90,6 +90,8 @@ input GetProjectsInput {
 input SearchProjectInput {
   projectName: String
   description: String
+  deadLine: String
+  idPriority: String = null
   idUser: String = ""
   idProject: String = ""
 }
@@ -137,10 +139,10 @@ type Mutation {
   registerUser(input: RegisterUserInput!): User!
   deleteProject(idProject: String!): Project!
   updateProject(input: UpdateProjectInput!): Project!
-  createProject(input: CreateProjectInput!): String!
+  createProject(input: CreateProjectInput!): Project!
   deleteDocument(idDocument: String!): String!
   updateDocument(input: UpdateDocumentInput!): DocumentEntity!
-  uploadDocument(input: UploadDocumentInput!): String!
+  uploadDocument(input: UploadDocumentInput!): DocumentEntity!
   changePassword(input: ChangePasswordInput!): String!
   forgotAdmin(email: String!): String!
   forgotUser(email: String!): String!
@@ -166,6 +168,7 @@ input UpdateUserInput {
   password: String
   repassword: String
   fullname: String
+  birthDay: String
   bio: String
   homepage: String
   image: Upload
@@ -183,6 +186,7 @@ input RegisterUserInput {
   password: String!
   repassword: String!
   fullname: String!
+  birthDay: String!
   bio: String
   homepage: String
   image: Upload
@@ -191,12 +195,16 @@ input RegisterUserInput {
 input UpdateProjectInput {
   projectName: String
   description: String
+  deadLine: String
+  idPriority: String = null
   idProject: String!
 }
 
 input CreateProjectInput {
   projectName: String!
   description: String!
+  deadLine: String!
+  idPriority: String = null
 }
 
 input UpdateDocumentInput {
