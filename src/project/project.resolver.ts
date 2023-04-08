@@ -133,6 +133,29 @@ export class ProjectResolver {
     }
   }
 
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Query((returns) => [Project], {
+    name: 'project',
+    nullable: true,
+    defaultValue: [],
+  })
+  async project(
+    @CurrentUser() user: User,
+    @Args('options', { nullable: true, defaultValue: {} })
+    getProjectsInput?: GetProjectsInput<Project>,
+  ) {
+    try {
+      const result = await this.projectService.findAll(
+        user?.idUser,
+        getProjectsInput,
+      );
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [Project], {

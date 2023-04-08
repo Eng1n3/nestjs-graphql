@@ -134,7 +134,7 @@ export class DocumentService {
       const document = await this.documentRepository.find({
         where: {
           project: {
-            user: { idUser },
+            user: { idUser, role: 'user' },
             idProject: idProject
               ? idProject
               : ILike(`%${optionsInput?.search?.idProject || ''}%`),

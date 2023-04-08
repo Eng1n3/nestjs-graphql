@@ -100,7 +100,7 @@ export class ProjectService {
       const take = getProjectsInput?.pagination?.take;
       const project = await this.projectRepository.find({
         where: {
-          user: { idUser },
+          user: { idUser, role: 'user' },
           idProject: ILike(`%${getProjectsInput?.search?.idProject || ''}%`),
           projectName: ILike(
             `%${getProjectsInput?.search?.projectName || ''}%`,

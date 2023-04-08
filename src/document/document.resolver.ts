@@ -111,6 +111,30 @@ export class DocumentResolver {
     return result;
   }
 
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Query((returns) => [DocumentEntity], {
+    name: 'document',
+    nullable: true,
+    defaultValue: [],
+  })
+  async document(
+    @CurrentUser() user: User,
+    @Args('options', { nullable: true })
+    optionsInput: GetDocumentsInput<DocumentEntity>,
+  ) {
+    try {
+      const result = await this.documentService.findAll(
+        user?.idUser,
+        null,
+        optionsInput,
+      );
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [DocumentEntity], {
