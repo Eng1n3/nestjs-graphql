@@ -67,7 +67,8 @@ export class ProjectService {
         ...project,
       });
       await this.projectRepository.update(idProject, value);
-      return value;
+      const result = plainToInstance(Project, { ...existProject, ...value });
+      return result;
     } catch (error) {
       throw error;
     }

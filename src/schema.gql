@@ -153,7 +153,7 @@ type Mutation {
   deleteProject(idProject: String!): Project!
   updateProject(input: UpdateProjectInput!): Project!
   createProject(input: CreateProjectInput!): Project!
-  deleteDocument(idDocument: String!): String!
+  deleteDocument(idDocument: String!): DocumentEntity!
   updateDocument(input: UpdateDocumentInput!): DocumentEntity!
   uploadDocument(input: UploadDocumentInput!): DocumentEntity!
   deletePriority(idPriority: String!): Priority!

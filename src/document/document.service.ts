@@ -81,7 +81,11 @@ export class DocumentService {
       });
       await this.documentRepository.update(idDocument, value);
       rmSync(join(process.cwd(), existDocument.pathDocument));
-      return value;
+      const result = plainToInstance(DocumentEntity, {
+        ...existDocument,
+        ...value,
+      });
+      return result;
     } catch (error) {
       throw error;
     }
@@ -99,7 +103,7 @@ export class DocumentService {
       const document = await this.documentRepository.find({
         where: {
           project: {
-            user: { idUser, role: 'user' },
+            user: { idUser },
             idProject,
           },
           documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),

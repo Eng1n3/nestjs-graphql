@@ -77,9 +77,9 @@ export class DocumentResolver {
     }
   }
 
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, {
+  @Mutation((returns) => DocumentEntity, {
     name: 'deleteDocument',
   })
   async deleteDocument(
