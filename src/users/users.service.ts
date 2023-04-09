@@ -19,6 +19,7 @@ import { createWriteStream, mkdirSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
 import { FileUpload } from 'graphql-upload-ts';
 import { plainToInstance } from 'class-transformer';
+import { Project } from 'ts-morph';
 
 @Injectable()
 export class UsersService {
@@ -116,9 +117,21 @@ export class UsersService {
     try {
       const checkUser = await this.userRepository.findOne({
         where: { idUser },
+        relations: { project: true },
       });
       if (!checkUser) throw new NotFoundException('User not found');
       await this.userRepository.delete(idUser);
+      rmSync(join(process.cwd(), `/uploads/profiles/${checkUser?.idUser}`), {
+        recursive: true,
+        force: true,
+      }),
+        checkUser?.project?.forEach(({ idProject }) =>
+          rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
+            recursive: true,
+            force: true,
+          }),
+        );
+      return checkUser;
     } catch (error) {
       throw error;
     }
@@ -187,7 +200,7 @@ export class UsersService {
       const order = getUserInput?.sort;
       const skip = getUserInput?.pagination?.skip;
       const take = getUserInput?.pagination?.take;
-      const result = await this.userRepository.find({
+      const users = await this.userRepository.find({
         where: {
           role: 'user',
           email: ILike(`%${getUserInput?.search?.email || ''}%`),
@@ -202,6 +215,7 @@ export class UsersService {
         take,
         order,
       });
+      const result = plainToInstance(User, users);
       return result;
     } catch (error) {
       throw error;

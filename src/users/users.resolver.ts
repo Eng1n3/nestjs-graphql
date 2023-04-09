@@ -22,7 +22,6 @@ import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 import { GetProjectsInput } from 'src/project/dto/get-project.input';
 import { ProjectService } from 'src/project/project.service';
 import { Project } from 'src/project/entities/project.entity';
-import { plainToClass } from 'class-transformer';
 // import { PUB_SUB } from 'src/pubsub/pubsub.module';
 // import { RedisPubSub } from 'graphql-redis-subscriptions';
 
@@ -53,11 +52,11 @@ export class UsersResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'deleteUser' })
+  @Mutation((returns) => User, { name: 'deleteUser' })
   async deleteUser(@Args('idUser') idUser: string) {
     try {
-      await this.userService.deleteUser(idUser);
-      return 'Success delete user';
+      const result = await this.userService.deleteUser(idUser);
+      return result;
     } catch (error) {
       throw error;
     }
@@ -185,11 +184,11 @@ export class UsersResolver {
   async project(
     @Parent() parent: User,
     @Args('options', { nullable: true, defaultValue: {} })
-    getProjectsINput?: GetProjectsInput<Project>,
+    getProjectsInput?: GetProjectsInput<Project>,
   ) {
     const result = await this.projectService.findAll(
       parent.idUser,
-      getProjectsINput,
+      getProjectsInput,
     );
     return result;
   }

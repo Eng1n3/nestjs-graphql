@@ -11,12 +11,7 @@ import { CreateProjectInput } from './dto/create-project.input';
 import { ProjectService } from './project.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import {
-  ClassSerializerInterceptor,
-  NotFoundException,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { NotFoundException, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
@@ -27,11 +22,13 @@ import { join } from 'path';
 import { GetProjectsInput, SearchProjectInput } from './dto/get-project.input';
 import { DocumentEntity } from 'src/document/entities/document.entity';
 import { GetDocumentsInput } from 'src/document/dto/get-documents.input';
+import { PriorityService } from 'src/priority/priority.service';
+import { Priority } from 'src/priority/entities/priority.entity';
 
-@UseInterceptors(ClassSerializerInterceptor)
 @Resolver((of) => Project)
 export class ProjectResolver {
   constructor(
+    private priorityService: PriorityService,
     private projectService: ProjectService,
     private documentService: DocumentService,
   ) {}
@@ -105,8 +102,15 @@ export class ProjectResolver {
     @Args('input') updateProjectInput: UpdateProjectInput,
   ) {
     try {
+      const checkPriority: Priority =
+        await this.priorityService.findByIdPriority(
+          updateProjectInput?.idPriority,
+        );
+      if (updateProjectInput?.idPriority && !checkPriority)
+        throw new NotFoundException('Priority tidak ada!');
       const result = await this.projectService.updateByIdProject(
         user.idUser,
+        checkPriority,
         updateProjectInput,
       );
       return result;
@@ -123,6 +127,12 @@ export class ProjectResolver {
     @Args('input') createProjectInput: CreateProjectInput,
   ) {
     try {
+      const checkPriority: Priority =
+        await this.priorityService.findByIdPriority(
+          createProjectInput?.idPriority,
+        );
+      if (createProjectInput?.idPriority && !checkPriority)
+        throw new NotFoundException('Priority tidak ada!');
       const result = await this.projectService.create(
         user.idUser,
         createProjectInput,
@@ -176,7 +186,6 @@ export class ProjectResolver {
     }
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @ResolveField((returns) => [DocumentEntity], {
     nullable: true,
     defaultValue: [],

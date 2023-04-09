@@ -1,8 +1,5 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
@@ -13,6 +10,7 @@ import { UpdateProjectInput } from './dto/update-project.input';
 import { Project } from './entities/project.entity';
 import { v4 as uuid4 } from 'uuid';
 import { plainToInstance } from 'class-transformer';
+import { Priority } from 'src/priority/entities/priority.entity';
 
 @Injectable()
 export class ProjectService {
@@ -39,7 +37,6 @@ export class ProjectService {
       const result = await this.projectRepository.count({
         where: {
           user: { idUser },
-          idProject: ILike(`%${searchProjectInput?.idProject || ''}%`),
           projectName: ILike(`%${searchProjectInput?.projectName || ''}%`),
           description: ILike(`%${searchProjectInput?.description || ''}%`),
         },
@@ -51,17 +48,22 @@ export class ProjectService {
   }
 
   async updateByIdProject(
-    idUser: string,
-    updateProjectInput: UpdateProjectInput,
+    idUser?: string,
+    priority?: Priority,
+    updateProjectInput?: UpdateProjectInput,
   ) {
     try {
       const { idProject, ...project } = updateProjectInput;
       const existProject = await this.projectRepository.findOne({
-        where: { user: { idUser } },
+        where: {
+          user: { idUser },
+          idProject: updateProjectInput?.idProject,
+        },
       });
       if (!existProject) throw new NotFoundException('Project not found!');
       const value = this.projectRepository.create({
         idProject,
+        priority,
         ...project,
       });
       await this.projectRepository.update(idProject, value);
@@ -91,7 +93,7 @@ export class ProjectService {
   }
 
   async findAll(
-    idUser: string | null,
+    idUser?: string | null,
     getProjectsInput?: GetProjectsInput<Project>,
   ) {
     try {
@@ -101,17 +103,22 @@ export class ProjectService {
       const project = await this.projectRepository.find({
         where: {
           user: { idUser, role: 'user' },
-          idProject: ILike(`%${getProjectsInput?.search?.idProject || ''}%`),
           projectName: ILike(
             `%${getProjectsInput?.search?.projectName || ''}%`,
           ),
           description: ILike(
             `%${getProjectsInput?.search?.description || ''}%`,
           ),
+          priority: {
+            name: getProjectsInput?.search?.priority
+              ? ILike(`%${getProjectsInput?.search?.priority || ''}%`)
+              : null,
+          },
         },
         relations: {
           user: true,
           document: true,
+          priority: true,
         },
         skip,
         take,
@@ -125,8 +132,8 @@ export class ProjectService {
   }
 
   async create(
-    idUser: string,
-    createProjectModel: CreateProjectInput,
+    idUser?: string,
+    createProjectModel?: CreateProjectInput,
   ): Promise<Project | any> {
     try {
       const { idPriority, ...projectInput } = createProjectModel;

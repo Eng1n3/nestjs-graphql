@@ -1,10 +1,8 @@
 import {
-  ClassSerializerInterceptor,
   forwardRef,
   Inject,
   NotFoundException,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -120,8 +118,8 @@ export class DocumentResolver {
   })
   async document(
     @CurrentUser() user: User,
-    @Args('options', { nullable: true })
-    optionsInput: GetDocumentsInput<DocumentEntity>,
+    @Args('options', { nullable: true, defaultValue: {} })
+    optionsInput?: GetDocumentsInput<DocumentEntity>,
   ) {
     try {
       const result = await this.documentService.findAll(

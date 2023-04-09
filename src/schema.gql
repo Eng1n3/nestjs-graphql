@@ -56,10 +56,8 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 input SearchDocumentsInput {
-  idProject: String
   documentName: String
   description: String
-  idDocument: String = ""
   pathDocument: String = ""
 }
 
@@ -90,10 +88,7 @@ input GetProjectsInput {
 input SearchProjectInput {
   projectName: String
   description: String
-  deadLine: String
-  idPriority: String = null
-  idUser: String = ""
-  idProject: String = ""
+  priority: String = null
 }
 
 type LoginModel {
@@ -109,11 +104,14 @@ type Query {
   countAccount(search: SearchUserInput = {}): Float!
   countProjectAdmin(search: SearchProjectInput = {}): Float
   countProjectUser(search: SearchProjectInput = {}): Float
+  project(options: GetProjectsInput = {}): [Project!]
   projects(options: GetProjectsInput = {}): [Project!]
   countDocumentAdmin(search: SearchDocumentsInput = {}): Float
   countDocumentUser(search: SearchDocumentsInput = {}): Float
+  document(options: GetDocumentsInput = {}): [DocumentEntity!]
   documents(options: GetDocumentsInput): [DocumentEntity!]
-  priorities: [Priority!]!
+  countPriorities(search: SearchPrioritiesInput = {}): Float
+  priorities(options: GetPrioritiesInput = {}): [Priority!]!
 }
 
 input GetUserInput {
@@ -131,8 +129,23 @@ input SearchUserInput {
   fullname: String = ""
 }
 
+input SearchPrioritiesInput {
+  name: String
+  description: String
+}
+
+input GetPrioritiesInput {
+  pagination: PaginationInput
+
+  """
+  {key: "ASC" or "DESC" or "asc" or "desc" or 1 or -1} or {key: {direction: "ASC" or "DESC" or "asc" or "desc", nulls: "first" or "last" or "FIRST" or "LAST"}}}
+  """
+  sort: JSON
+  search: SearchPrioritiesInput
+}
+
 type Mutation {
-  deleteUser(idUser: String!): String!
+  deleteUser(idUser: String!): User!
   updateAdmin(input: UpdateAdminInput!): User!
   updateUser(input: UpdateUserInput!): User!
   registerAdmin(input: RegisterAdminInput!): User!
@@ -143,14 +156,14 @@ type Mutation {
   deleteDocument(idDocument: String!): String!
   updateDocument(input: UpdateDocumentInput!): DocumentEntity!
   uploadDocument(input: UploadDocumentInput!): DocumentEntity!
+  deletePriority(idPriority: String!): Priority!
+  updatePriority(idPriority: String!, name: String!, description: String!): Priority!
+  createPriority(name: String!, description: String!): Priority!
   changePassword(input: ChangePasswordInput!): String!
   forgotAdmin(email: String!): String!
   forgotUser(email: String!): String!
   loginAdmin(email: String!, password: String!): LoginModel!
   loginUser(email: String!, password: String!): LoginModel!
-  deletePriority(idPriority: String!): Priority!
-  updatePriority(idPriority: String!, name: String!, description: String!): Priority!
-  createPriority(name: String!, description: String!): Priority!
 }
 
 input UpdateAdminInput {

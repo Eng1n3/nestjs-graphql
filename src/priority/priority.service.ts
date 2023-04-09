@@ -5,7 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Priority } from './entities/priority.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
+import {
+  GetPrioritiesInput,
+  SearchPrioritiesInput,
+} from './dto/get-priority.input';
 
 @Injectable()
 export class PriorityService {
@@ -14,8 +18,40 @@ export class PriorityService {
     private priorityRepository: Repository<Priority>,
   ) {}
 
-  async find() {
-    const result = await this.priorityRepository.find();
+  async count(searchPrioritiesInput?: SearchPrioritiesInput) {
+    try {
+      const result = await this.priorityRepository.count({
+        where: {
+          name: ILike(`%${searchPrioritiesInput?.name || ''}%`),
+          description: ILike(`%${searchPrioritiesInput?.description || ''}%`),
+        },
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findByIdPriority(idPriority: string) {
+    const result = await this.priorityRepository.findOne({
+      where: { idPriority },
+    });
+    return result;
+  }
+
+  async find(optionsInput?: GetPrioritiesInput<Priority>) {
+    const order = optionsInput?.sort;
+    const skip = optionsInput?.pagination?.skip;
+    const take = optionsInput?.pagination?.take;
+    const result = await this.priorityRepository.find({
+      where: {
+        name: ILike(`%${optionsInput?.search?.name || ''}%`),
+        description: ILike(`%${optionsInput?.search?.description || ''}%`),
+      },
+      skip,
+      take,
+      order,
+    });
     return result;
   }
 
@@ -40,10 +76,10 @@ export class PriorityService {
       where: { idPriority },
       relations: { project: true },
     });
-    if (!result) throw new NotFoundException('Priority not found!');
+    if (!result) throw new NotFoundException('Prioritas tidak ada!');
     if (project?.length)
       throw new BadRequestException(
-        `can't remove priority because it's in use`,
+        `Tidak bisa menghapus prioritas karena sedang digunakan`,
       );
     return result;
   }

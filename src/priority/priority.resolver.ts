@@ -9,10 +9,32 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Priority } from './entities/priority.entity';
+import {
+  GetPrioritiesInput,
+  SearchPrioritiesInput,
+} from './dto/get-priority.input';
 
 @Resolver()
 export class PriorityResolver {
   constructor(private priorityService: PriorityService) {}
+
+  @Roles(Role.Admin, Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Query((returns) => Number, {
+    name: 'countPriorities',
+    nullable: true,
+  })
+  async projectAdminCount(
+    @Args('search', { nullable: true, defaultValue: {} })
+    searchPrioritiesInput?: SearchPrioritiesInput,
+  ) {
+    try {
+      const count = await this.priorityService.count(searchPrioritiesInput);
+      return count;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -38,12 +60,15 @@ export class PriorityResolver {
     return result;
   }
 
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.User)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Query((returns) => [Priority], { name: 'priorities', defaultValue: [] })
-  async find() {
-    const result = await this.priorityService.find();
+  async find(
+    @Args('options', { nullable: true, defaultValue: {} })
+    optionsInput?: GetPrioritiesInput<Priority>,
+  ) {
+    const result = await this.priorityService.find(optionsInput);
     return result;
   }
 

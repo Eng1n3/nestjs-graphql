@@ -7,13 +7,8 @@ import { UploadDocumentInput } from './upload-document.dto';
 
 @InputType()
 export class SearchDocumentsInput extends PartialType(
-  OmitType(UploadDocumentInput, ['file']),
+  OmitType(UploadDocumentInput, ['file', 'idProject']),
 ) {
-  @Field({ nullable: true, defaultValue: '' })
-  @IsString()
-  @IsOptional()
-  idDocument?: string;
-
   @Field({ nullable: true, defaultValue: '' })
   @IsString()
   @IsOptional()

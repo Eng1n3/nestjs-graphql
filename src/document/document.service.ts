@@ -29,38 +29,6 @@ export class DocumentService {
     private documentRepository: Repository<DocumentEntity>,
   ) {}
 
-  async restFindAll(
-    idUser?: string | null,
-    idProject?: string | null,
-    optionsInput?: GetDocumentsInput<DocumentEntity>,
-  ) {
-    try {
-      const order = optionsInput?.sort;
-      const skip = optionsInput?.pagination?.skip;
-      const take = optionsInput?.pagination?.take;
-      const result = await this.documentRepository.find({
-        where: {
-          project: {
-            user: { idUser },
-            idProject: idProject
-              ? idProject
-              : ILike(`%${optionsInput?.search.idProject || ''}%`),
-          },
-          idDocument: ILike(`%${optionsInput?.search?.idDocument || ''}%`),
-          documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),
-          description: ILike(`%${optionsInput?.search?.description || ''}%`),
-          pathDocument: ILike(`%${optionsInput?.search?.pathDocument || ''}%`),
-        },
-        skip,
-        take: 1,
-        order,
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   async countDocument(
     idUser: string | null,
     idProject: string | null,
@@ -71,11 +39,8 @@ export class DocumentService {
         where: {
           project: {
             user: { idUser },
-            idProject: idProject
-              ? idProject
-              : ILike(`%${searchDocumentsInput?.idProject || ''}%`),
+            idProject,
           },
-          idDocument: ILike(`%${searchDocumentsInput?.idDocument || ''}%`),
           documentName: ILike(`%${searchDocumentsInput?.documentName || ''}%`),
           description: ILike(`%${searchDocumentsInput?.description || ''}%`),
           pathDocument: ILike(`%${searchDocumentsInput?.pathDocument || ''}%`),
@@ -135,11 +100,8 @@ export class DocumentService {
         where: {
           project: {
             user: { idUser, role: 'user' },
-            idProject: idProject
-              ? idProject
-              : ILike(`%${optionsInput?.search?.idProject || ''}%`),
+            idProject,
           },
-          idDocument: ILike(`%${optionsInput?.search?.idDocument || ''}%`),
           documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),
           description: ILike(`%${optionsInput?.search?.description || ''}%`),
           pathDocument: ILike(`%${optionsInput?.search?.pathDocument || ''}%`),

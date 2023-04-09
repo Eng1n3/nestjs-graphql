@@ -3,24 +3,18 @@ import { IsOptional, IsString } from 'class-validator';
 import { PaginationInput } from 'src/common/dto/pagination.input';
 import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
-import { CreateProjectInput } from './create-project.input';
+import { CreatePriorityInput } from './create-priority.input';
 
 @InputType()
-export class SearchProjectInput extends PartialType(
-  OmitType(CreateProjectInput, ['idPriority', 'deadLine']),
-) {
-  @Field({ nullable: true, defaultValue: null })
-  @IsOptional()
-  priority?: string;
-}
+export class SearchPrioritiesInput extends PartialType(CreatePriorityInput) {}
 
 @InputType()
-export class GetProjectsInput<T> {
+export class GetPrioritiesInput<T> {
   @Field((types) => PaginationInput, { nullable: true })
   @IsOptional()
   pagination?: PaginationInput;
 
-  @Field((types) => GraphQLJSON, {
+  @Field(() => GraphQLJSON, {
     nullable: true,
     description:
       '{key: "ASC" or "DESC" or "asc" or "desc" or 1 or -1} or {key: {direction: "ASC" or "DESC" or "asc" or "desc", nulls: "first" or "last" or "FIRST" or "LAST"}}}',
@@ -28,7 +22,7 @@ export class GetProjectsInput<T> {
   @IsOptional()
   sort?: FindOptionsOrder<T>;
 
-  @Field((types) => SearchProjectInput, { nullable: true })
+  @Field((types) => SearchPrioritiesInput, { nullable: true })
   @IsOptional()
-  search?: SearchProjectInput;
+  search?: SearchPrioritiesInput;
 }
