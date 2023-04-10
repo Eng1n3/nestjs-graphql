@@ -1,9 +1,5 @@
 import { UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
-import {
-  RegisterAdminInput,
-  RegisterUserInput,
-} from 'src/users/dto/register.input';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
@@ -14,12 +10,51 @@ import { JwtChangePasswordAuthGuard } from './guards/change-password.auth.guard'
 import { LocalAdminAuthGuard } from './guards/local-admin-auth.guard';
 import { LocalUserAuthGuard } from './guards/local-user-auth.guard';
 import { LoginModel } from './models/login.model';
+import { ForgotUserModel } from './models/forgot-user.model';
 
 @Resolver()
 export class AuthResolver {
   constructor(private authService: AuthService) {}
 
+  @Mutation((returns) => String, { name: 'messageForgotUser' })
+  async messageForgotUser() {
+    try {
+      return 'Success kirim email untuk konfirmasi lupa password';
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Roles(Role.User, Role.Admin)
+  @UseGuards(JwtChangePasswordAuthGuard)
+  @Mutation((returns) => String, { name: 'messageChangePassword' })
+  async messageChangePassword() {
+    try {
+      return 'Success change password';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation((returns) => String, { name: 'messageLoginAdmin' })
+  async messageLoginAdmin() {
+    try {
+      return 'Success login admin';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation((returns) => String, { name: 'messageLoginUser' })
+  async messageLoginUser() {
+    try {
+      return 'Success login user';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User)
   @UseGuards(JwtChangePasswordAuthGuard)
   @Mutation((returns) => String, { name: 'changePassword' })
   async changePassword(
@@ -37,27 +72,14 @@ export class AuthResolver {
     }
   }
 
-  @Mutation((returns) => String, { name: 'forgotAdmin' })
-  async forgotAdmin(@Args('email') email: string) {
-    try {
-      const user = await this.authService.findUser(email);
-      if (!user || (user && user.role !== 'admin'))
-        throw new UnauthorizedException('User not found!');
-      await this.authService.sendEmail(user);
-      return 'Forgot password success, please check the mail inbox';
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Mutation((returns) => String, { name: 'forgotUser' })
+  @Mutation((returns) => ForgotUserModel, { name: 'forgotUser' })
   async forgotUser(@Args('email') email: string) {
     try {
       const user = await this.authService.findUser(email);
       if (!user || (user && user.role !== 'user'))
         throw new UnauthorizedException('User not found!');
       await this.authService.sendEmail(user);
-      return 'Forgot password success, please check the mail inbox';
+      return { email: user.email };
     } catch (error) {
       throw error;
     }

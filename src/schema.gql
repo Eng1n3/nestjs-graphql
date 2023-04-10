@@ -95,10 +95,15 @@ type LoginModel {
   token: String!
 }
 
+type ForgotUserModel {
+  email: String!
+}
+
 """Date custom scalar type"""
 scalar Date
 
 type Query {
+  messageUser: String!
   user: User!
   users(options: GetUserInput = {}): [User!]!
   countAccount(search: SearchUserInput = {}): Float!
@@ -145,61 +150,59 @@ input GetPrioritiesInput {
 }
 
 type Mutation {
+  messageDeleteUser: String!
+  messageRegisterUser: String!
+  messageUpdateUser: String!
   deleteUser(idUser: String!): User!
-  updateAdmin(input: UpdateAdminInput!): User!
   updateUser(input: UpdateUserInput!): User!
-  registerAdmin(input: RegisterAdminInput!): User!
   registerUser(input: RegisterUserInput!): User!
+  messageDeleteProject: String!
+  messageUpdateProject: String!
+  messageCreateProject: String!
+  messageProject: String!
   deleteProject(idProject: String!): Project!
   updateProject(input: UpdateProjectInput!): Project!
   createProject(input: CreateProjectInput!): Project!
+  messageDeleteDocument: String!
+  messageUpdateDocument: String!
+  messageUpdloadDocument: String!
+  messageDocument: String!
   deleteDocument(idDocument: String!): DocumentEntity!
   updateDocument(input: UpdateDocumentInput!): DocumentEntity!
   uploadDocument(input: UploadDocumentInput!): DocumentEntity!
   deletePriority(idPriority: String!): Priority!
   updatePriority(idPriority: String!, name: String!, description: String!): Priority!
   createPriority(name: String!, description: String!): Priority!
+  messageForgotUser: String!
+  messageChangePassword: String!
+  messageLoginAdmin: String!
+  messageLoginUser: String!
   changePassword(input: ChangePasswordInput!): String!
-  forgotAdmin(email: String!): String!
-  forgotUser(email: String!): String!
+  forgotUser(email: String!): ForgotUserModel!
   loginAdmin(email: String!, password: String!): LoginModel!
   loginUser(email: String!, password: String!): LoginModel!
 }
-
-input UpdateAdminInput {
-  email: String
-  password: String
-  repassword: String
-  image: Upload
-}
-
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
 
 input UpdateUserInput {
   email: String
   password: String
   repassword: String
   fullname: String
-  birthDay: String
+  birthDay: Date
   bio: String
   homepage: String
   image: Upload
 }
 
-input RegisterAdminInput {
-  email: String!
-  password: String!
-  repassword: String!
-  image: Upload
-}
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 input RegisterUserInput {
   email: String!
   password: String!
   repassword: String!
   fullname: String!
-  birthDay: String!
+  birthDay: Date!
   bio: String
   homepage: String
   image: Upload
@@ -208,7 +211,7 @@ input RegisterUserInput {
 input UpdateProjectInput {
   projectName: String
   description: String
-  deadLine: String
+  deadLine: Date
   idPriority: String = null
   idProject: String!
 }
@@ -216,7 +219,7 @@ input UpdateProjectInput {
 input CreateProjectInput {
   projectName: String!
   description: String!
-  deadLine: String!
+  deadLine: Date!
   idPriority: String = null
 }
 

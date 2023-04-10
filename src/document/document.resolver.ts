@@ -30,6 +30,50 @@ export class DocumentResolver {
     private projectService: ProjectService,
   ) {}
 
+  @Roles(Role.User, Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'messageDeleteDocument' })
+  async messageDeleteDocument() {
+    try {
+      return 'Success delete document';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'messageUpdateDocument' })
+  async messageUpdateDocument() {
+    try {
+      return 'Success update document';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'messageUpdloadDocument' })
+  async messageUpdloadDocument() {
+    try {
+      return 'Success updload document';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User, Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'messageDocument' })
+  async messageDocument() {
+    try {
+      return 'Success mendapatkan data document';
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => Number, {

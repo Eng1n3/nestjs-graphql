@@ -28,13 +28,54 @@ import { Project } from 'src/project/entities/project.entity';
 const USERS_EVENT = 'users';
 const USER_ADDED_EVENT = 'userAdded';
 
-// @UseInterceptors(ClassSerializerInterceptor)
 @Resolver(() => User)
 export class UsersResolver {
   constructor(
     private userService: UsersService,
     private projectService: ProjectService, // @Inject(PUB_SUB) private pubSub: RedisPubSub,
   ) {}
+
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'messageDeleteUser' })
+  async messageDeleteUser() {
+    try {
+      return 'Success delete user';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Mutation((returns) => String, { name: 'messageRegisterUser' })
+  async messageRegister() {
+    try {
+      return 'Success registrasi user';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User, Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Query((returns) => String, { name: 'messageUser' })
+  async messageUser() {
+    try {
+      return 'Success mendapatkan data user';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'messageUpdateUser' })
+  async messageUpdateUser() {
+    try {
+      return 'Success update user';
+    } catch (error) {
+      throw error;
+    }
+  }
 
   // @Subscription((returns) => [User], {
   //   name: 'users',
@@ -62,23 +103,23 @@ export class UsersResolver {
     }
   }
 
-  @Roles(Role.Admin)
-  @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => User, { name: 'updateAdmin' })
-  async updateAdmin(
-    @CurrentUser() user: User,
-    @Args('input') updateAdminInput: UpdateAdminInput,
-  ) {
-    try {
-      const result = await this.userService.updateUser(
-        user.idUser,
-        updateAdminInput,
-      );
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
+  // @Roles(Role.Admin)
+  // @UseGuards(JwtAuthGuard)
+  // @Mutation((returns) => User, { name: 'updateAdmin' })
+  // async updateAdmin(
+  //   @CurrentUser() user: User,
+  //   @Args('input') updateAdminInput: UpdateAdminInput,
+  // ) {
+  //   try {
+  //     const result = await this.userService.updateUser(
+  //       user.idUser,
+  //       updateAdminInput,
+  //     );
+  //     return result;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
@@ -98,18 +139,18 @@ export class UsersResolver {
     }
   }
 
-  @Mutation((returns) => User, { name: 'registerAdmin' })
-  async registerAdmin(@Args('input') registerAdminInput: RegisterAdminInput) {
-    try {
-      const result = await this.userService.createUser(
-        'admin',
-        registerAdminInput,
-      );
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
+  // @Mutation((returns) => User, { name: 'registerAdmin' })
+  // async registerAdmin(@Args('input') registerAdminInput: RegisterAdminInput) {
+  //   try {
+  //     const result = await this.userService.createUser(
+  //       'admin',
+  //       registerAdminInput,
+  //     );
+  //     return result;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   @Mutation((returns) => User, { name: 'registerUser' })
   async registerUser(@Args('input') registerUserInput: RegisterUserInput) {

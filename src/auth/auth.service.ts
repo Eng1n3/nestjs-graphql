@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import * as postmark from 'postmark';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { emailTemplate } from './templates/email.template';
 
 @Injectable()
 export class AuthService {
@@ -52,23 +53,7 @@ export class AuthService {
         To: user.email,
         Subject: 'Forgot password',
         // TextBody: 'Coba kirim',
-        TextBody: `Use this link to reset your password. The link is only valid for ${this.configService.get<string>(
-          'JWT_FORGOT_PASSWORD_EXPIRES_IN',
-        )}.
-
-        ************
-        Hi ${user.email},
-        ************
-
-        You recently requested to reset your password for your account. Use the TOKEN. This password reset is only valid for the next ${this.configService.get<string>(
-          'JWT_FORGOT_PASSWORD_EXPIRES_IN',
-        )} with header authorization and mutation { changePassword(password: string, repassword: string) }
-
-        Reset your password ( ${this.configService.get<string>(
-          'DOMAIN',
-        )}/graphql ) and token (${tokenForgotPassword})
-
-        Thanks`,
+        HtmlBody: emailTemplate(tokenForgotPassword),
       });
     } catch (error) {
       throw error;

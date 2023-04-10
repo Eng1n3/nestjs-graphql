@@ -33,6 +33,50 @@ export class ProjectResolver {
     private documentService: DocumentService,
   ) {}
 
+  @Roles(Role.User, Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'messageDeleteProject' })
+  async messageDeleteProject() {
+    try {
+      return 'Success delete project';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'messageUpdateProject' })
+  async messageUpdateProject() {
+    try {
+      return 'Success update project';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'messageCreateProject' })
+  async messageCreateProject() {
+    try {
+      return 'Success buat project';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.User, Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, { name: 'messageProject' })
+  async messageProject() {
+    try {
+      return 'Success mendapatkan data project';
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => Number, {
