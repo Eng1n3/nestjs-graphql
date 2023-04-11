@@ -1,7 +1,6 @@
 import { Field, InputType, OmitType } from '@nestjs/graphql';
 import {
   IsDate,
-  IsDateString,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -37,9 +36,9 @@ export class RegisterUserInput {
   fullname: string;
 
   @Field()
-  @IsDate()
-  // @IsOnlyDate()
-  birthDay: Date;
+  // @IsDate()
+  @IsOnlyDate()
+  birthDay: string;
 
   @Field({ nullable: true })
   @IsOptional()

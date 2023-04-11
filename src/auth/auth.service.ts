@@ -52,6 +52,7 @@ export class AuthService {
         From: this.configService.get<string>('POSTMARKAPP_FROM'),
         To: user.email,
         Subject: 'Forgot password',
+        // InlineCss: true,
         // TextBody: 'Coba kirim',
         HtmlBody: emailTemplate(tokenForgotPassword),
       });

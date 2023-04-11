@@ -19,10 +19,14 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm-config": "npm run build && typeorm -d dist/database/data-source.js",
-    "migration:generate": "npm run typeorm-config -- migration:generate",
-    "migration:run": "npm run typeorm-config -- migration:run",
-    "migration:revert": "npm run typeorm-config -- migration:revert",
-    "seed:run": "npm run build && typeorm-seeding seed -d dist/database/data-source.js dist/database/seeds/*.js"
+    "migration:generate:dev": "npm run typeorm-config -- migration:generate",
+    "migration:run:dev": "npm run typeorm-config -- migration:run",
+    "migration:revert:dev": "npm run typeorm-config -- migration:revert",
+    "migration:generate:prod": "NODE_ENV=production npm run typeorm-config -- migration:generate",
+    "migration:run:prod": "NODE_ENV=production npm run typeorm-config -- migration:run",
+    "migration:revert:prod": "NODE_ENV=production npm run typeorm-config -- migration:revert",
+    "seed:run": "npm run build && typeorm-seeding seed -d dist/database/data-source.js dist/database/seeds/*.js",
+    "pm2:start:prod": "npm run build && pm2 start ecosystem.config.js --env=production"
   },
   "dependencies": {
     "@apollo/server": "^4.5.0",

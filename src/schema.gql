@@ -188,7 +188,7 @@ input UpdateUserInput {
   password: String
   repassword: String
   fullname: String
-  birthDay: Date
+  birthDay: String
   bio: String
   homepage: String
   image: Upload
@@ -202,7 +202,7 @@ input RegisterUserInput {
   password: String!
   repassword: String!
   fullname: String!
-  birthDay: Date!
+  birthDay: String!
   bio: String
   homepage: String
   image: Upload
@@ -211,7 +211,7 @@ input RegisterUserInput {
 input UpdateProjectInput {
   projectName: String
   description: String
-  deadLine: Date
+  deadLine: String
   idPriority: String = null
   idProject: String!
 }
@@ -219,7 +219,7 @@ input UpdateProjectInput {
 input CreateProjectInput {
   projectName: String!
   description: String!
-  deadLine: Date!
+  deadLine: String!
   idPriority: String = null
 }
 
