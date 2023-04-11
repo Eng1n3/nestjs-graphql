@@ -95,8 +95,8 @@ export class ProjectResolver {
   @UseGuards(JwtAuthGuard)
   @Query((returns) => Int, {
     name: 'countProjectAdmin',
-    nullable: true,
     description: 'query total semua project',
+    defaultValue: 0,
   })
   async projectAdminCount(
     @Args('search', { nullable: true, defaultValue: {} })
@@ -117,8 +117,8 @@ export class ProjectResolver {
   @UseGuards(JwtAuthGuard)
   @Query((returns) => Int, {
     name: 'countProjectUser',
-    nullable: true,
     description: 'query total project user',
+    defaultValue: 0,
   })
   async projectCount(
     @CurrentUser() user: User,
@@ -138,7 +138,10 @@ export class ProjectResolver {
 
   @Roles(Role.Admin, Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => Project, { name: 'deleteProject' })
+  @Mutation((returns) => Project, {
+    name: 'deleteProject',
+    description: 'mutation delete project, data: {...project}',
+  })
   async deleteProject(@Args('idProject') idProject: string) {
     try {
       const existProject = await this.projectService.findByIdProject(idProject);
@@ -157,7 +160,9 @@ export class ProjectResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => Project)
+  @Mutation((returns) => Project, {
+    description: 'mutation update project, data: {...project}',
+  })
   async updateProject(
     @CurrentUser() user: User,
     @Args('input') updateProjectInput: UpdateProjectInput,
@@ -182,7 +187,11 @@ export class ProjectResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => Project, { name: 'createProject' })
+  @Mutation((returns) => Project, {
+    name: 'createProject',
+    defaultValue: {},
+    description: 'mutation create project, data: {...project}',
+  })
   async createProject(
     @CurrentUser() user: User,
     @Args('input') createProjectInput: CreateProjectInput,
@@ -210,6 +219,7 @@ export class ProjectResolver {
     name: 'project',
     nullable: true,
     defaultValue: [],
+    description: 'query mendapatkan project user, data: [{...project}]',
   })
   async project(
     @CurrentUser() user: User,
@@ -233,6 +243,7 @@ export class ProjectResolver {
     name: 'projects',
     nullable: true,
     defaultValue: [],
+    description: 'query mendapatkan project semua user, data: [{...project}]',
   })
   async projects(
     @CurrentUser() user: User,
@@ -251,6 +262,7 @@ export class ProjectResolver {
     nullable: true,
     defaultValue: [],
     name: 'document',
+    description: 'resolver dokumen berdasarkan project, data: [{...document}]',
   })
   async document(
     @Parent() parent: Project,

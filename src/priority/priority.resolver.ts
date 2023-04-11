@@ -79,8 +79,8 @@ export class PriorityResolver {
   @UseGuards(JwtAuthGuard)
   @Query((returns) => Int, {
     name: 'countPriorities',
-    nullable: true,
     description: 'query total prioritas, data: "1"',
+    defaultValue: 0,
   })
   async projectAdminCount(
     @Args('search', { nullable: true, defaultValue: {} })
@@ -96,7 +96,10 @@ export class PriorityResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => Priority, { name: 'deletePriority' })
+  @Mutation((returns) => Priority, {
+    name: 'deletePriority',
+    description: 'mutation delete prioritas, data: {...prioritas}',
+  })
   async delete(@Args('idPriority') idPriority: string) {
     const result = await this.priorityService.delete(idPriority);
     return result;
@@ -104,7 +107,10 @@ export class PriorityResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => Priority, { name: 'updatePriority' })
+  @Mutation((returns) => Priority, {
+    name: 'updatePriority',
+    description: 'mutation update prioritas, data: {...prioritas}',
+  })
   async update(
     @Args('idPriority') idPriority: string,
     @Args('name') name: string,
@@ -121,7 +127,11 @@ export class PriorityResolver {
   @Roles(Role.Admin, Role.User)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
-  @Query((returns) => [Priority], { name: 'priorities', defaultValue: [] })
+  @Query((returns) => [Priority], {
+    name: 'priorities',
+    defaultValue: [],
+    description: 'query mendapatkan prioritas, data: [{...prioritas}]',
+  })
   async find(
     @Args('options', { nullable: true, defaultValue: {} })
     optionsInput?: GetPrioritiesInput<Priority>,
@@ -132,7 +142,10 @@ export class PriorityResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => Priority, { name: 'createPriority' })
+  @Mutation((returns) => Priority, {
+    name: 'createPriority',
+    description: 'mutation create prioritas, data: {...prioritas}',
+  })
   async create(
     @Args('name') name: string,
     @Args('description') description: string,

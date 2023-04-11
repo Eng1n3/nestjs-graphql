@@ -93,6 +93,7 @@ export class DocumentResolver {
     name: 'countDocumentAdmin',
     nullable: true,
     description: 'query total dokumen user, data: "1"',
+    defaultValue: 0,
   })
   async countDocumentAdmin(
     @CurrentUser() user: User,
@@ -115,8 +116,8 @@ export class DocumentResolver {
   @UseGuards(JwtAuthGuard)
   @Query((returns) => Int, {
     name: 'countDocumentUser',
-    nullable: true,
     description: 'query total semua dokumen user, data: "1"',
+    defaultValue: 0,
   })
   async countByAll(
     @CurrentUser() user: User,
@@ -139,6 +140,8 @@ export class DocumentResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation((returns) => DocumentEntity, {
     name: 'deleteDocument',
+    description: 'mutation delete document user, data: {...document}',
+    defaultValue: {},
   })
   async deleteDocument(
     @CurrentUser() user: User,
@@ -155,6 +158,8 @@ export class DocumentResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation((returns) => DocumentEntity, {
     name: 'updateDocument',
+    description: 'mutation update document user, data: {...document}',
+    defaultValue: {},
   })
   async updateDocument(
     @CurrentUser() user: User,
@@ -173,10 +178,14 @@ export class DocumentResolver {
     name: 'document',
     nullable: true,
     defaultValue: [],
+    description: 'query mendapatkan document user, data: [{...document}]',
   })
   async document(
     @CurrentUser() user: User,
-    @Args('options', { nullable: true, defaultValue: {} })
+    @Args('options', {
+      nullable: true,
+      defaultValue: {},
+    })
     optionsInput?: GetDocumentsInput<DocumentEntity>,
   ) {
     try {
@@ -197,6 +206,7 @@ export class DocumentResolver {
     name: 'documents',
     nullable: true,
     defaultValue: [],
+    description: 'query mendapatkan document semua user, data: [{...document}]',
   })
   async documents(
     @CurrentUser() user: User,
@@ -219,6 +229,8 @@ export class DocumentResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation((returns) => DocumentEntity, {
     name: 'uploadDocument',
+    description: 'mutation upload document user, data: {...document}',
+    defaultValue: {},
   })
   async uploadDocument(
     @CurrentUser() user: User,
