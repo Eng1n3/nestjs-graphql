@@ -4,7 +4,7 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid4 } from 'uuid';
 
-export default class PrioritySeeder extends Seeder {
+export default class AdminAccountSeeder extends Seeder {
   async run(dataSource: DataSource) {
     const getSalt = bcrypt.genSaltSync();
     const password = 'Sup3rstrong_password';
