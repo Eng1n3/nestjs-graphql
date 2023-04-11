@@ -1,4 +1,8 @@
-import { UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+  NotFoundException,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -77,7 +81,7 @@ export class AuthResolver {
     try {
       const user = await this.authService.findUser(email);
       if (!user || (user && user.role !== 'user'))
-        throw new UnauthorizedException('User not found!');
+        throw new NotFoundException('User tidak ditemukan!');
       await this.authService.sendEmail(user);
       return { email: user.email };
     } catch (error) {

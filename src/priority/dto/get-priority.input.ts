@@ -10,7 +10,10 @@ export class SearchPrioritiesInput extends PartialType(CreatePriorityInput) {}
 
 @InputType()
 export class GetPrioritiesInput<T> {
-  @Field((types) => PaginationInput, { nullable: true })
+  @Field((types) => PaginationInput, {
+    nullable: true,
+    description: '{skip: 0 or take: 10}',
+  })
   @IsOptional()
   pagination?: PaginationInput;
 
@@ -22,7 +25,10 @@ export class GetPrioritiesInput<T> {
   @IsOptional()
   sort?: FindOptionsOrder<T>;
 
-  @Field((types) => SearchPrioritiesInput, { nullable: true })
+  @Field((types) => SearchPrioritiesInput, {
+    nullable: true,
+    description: '{key: "cari kata"}',
+  })
   @IsOptional()
   search?: SearchPrioritiesInput;
 }

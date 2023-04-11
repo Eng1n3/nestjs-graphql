@@ -6,12 +6,20 @@ import GraphQLJSON from 'graphql-type-json';
 
 @InputType()
 export class SearchUserInput {
-  @Field({ nullable: true, defaultValue: '' })
+  @Field({
+    nullable: true,
+    defaultValue: '',
+    description: 'email user, contoh: "email@gmail.com"',
+  })
   @IsString()
   @IsOptional()
   email?: string;
 
-  @Field({ nullable: true, defaultValue: '' })
+  @Field({
+    nullable: true,
+    defaultValue: '',
+    description: 'fullname user, contoh: "fullname user"',
+  })
   @IsString()
   @IsOptional()
   fullname?: string;
@@ -19,7 +27,10 @@ export class SearchUserInput {
 
 @InputType()
 export class GetUserInput<T> {
-  @Field((types) => PaginationInput, { nullable: true })
+  @Field((types) => PaginationInput, {
+    nullable: true,
+    description: '{skip: 0 or take: 0}',
+  })
   @IsOptional()
   pagination?: PaginationInput;
 
@@ -31,7 +42,10 @@ export class GetUserInput<T> {
   @IsOptional()
   sort?: FindOptionsOrder<T>;
 
-  @Field((types) => SearchUserInput, { nullable: true })
+  @Field((types) => SearchUserInput, {
+    nullable: true,
+    description: '{key: "cari kata"}',
+  })
   @IsOptional()
   search?: SearchUserInput;
 }

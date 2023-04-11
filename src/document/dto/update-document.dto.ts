@@ -6,7 +6,10 @@ import { UploadDocumentInput } from './upload-document.dto';
 export class UpdateDocumentInput extends PartialType(
   OmitType(UploadDocumentInput, ['idProject']),
 ) {
-  @Field()
+  @Field({
+    description:
+      'id document berupa uuid, contoh: "0900ec8d-a3e3-46d0-ac9f-288acbdd0ew"',
+  })
   @IsString()
   @IsNotEmpty()
   idDocument: string;

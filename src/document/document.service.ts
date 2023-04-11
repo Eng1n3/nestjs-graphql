@@ -67,7 +67,8 @@ export class DocumentService {
           project: true,
         },
       });
-      if (!existDocument) throw new NotFoundException('Document not found!');
+      if (!existDocument)
+        throw new NotFoundException('Dokumen tidak ditemukan!');
       const pathName = `/uploads/projects/${existDocument?.project?.idProject}`;
       const pathDocumentToSave = await this.saveDocumentToDir(
         document,

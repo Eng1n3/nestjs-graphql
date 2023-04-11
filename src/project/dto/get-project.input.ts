@@ -9,14 +9,21 @@ import { CreateProjectInput } from './create-project.input';
 export class SearchProjectInput extends PartialType(
   OmitType(CreateProjectInput, ['idPriority', 'deadLine']),
 ) {
-  @Field({ nullable: true, defaultValue: null })
+  @Field({
+    nullable: true,
+    defaultValue: null,
+    description: 'cari nama prioritas, contoh: "high"',
+  })
   @IsOptional()
   priority?: string;
 }
 
 @InputType()
 export class GetProjectsInput<T> {
-  @Field((types) => PaginationInput, { nullable: true })
+  @Field((types) => PaginationInput, {
+    nullable: true,
+    description: '{skip: 0 or take: 10}',
+  })
   @IsOptional()
   pagination?: PaginationInput;
 
@@ -28,7 +35,10 @@ export class GetProjectsInput<T> {
   @IsOptional()
   sort?: FindOptionsOrder<T>;
 
-  @Field((types) => SearchProjectInput, { nullable: true })
+  @Field((types) => SearchProjectInput, {
+    nullable: true,
+    description: '{key: "cari kata"}',
+  })
   @IsOptional()
   search?: SearchProjectInput;
 }

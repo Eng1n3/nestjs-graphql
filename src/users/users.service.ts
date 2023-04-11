@@ -91,7 +91,7 @@ export class UsersService {
         );
         if (existImage.length) rmSync(join(process.cwd(), existUser.pathImage));
         if (!validImage.test(images.mimetype))
-          throw new BadRequestException('File not valid!');
+          throw new BadRequestException('File tidak valid!');
         const pathImage = `/uploads/profiles/${idUser}`;
         pathImageToSave = await this.saveDocumentToDir(images, pathImage);
       }
@@ -107,7 +107,7 @@ export class UsersService {
         error.message.includes('duplicate key value') &&
         error?.detail?.includes('email')
       ) {
-        throw new BadRequestException('email has been used!');
+        throw new BadRequestException('Email sudah digunakan!');
       }
       throw error;
     }
@@ -189,7 +189,7 @@ export class UsersService {
         error.message.includes('duplicate key value') &&
         error?.detail?.includes('email')
       ) {
-        throw new BadRequestException('email has been used!');
+        throw new BadRequestException('Email sudah digunakan!');
       }
       throw error;
     }

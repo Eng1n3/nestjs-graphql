@@ -9,7 +9,11 @@ import { UploadDocumentInput } from './upload-document.dto';
 export class SearchDocumentsInput extends PartialType(
   OmitType(UploadDocumentInput, ['file', 'idProject']),
 ) {
-  @Field({ nullable: true, defaultValue: '' })
+  @Field({
+    nullable: true,
+    defaultValue: '',
+    description: 'data path document user, example: "http://domain.com/path"',
+  })
   @IsString()
   @IsOptional()
   pathDocument?: string;
@@ -17,7 +21,10 @@ export class SearchDocumentsInput extends PartialType(
 
 @InputType()
 export class GetDocumentsInput<T> {
-  @Field((types) => PaginationInput, { nullable: true })
+  @Field((types) => PaginationInput, {
+    nullable: true,
+    description: '{skip: 0 or take: 10}',
+  })
   @IsOptional()
   pagination?: PaginationInput;
 
@@ -29,7 +36,10 @@ export class GetDocumentsInput<T> {
   @IsOptional()
   sort?: FindOptionsOrder<T>;
 
-  @Field((types) => SearchDocumentsInput, { nullable: true })
+  @Field((types) => SearchDocumentsInput, {
+    nullable: true,
+    description: '{key: "cari apa"}',
+  })
   @IsOptional()
   search?: SearchDocumentsInput;
 }

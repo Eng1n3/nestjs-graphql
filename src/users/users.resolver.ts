@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Args,
+  Int,
   Mutation,
   Parent,
   Query,
@@ -16,8 +17,8 @@ import { Role } from 'src/common/enums/roles.enum';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
-import { RegisterAdminInput, RegisterUserInput } from './dto/register.input';
+import { UpdateUserInput } from './dto/update.input';
+import { RegisterUserInput } from './dto/register.input';
 import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 import { GetProjectsInput } from 'src/project/dto/get-project.input';
 import { ProjectService } from 'src/project/project.service';
@@ -37,7 +38,10 @@ export class UsersResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'messageDeleteUser' })
+  @Mutation((returns) => String, {
+    name: 'messageDeleteUser',
+    description: 'message delete user, contoh: "Success delete user"',
+  })
   async messageDeleteUser() {
     try {
       return 'Success delete user';
@@ -46,7 +50,10 @@ export class UsersResolver {
     }
   }
 
-  @Mutation((returns) => String, { name: 'messageRegisterUser' })
+  @Mutation((returns) => String, {
+    name: 'messageRegisterUser',
+    description: 'message registrasi user, contoh: "Success registrasi user"',
+  })
   async messageRegister() {
     try {
       return 'Success registrasi user';
@@ -57,7 +64,11 @@ export class UsersResolver {
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => String, { name: 'messageUser' })
+  @Query((returns) => String, {
+    name: 'messageUser',
+    description:
+      'message mendapatkan user, contoh: "Success mendapatkan data user"',
+  })
   async messageUser() {
     try {
       return 'Success mendapatkan data user';
@@ -68,7 +79,10 @@ export class UsersResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'messageUpdateUser' })
+  @Mutation((returns) => String, {
+    name: 'messageUpdateUser',
+    description: 'message update user, contoh: "Success update user"',
+  })
   async messageUpdateUser() {
     try {
       return 'Success update user';
@@ -93,7 +107,10 @@ export class UsersResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => User, { name: 'deleteUser' })
+  @Mutation((returns) => User, {
+    name: 'deleteUser',
+    description: 'Mutation delete user, contoh: {...user}',
+  })
   async deleteUser(@Args('idUser') idUser: string) {
     try {
       const result = await this.userService.deleteUser(idUser);
@@ -123,7 +140,10 @@ export class UsersResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => User, { name: 'updateUser' })
+  @Mutation((returns) => User, {
+    name: 'updateUser',
+    description: 'mutation update akun, data: {...user}',
+  })
   async updateUser(
     @CurrentUser() user: User,
     @Args('input') updateUserInput: UpdateUserInput,
@@ -152,7 +172,10 @@ export class UsersResolver {
   //   }
   // }
 
-  @Mutation((returns) => User, { name: 'registerUser' })
+  @Mutation((returns) => User, {
+    name: 'registerUser',
+    description: 'mutation register akun, data: {...user}',
+  })
   async registerUser(@Args('input') registerUserInput: RegisterUserInput) {
     try {
       const result = await this.userService.createUser(
@@ -172,6 +195,7 @@ export class UsersResolver {
     name: 'user',
     complexity: (options: ComplexityEstimatorArgs) =>
       options.args.count * options.childComplexity,
+    description: 'query mendapatkan akun, data: {...user}',
   })
   async findOne(@CurrentUser() user: User) {
     try {
@@ -188,6 +212,7 @@ export class UsersResolver {
     name: 'users',
     complexity: (options: ComplexityEstimatorArgs) =>
       options.args.count * options.childComplexity,
+    description: 'query mendapatkan semua akun, data: [{...user}]',
   })
   async findAll(
     @Args('options', { nullable: true, defaultValue: {} })
@@ -204,7 +229,10 @@ export class UsersResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => Number, { name: 'countAccount' })
+  @Query((returns) => Int, {
+    name: 'countAccount',
+    description: 'query total akun user',
+  })
   async userCount(
     @Args('search', { nullable: true, defaultValue: {} })
     searchUserInput: SearchUserInput,
@@ -221,6 +249,7 @@ export class UsersResolver {
     nullable: true,
     defaultValue: [],
     name: 'project',
+    description: 'resolver project berdasarkan user, data: [{...project}]',
   })
   async project(
     @Parent() parent: User,

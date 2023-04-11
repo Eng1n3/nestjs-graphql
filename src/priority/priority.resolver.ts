@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { PriorityService } from './priority.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
@@ -18,11 +18,69 @@ import {
 export class PriorityResolver {
   constructor(private priorityService: PriorityService) {}
 
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, {
+    name: 'messageDeletePriority',
+    description: 'message delete prioritas, contoh: "Success delete priority"',
+  })
+  async messageDeletePriority() {
+    try {
+      return 'Success delete Priority';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, {
+    name: 'messageUpdatePriority',
+    description: 'message update prioritas, contoh: "Success update priority"',
+  })
+  async messageUpdatePriority() {
+    try {
+      return 'Success update Priority';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Mutation((returns) => String, {
+    name: 'messageCreatePriority',
+    description: 'message create prioritas, contoh: "Success create priority"',
+  })
+  async messageCreatePriority() {
+    try {
+      return 'Success create Priority';
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Roles(Role.Admin, Role.User)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => Number, {
+  @Mutation((returns) => String, {
+    name: 'messagePriorities',
+    description:
+      'message mendapatkan prioritas, contoh: "Success mendapatkan priority"',
+  })
+  async messagePriorities() {
+    try {
+      return 'Success mendapatkan data Priority';
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Query((returns) => Int, {
     name: 'countPriorities',
     nullable: true,
+    description: 'query total prioritas, data: "1"',
   })
   async projectAdminCount(
     @Args('search', { nullable: true, defaultValue: {} })
@@ -38,7 +96,7 @@ export class PriorityResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => Priority, { name: 'deletePriority', defaultValue: [] })
+  @Mutation((returns) => Priority, { name: 'deletePriority' })
   async delete(@Args('idPriority') idPriority: string) {
     const result = await this.priorityService.delete(idPriority);
     return result;
@@ -46,7 +104,7 @@ export class PriorityResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => Priority, { name: 'updatePriority', defaultValue: [] })
+  @Mutation((returns) => Priority, { name: 'updatePriority' })
   async update(
     @Args('idPriority') idPriority: string,
     @Args('name') name: string,
@@ -74,7 +132,7 @@ export class PriorityResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => Priority, { name: 'createPriority', defaultValue: [] })
+  @Mutation((returns) => Priority, { name: 'createPriority' })
   async create(
     @Args('name') name: string,
     @Args('description') description: string,

@@ -60,7 +60,7 @@ export class ProjectService {
           idProject: updateProjectInput?.idProject,
         },
       });
-      if (!existProject) throw new NotFoundException('Project not found!');
+      if (!existProject) throw new NotFoundException('Project tidak ditemukan!');
       const value = this.projectRepository.create({
         idProject,
         priority,

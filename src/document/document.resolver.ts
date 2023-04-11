@@ -4,7 +4,7 @@ import {
   NotFoundException,
   UseGuards,
 } from '@nestjs/common';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -32,7 +32,10 @@ export class DocumentResolver {
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'messageDeleteDocument' })
+  @Mutation((returns) => String, {
+    name: 'messageDeleteDocument',
+    description: 'message delete document, data: "Success delete document"',
+  })
   async messageDeleteDocument() {
     try {
       return 'Success delete document';
@@ -43,7 +46,10 @@ export class DocumentResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'messageUpdateDocument' })
+  @Mutation((returns) => String, {
+    name: 'messageUpdateDocument',
+    description: 'message update document, data: "Success update document"',
+  })
   async messageUpdateDocument() {
     try {
       return 'Success update document';
@@ -54,7 +60,10 @@ export class DocumentResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'messageUpdloadDocument' })
+  @Mutation((returns) => String, {
+    name: 'messageUpdloadDocument',
+    description: 'message updload document, data: "Success updload document"',
+  })
   async messageUpdloadDocument() {
     try {
       return 'Success updload document';
@@ -65,7 +74,11 @@ export class DocumentResolver {
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'messageDocument' })
+  @Mutation((returns) => String, {
+    name: 'messageDocument',
+    description:
+      'message mendapatkan document, data: "Success mendapatkan document"',
+  })
   async messageDocument() {
     try {
       return 'Success mendapatkan data document';
@@ -76,10 +89,10 @@ export class DocumentResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => Number, {
+  @Query((returns) => Int, {
     name: 'countDocumentAdmin',
     nullable: true,
-    defaultValue: [],
+    description: 'query total dokumen user, data: "1"',
   })
   async countDocumentAdmin(
     @CurrentUser() user: User,
@@ -100,9 +113,10 @@ export class DocumentResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => Number, {
+  @Query((returns) => Int, {
     name: 'countDocumentUser',
     nullable: true,
+    description: 'query total semua dokumen user, data: "1"',
   })
   async countByAll(
     @CurrentUser() user: User,
@@ -217,7 +231,7 @@ export class DocumentResolver {
       const project = projects.find(
         ({ idProject }) => uploadDocumentInput.idProject === idProject,
       );
-      if (!project) throw new NotFoundException('project not found');
+      if (!project) throw new NotFoundException('Project tidak ditemukan!');
       const result = await this.documentService.createDocument(
         uploadDocumentInput,
       );

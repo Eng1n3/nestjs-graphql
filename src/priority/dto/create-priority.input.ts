@@ -4,11 +4,13 @@ import { IsString } from 'class-validator';
 
 @InputType()
 export class CreatePriorityInput {
-  @Field()
+  @Field({ description: 'nama untuk prioritas, contoh: "nama prioritas"' })
   @IsString()
   name: string;
 
-  @Field()
+  @Field({
+    description: 'deskripsi untuk prioritas, contoh: "deskripsi prioritas"',
+  })
   @IsString()
   description: string;
 }

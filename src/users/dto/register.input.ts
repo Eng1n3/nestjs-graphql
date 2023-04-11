@@ -8,49 +8,62 @@ import {
   IsStrongPassword,
 } from 'class-validator';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-ts';
+import { IsHomepage } from 'src/common/decorators/is-homepage.decorator';
 import { IsOnlyDate } from 'src/common/decorators/is-only-date.decorator';
 import { Match } from 'src/common/decorators/match.decorator';
 
 @InputType()
 export class RegisterUserInput {
-  @Field()
+  @Field({ description: 'email user, contoh: "email@gmail.com"' })
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
-  @Field()
+  @Field({ description: 'password user, contoh: "Sup3r_setrong_paswot"' })
   @IsString()
   @IsNotEmpty()
   @IsStrongPassword()
   password: string;
 
-  @Field()
+  @Field({ description: 'nilai harus sama dengan password' })
   @IsString()
   @IsNotEmpty()
-  @Match('password', { message: 'repassword must be match to password' })
+  @Match('password', { message: 'repassword harus sama dengan password' })
   repassword: string;
 
-  @Field()
+  @Field({ description: 'nama lengkap user, contoh: "nama lengkap user"' })
   @IsString()
   @IsNotEmpty()
   fullname: string;
 
-  @Field()
+  @Field({
+    description:
+      'tanggal lahir user berupa nilai tanggal, contoh: "2002-03-23"',
+  })
   // @IsDate()
   @IsOnlyDate()
   birthDay: string;
 
-  @Field({ nullable: true })
+  @Field({
+    nullable: true,
+    description: 'bio user, contoh: "bio user"',
+  })
   @IsOptional()
   @IsString()
   bio?: string;
 
-  @Field({ nullable: true })
+  @Field({
+    nullable: true,
+    description: 'homepage user, contoh: "https://domain.com/home"',
+  })
   @IsOptional()
-  @IsString()
+  @IsHomepage()
   homepage?: string;
 
-  @Field(() => GraphQLUpload, { nullable: true })
+  @Field(() => GraphQLUpload, {
+    nullable: true,
+    description: 'image user, upload file berupa image',
+  })
   @IsOptional()
   image?: Promise<FileUpload>;
 }

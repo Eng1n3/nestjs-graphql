@@ -1,5 +1,6 @@
 import {
   Args,
+  Int,
   Mutation,
   Parent,
   Query,
@@ -35,7 +36,10 @@ export class ProjectResolver {
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'messageDeleteProject' })
+  @Mutation((returns) => String, {
+    name: 'messageDeleteProject',
+    description: 'message delete projek, data: "Success delete project"',
+  })
   async messageDeleteProject() {
     try {
       return 'Success delete project';
@@ -46,7 +50,10 @@ export class ProjectResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'messageUpdateProject' })
+  @Mutation((returns) => String, {
+    name: 'messageUpdateProject',
+    description: 'message update projek, data: "Success update project"',
+  })
   async messageUpdateProject() {
     try {
       return 'Success update project';
@@ -57,7 +64,10 @@ export class ProjectResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'messageCreateProject' })
+  @Mutation((returns) => String, {
+    name: 'messageCreateProject',
+    description: 'message buat projek, data: "Success buat project"',
+  })
   async messageCreateProject() {
     try {
       return 'Success buat project';
@@ -68,7 +78,11 @@ export class ProjectResolver {
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, { name: 'messageProject' })
+  @Mutation((returns) => String, {
+    name: 'messageProject',
+    description:
+      'message mendapatkan projek, data: "Success mendapatkan project"',
+  })
   async messageProject() {
     try {
       return 'Success mendapatkan data project';
@@ -79,9 +93,10 @@ export class ProjectResolver {
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => Number, {
+  @Query((returns) => Int, {
     name: 'countProjectAdmin',
     nullable: true,
+    description: 'query total semua project',
   })
   async projectAdminCount(
     @Args('search', { nullable: true, defaultValue: {} })
@@ -100,9 +115,10 @@ export class ProjectResolver {
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
-  @Query((returns) => Number, {
+  @Query((returns) => Int, {
     name: 'countProjectUser',
     nullable: true,
+    description: 'query total project user',
   })
   async projectCount(
     @CurrentUser() user: User,
@@ -126,7 +142,8 @@ export class ProjectResolver {
   async deleteProject(@Args('idProject') idProject: string) {
     try {
       const existProject = await this.projectService.findByIdProject(idProject);
-      if (!existProject) throw new NotFoundException('project not found!');
+      if (!existProject)
+        throw new NotFoundException('Project tidak ditemukan!');
       await this.projectService.deleteProject(idProject);
       rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
         recursive: true,
@@ -151,7 +168,7 @@ export class ProjectResolver {
           updateProjectInput?.idPriority,
         );
       if (updateProjectInput?.idPriority && !checkPriority)
-        throw new NotFoundException('Priority tidak ada!');
+        throw new NotFoundException('Priority tidak ditemukan!');
       const result = await this.projectService.updateByIdProject(
         user.idUser,
         checkPriority,
@@ -176,7 +193,7 @@ export class ProjectResolver {
           createProjectInput?.idPriority,
         );
       if (createProjectInput?.idPriority && !checkPriority)
-        throw new NotFoundException('Priority tidak ada!');
+        throw new NotFoundException('Priority tidak ditemukan!');
       const result = await this.projectService.create(
         user.idUser,
         createProjectInput,

@@ -6,16 +6,13 @@ const configService = new ConfigService();
 export const emailTemplate = (token: string) => `
 <html>
   <head>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap"
-      rel="stylesheet"
-    />
-    <style>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap" rel="stylesheet">
+      <style>
       body {
         position: relative;
         width: 600px;
         height: 640px;
-        font-family: "Poppins", "";
+        font-family: "Poppins", sans-serif;
         background: #ffffff;
         border-radius: 24px;
       }
@@ -38,7 +35,7 @@ export const emailTemplate = (token: string) => `
         height: 76px;
         margin-left: auto;
         margin-right: auto;
-        font-family: "Poppins";
+        font-family: "Poppins", sans-serif;
         font-style: normal;
         font-weight: 600;
         font-size: 20px;
@@ -49,7 +46,7 @@ export const emailTemplate = (token: string) => `
       .lp-text {
         width: 552px;
         height: 44px;
-        font-family: "Poppins";
+        font-family: "Poppins", sans-serif;
         font-style: normal;
         font-weight: 300;
         font-size: 14px;
