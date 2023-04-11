@@ -74,7 +74,7 @@ export class DocumentService {
         pathName,
       );
       const { idDocument, file, ...values } = updateDocumentInput;
-      const value = await this.documentRepository.create({
+      const value = this.documentRepository.create({
         idDocument,
         ...values,
         pathDocument: pathDocumentToSave,

@@ -26,6 +26,7 @@ export const emailTemplate = (token: string) => `
         width: 100vw;
       }
       .lp-img {
+        display: block;
         width: 200px;
         height: 200px;
         margin-left: auto;
