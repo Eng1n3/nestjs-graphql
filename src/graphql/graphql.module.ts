@@ -64,7 +64,7 @@ import { ComplexityPlugin } from 'src/common/plugins/complexity.plugin';
           },
         },
         autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-        playground: configService.get<boolean>('PLAYGROND'),
+        playground: configService.get<boolean>('PLAYGROUND'),
         context: ({ req, connection }) => ({ req }),
         csrfPrevention: false,
         validationRules: [depthLimit(3)],
