@@ -12,14 +12,13 @@ import {
 } from 'src/users/dto/register.input';
 import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { GetUserInput, SearchUserInput } from './dto/get-user.input';
+import { GetUserInput } from './dto/get-user.input';
 import * as bcrypt from 'bcrypt';
 import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
 import { createWriteStream, mkdirSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
 import { FileUpload } from 'graphql-upload-ts';
 import { plainToInstance } from 'class-transformer';
-import { Project } from 'ts-morph';
 
 @Injectable()
 export class UsersService {
@@ -28,21 +27,6 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
-
-  async restFindAll(email: string): Promise<User> {
-    try {
-      return await this.userRepository.findOne({
-        where: { email: email },
-        relations: {
-          project: {
-            document: true,
-          },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  }
 
   private saveDocumentToDir(
     document: FileUpload,
@@ -97,7 +81,6 @@ export class UsersService {
       }
       const value = this.userRepository.create({
         ...registerUserInput,
-        idUser: uuidv4(),
         pathImage: pathImageToSave,
       });
       await this.userRepository.update(idUser, value);
@@ -201,11 +184,16 @@ export class UsersService {
       const skip = getUserInput?.pagination?.skip;
       const take = getUserInput?.pagination?.take;
       const users = await this.userRepository.find({
-        where: {
-          role: 'user',
-          email: ILike(`%${getUserInput?.search?.email || ''}%`),
-          fullname: ILike(`%${getUserInput?.search?.fullname || ''}%`),
-        },
+        where: [
+          {
+            email: ILike(`%${getUserInput?.search || ''}%`),
+            role: 'user',
+          },
+          {
+            fullname: ILike(`%${getUserInput?.search || ''}%`),
+            role: 'user',
+          },
+        ],
         relations: {
           project: {
             document: true,
@@ -222,14 +210,19 @@ export class UsersService {
     }
   }
 
-  async count(searchUserInput: SearchUserInput) {
+  async count(searchUserInput?: string) {
     try {
       const result = await this.userRepository.count({
-        where: {
-          role: 'user',
-          email: ILike(`%${searchUserInput?.email || ''}%`),
-          fullname: ILike(`%${searchUserInput?.fullname || ''}%`),
-        },
+        where: [
+          {
+            email: ILike(`%${searchUserInput || ''}%`),
+            role: 'user',
+          },
+          {
+            fullname: ILike(`%${searchUserInput || ''}%`),
+            role: 'user',
+          },
+        ],
       });
       return result;
     } catch (error) {

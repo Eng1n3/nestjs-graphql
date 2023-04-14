@@ -13,16 +13,12 @@ import { Project } from 'src/project/entities/project.entity';
 import { ProjectService } from 'src/project/project.service';
 import { User } from 'src/users/entities/user.entity';
 import { DocumentService } from './document.service';
-import {
-  GetDocumentsInput,
-  SearchDocumentsInput,
-} from './dto/get-documents.input';
+import { GetDocumentsInput } from './dto/get-documents.input';
 import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
 
 @Resolver((of) => DocumentEntity)
-// @UseInterceptors(ClassSerializerInterceptor)
 export class DocumentResolver {
   constructor(
     private documentService: DocumentService,
@@ -97,8 +93,8 @@ export class DocumentResolver {
   })
   async countDocumentAdmin(
     @CurrentUser() user: User,
-    @Args('search', { nullable: true, defaultValue: {} })
-    searchDocumentsInput: SearchDocumentsInput,
+    @Args('search', { nullable: true, defaultValue: '' })
+    searchDocumentsInput: string,
   ) {
     try {
       const count = await this.documentService.countDocument(
@@ -121,8 +117,8 @@ export class DocumentResolver {
   })
   async countByAll(
     @CurrentUser() user: User,
-    @Args('search', { nullable: true, defaultValue: {} })
-    searchDocumentsInput: SearchDocumentsInput,
+    @Args('search', { nullable: true, defaultValue: '' })
+    searchDocumentsInput: string,
   ) {
     try {
       const count = await this.documentService.countDocument(

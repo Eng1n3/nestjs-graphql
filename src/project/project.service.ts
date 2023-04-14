@@ -5,7 +5,7 @@ import { mkdirSync } from 'fs';
 import { join } from 'path';
 import { ILike, Repository } from 'typeorm';
 import { CreateProjectInput } from './dto/create-project.input';
-import { GetProjectsInput, SearchProjectInput } from './dto/get-project.input';
+import { GetProjectsInput } from './dto/get-project.input';
 import { UpdateProjectInput } from './dto/update-project.input';
 import { Project } from './entities/project.entity';
 import { v4 as uuid4 } from 'uuid';
@@ -29,17 +29,20 @@ export class ProjectService {
     }
   }
 
-  async projectCount(
-    idUser: string | null,
-    searchProjectInput?: SearchProjectInput,
-  ) {
+  async projectCount(idUser: string | null, searchProjectInput?: string) {
     try {
+      const filter = { user: { idUser } };
       const result = await this.projectRepository.count({
-        where: {
-          user: { idUser },
-          projectName: ILike(`%${searchProjectInput?.projectName || ''}%`),
-          description: ILike(`%${searchProjectInput?.description || ''}%`),
-        },
+        where: [
+          {
+            projectName: ILike(`%${searchProjectInput || ''}%`),
+            ...filter,
+          },
+          {
+            description: ILike(`%${searchProjectInput || ''}%`),
+            ...filter,
+          },
+        ],
       });
       return result;
     } catch (error) {
@@ -60,7 +63,8 @@ export class ProjectService {
           idProject: updateProjectInput?.idProject,
         },
       });
-      if (!existProject) throw new NotFoundException('Project tidak ditemukan!');
+      if (!existProject)
+        throw new NotFoundException('Project tidak ditemukan!');
       const value = this.projectRepository.create({
         idProject,
         priority,
@@ -101,21 +105,26 @@ export class ProjectService {
       const order = getProjectsInput?.sort;
       const skip = getProjectsInput?.pagination?.skip;
       const take = getProjectsInput?.pagination?.take;
+      const filter = { user: { idUser, role: 'user' } };
       const project = await this.projectRepository.find({
-        where: {
-          user: { idUser, role: 'user' },
-          projectName: ILike(
-            `%${getProjectsInput?.search?.projectName || ''}%`,
-          ),
-          description: ILike(
-            `%${getProjectsInput?.search?.description || ''}%`,
-          ),
-          priority: {
-            name: getProjectsInput?.search?.priority
-              ? ILike(`%${getProjectsInput?.search?.priority || ''}%`)
-              : null,
+        where: [
+          {
+            projectName: ILike(`%${getProjectsInput?.search || ''}%`),
+            ...filter,
           },
-        },
+          {
+            description: ILike(`%${getProjectsInput?.search || ''}%`),
+            ...filter,
+          },
+          {
+            priority: {
+              name: getProjectsInput?.search
+                ? ILike(`%${getProjectsInput?.search || ''}%`)
+                : null,
+            },
+            ...filter,
+          },
+        ],
         relations: {
           user: true,
           document: true,

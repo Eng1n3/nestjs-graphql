@@ -11,10 +11,7 @@ import { createWriteStream, rmSync } from 'fs';
 import { FileUpload } from 'graphql-upload-ts';
 import { join } from 'path';
 import { ILike, In, Repository } from 'typeorm';
-import {
-  GetDocumentsInput,
-  SearchDocumentsInput,
-} from './dto/get-documents.input';
+import { GetDocumentsInput } from './dto/get-documents.input';
 import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
@@ -32,19 +29,30 @@ export class DocumentService {
   async countDocument(
     idUser: string | null,
     idProject: string | null,
-    searchDocumentsInput: SearchDocumentsInput,
+    searchDocumentsInput: string,
   ) {
     try {
-      const result = await this.documentRepository.count({
-        where: {
-          project: {
-            user: { idUser },
-            idProject,
-          },
-          documentName: ILike(`%${searchDocumentsInput?.documentName || ''}%`),
-          description: ILike(`%${searchDocumentsInput?.description || ''}%`),
-          pathDocument: ILike(`%${searchDocumentsInput?.pathDocument || ''}%`),
+      const filter = {
+        project: {
+          user: { idUser },
+          idProject,
         },
+      };
+      const result = await this.documentRepository.count({
+        where: [
+          {
+            documentName: ILike(`%${searchDocumentsInput || ''}%`),
+            ...filter,
+          },
+          {
+            description: ILike(`%${searchDocumentsInput || ''}%`),
+            ...filter,
+          },
+          {
+            pathDocument: ILike(`%${searchDocumentsInput || ''}%`),
+            ...filter,
+          },
+        ],
       });
       return result;
     } catch (error) {
@@ -101,16 +109,27 @@ export class DocumentService {
       const order = optionsInput?.sort;
       const skip = optionsInput?.pagination?.skip;
       const take = optionsInput?.pagination?.take;
-      const document = await this.documentRepository.find({
-        where: {
-          project: {
-            user: { idUser },
-            idProject,
-          },
-          documentName: ILike(`%${optionsInput?.search?.documentName || ''}%`),
-          description: ILike(`%${optionsInput?.search?.description || ''}%`),
-          pathDocument: ILike(`%${optionsInput?.search?.pathDocument || ''}%`),
+      const filter = {
+        project: {
+          user: { idUser },
+          idProject,
         },
+      };
+      const document = await this.documentRepository.find({
+        where: [
+          {
+            documentName: ILike(`%${optionsInput?.search || ''}%`),
+            ...filter,
+          },
+          {
+            description: ILike(`%${optionsInput?.search || ''}%`),
+            ...filter,
+          },
+          {
+            pathDocument: ILike(`%${optionsInput?.search || ''}%`),
+            ...filter,
+          },
+        ],
         relations: {
           project: { user: true },
         },

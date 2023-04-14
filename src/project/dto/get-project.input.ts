@@ -5,18 +5,18 @@ import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
 import { CreateProjectInput } from './create-project.input';
 
-@InputType()
-export class SearchProjectInput extends PartialType(
-  OmitType(CreateProjectInput, ['idPriority', 'deadLine']),
-) {
-  @Field({
-    nullable: true,
-    defaultValue: null,
-    description: 'cari nama prioritas, contoh: "high"',
-  })
-  @IsOptional()
-  priority?: string;
-}
+// @InputType()
+// export class SearchProjectInput extends PartialType(
+//   OmitType(CreateProjectInput, ['idPriority', 'deadLine']),
+// ) {
+//   @Field({
+//     nullable: true,
+//     defaultValue: null,
+//     description: 'cari nama prioritas, contoh: "high"',
+//   })
+//   @IsOptional()
+//   priority?: string;
+// }
 
 @InputType()
 export class GetProjectsInput<T> {
@@ -35,10 +35,10 @@ export class GetProjectsInput<T> {
   @IsOptional()
   sort?: FindOptionsOrder<T>;
 
-  @Field((types) => SearchProjectInput, {
+  @Field({
     nullable: true,
     description: '{key: "cari kata"}',
   })
   @IsOptional()
-  search?: SearchProjectInput;
+  search?: string;
 }

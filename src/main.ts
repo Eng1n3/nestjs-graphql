@@ -8,20 +8,33 @@ import * as Sentry from '@sentry/node';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
     }),
   );
-  app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }));
-  app.enableCors({ credentials: true, origin: '*' });
+  app.use(
+    graphqlUploadExpress({
+      maxFileSize: configService.get<number>('MAX_FILE_SIZE_IN_BYTE'),
+      maxFiles: configService.get<number>('MAX_FILES_IN_NUMBER'),
+    }),
+  );
+  app.enableCors({
+    credentials: true,
+    origin: [
+      configService.get<string>('FRONTEND_DOMAIN'),
+      configService.get<string>('DOMAIN'),
+      'http://localhost:3000',
+      'http://localhost:19004',
+    ],
+  });
   // Sentry.init({
   //   dsn: configService.get('SENTRY_DSN'),
   //   tracesSampleRate: 1.0,
   // });
-  const configService = app.get(ConfigService);
-  const port = configService.get('PORT');
+  const port = configService.get<number>('PORT');
   await app.listen(port);
 }
 bootstrap();

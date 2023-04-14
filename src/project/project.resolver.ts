@@ -20,7 +20,7 @@ import { UpdateProjectInput } from './dto/update-project.input';
 import { DocumentService } from 'src/document/document.service';
 import { rmSync } from 'fs';
 import { join } from 'path';
-import { GetProjectsInput, SearchProjectInput } from './dto/get-project.input';
+import { GetProjectsInput } from './dto/get-project.input';
 import { DocumentEntity } from 'src/document/entities/document.entity';
 import { GetDocumentsInput } from 'src/document/dto/get-documents.input';
 import { PriorityService } from 'src/priority/priority.service';
@@ -99,8 +99,8 @@ export class ProjectResolver {
     defaultValue: 0,
   })
   async projectAdminCount(
-    @Args('search', { nullable: true, defaultValue: {} })
-    searchProjectInput?: SearchProjectInput,
+    @Args('search', { nullable: true, defaultValue: '' })
+    searchProjectInput?: string,
   ) {
     try {
       const count = await this.projectService.projectCount(
@@ -122,8 +122,8 @@ export class ProjectResolver {
   })
   async projectCount(
     @CurrentUser() user: User,
-    @Args('search', { nullable: true, defaultValue: {} })
-    searchProjectInput?: SearchProjectInput,
+    @Args('search', { nullable: true, defaultValue: '' })
+    searchProjectInput?: string,
   ) {
     try {
       const count = await this.projectService.projectCount(

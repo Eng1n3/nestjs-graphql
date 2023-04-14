@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Args,
@@ -10,11 +11,11 @@ import {
   Subscription,
 } from '@nestjs/graphql';
 import { User } from './entities/user.entity';
-import { GetUserInput, SearchUserInput } from './dto/get-user.input';
+import { GetUserInput } from './dto/get-user.input';
 import { UsersService } from './users.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import { UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdateUserInput } from './dto/update.input';
@@ -23,18 +24,45 @@ import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 import { GetProjectsInput } from 'src/project/dto/get-project.input';
 import { ProjectService } from 'src/project/project.service';
 import { Project } from 'src/project/entities/project.entity';
-// import { PUB_SUB } from 'src/pubsub/pubsub.module';
+import { PUB_SUB } from 'src/pubsub/pubsub.module';
+import { PubSub } from 'graphql-subscriptions';
 // import { RedisPubSub } from 'graphql-redis-subscriptions';
 
-const USERS_EVENT = 'users';
 const USER_ADDED_EVENT = 'userAdded';
+const USER_UPDATED_EVENT = 'userUpdated';
+const USER_DELETED_EVENT = 'userDeleted';
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(
     private userService: UsersService,
-    private projectService: ProjectService, // @Inject(PUB_SUB) private pubSub: RedisPubSub,
+    private projectService: ProjectService,
+    @Inject(PUB_SUB) private pubSub: PubSub,
   ) {}
+
+  @Subscription((returns) => User, {
+    name: 'userDeleted',
+    filter: (payload, variables) => payload.userAdded.title === variables.title,
+  })
+  wsUserDeleted() {
+    return this.pubSub.asyncIterator(USER_DELETED_EVENT);
+  }
+
+  @Subscription((returns) => User, {
+    name: 'userUpdated',
+    filter: (payload, variables) => payload.userAdded.title === variables.title,
+  })
+  wsUserUpdated() {
+    return this.pubSub.asyncIterator(USER_UPDATED_EVENT);
+  }
+
+  @Subscription((returns) => User, {
+    name: 'userAdded',
+    filter: (payload, variables) => payload.userAdded.title === variables.title,
+  })
+  wsUserAdded() {
+    return this.pubSub.asyncIterator(USER_ADDED_EVENT);
+  }
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -91,20 +119,6 @@ export class UsersResolver {
     }
   }
 
-  // @Subscription((returns) => [User], {
-  //   name: 'users',
-  // })
-  // wsUsers() {
-  //   return this.pubSub.asyncIterator(USERS_EVENT);
-  // }
-
-  // @Subscription((returns) => User, {
-  //   name: 'userAdded',
-  // })
-  // wsUserAdded() {
-  //   return this.pubSub.asyncIterator(USER_ADDED_EVENT);
-  // }
-
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Mutation((returns) => User, {
@@ -114,29 +128,12 @@ export class UsersResolver {
   async deleteUser(@Args('idUser') idUser: string) {
     try {
       const result = await this.userService.deleteUser(idUser);
+      this.pubSub.publish(USER_ADDED_EVENT, { userDeleted: result });
       return result;
     } catch (error) {
       throw error;
     }
   }
-
-  // @Roles(Role.Admin)
-  // @UseGuards(JwtAuthGuard)
-  // @Mutation((returns) => User, { name: 'updateAdmin' })
-  // async updateAdmin(
-  //   @CurrentUser() user: User,
-  //   @Args('input') updateAdminInput: UpdateAdminInput,
-  // ) {
-  //   try {
-  //     const result = await this.userService.updateUser(
-  //       user.idUser,
-  //       updateAdminInput,
-  //     );
-  //     return result;
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
 
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
@@ -153,24 +150,12 @@ export class UsersResolver {
         user.idUser,
         updateUserInput,
       );
+      this.pubSub.publish(USER_ADDED_EVENT, { userUpdated: result });
       return result;
     } catch (error) {
       throw error;
     }
   }
-
-  // @Mutation((returns) => User, { name: 'registerAdmin' })
-  // async registerAdmin(@Args('input') registerAdminInput: RegisterAdminInput) {
-  //   try {
-  //     const result = await this.userService.createUser(
-  //       'admin',
-  //       registerAdminInput,
-  //     );
-  //     return result;
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
 
   @Mutation((returns) => User, {
     name: 'registerUser',
@@ -182,7 +167,7 @@ export class UsersResolver {
         'user',
         registerUserInput,
       );
-      // this.pubSub.publish(USER_ADDED_EVENT, { userAdded: result });
+      this.pubSub.publish(USER_ADDED_EVENT, { userAdded: result });
       return result;
     } catch (error) {
       throw error;
@@ -220,7 +205,6 @@ export class UsersResolver {
   ) {
     try {
       const result = await this.userService.find(optionsInput);
-      // this.pubSub.publish(USERS_EVENT, { users: result });
       return result;
     } catch (error) {
       throw error;
@@ -234,8 +218,8 @@ export class UsersResolver {
     description: 'query total akun user',
   })
   async userCount(
-    @Args('search', { nullable: true, defaultValue: {} })
-    searchUserInput: SearchUserInput,
+    @Args('search', { nullable: true, defaultValue: '' })
+    searchUserInput: string,
   ) {
     try {
       const count = await this.userService.count(searchUserInput);

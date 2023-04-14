@@ -1,9 +1,5 @@
-import {
-  NotFoundException,
-  UnauthorizedException,
-  UseGuards,
-} from '@nestjs/common';
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Inject, NotFoundException, UseGuards } from '@nestjs/common';
+import { Args, Mutation, Resolver, Subscription } from '@nestjs/graphql';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
@@ -15,6 +11,10 @@ import { LocalAdminAuthGuard } from './guards/local-admin-auth.guard';
 import { LocalUserAuthGuard } from './guards/local-user-auth.guard';
 import { LoginModel } from './models/login.model';
 import { ForgotUserModel } from './models/forgot-user.model';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from 'src/pubsub/pubsub.module';
+
+const USER_DELETED_EVENT = 'userDeleted';
 
 @Resolver()
 export class AuthResolver {

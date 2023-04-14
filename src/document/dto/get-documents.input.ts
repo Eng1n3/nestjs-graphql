@@ -5,19 +5,19 @@ import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
 import { UploadDocumentInput } from './upload-document.dto';
 
-@InputType()
-export class SearchDocumentsInput extends PartialType(
-  OmitType(UploadDocumentInput, ['file', 'idProject']),
-) {
-  @Field({
-    nullable: true,
-    defaultValue: '',
-    description: 'data path document user, example: "http://domain.com/path"',
-  })
-  @IsString()
-  @IsOptional()
-  pathDocument?: string;
-}
+// @InputType()
+// export class SearchDocumentsInput extends PartialType(
+//   OmitType(UploadDocumentInput, ['file', 'idProject']),
+// ) {
+//   @Field({
+//     nullable: true,
+//     defaultValue: '',
+//     description: 'data path document user, example: "http://domain.com/path"',
+//   })
+//   @IsString()
+//   @IsOptional()
+//   pathDocument?: string;
+// }
 
 @InputType()
 export class GetDocumentsInput<T> {
@@ -36,10 +36,10 @@ export class GetDocumentsInput<T> {
   @IsOptional()
   sort?: FindOptionsOrder<T>;
 
-  @Field((types) => SearchDocumentsInput, {
+  @Field({
     nullable: true,
     description: '{key: "cari apa"}',
   })
   @IsOptional()
-  search?: SearchDocumentsInput;
+  search?: string;
 }
