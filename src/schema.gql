@@ -228,6 +228,11 @@ type Query {
   """query total akun user"""
   countAccount(search: String = ""): Int!
 
+  """
+  message mendapatkan projek, data: "Success mendapatkan project"
+  """
+  messageProject: String!
+
   """query total semua project"""
   countProjectAdmin(search: String = ""): Int!
 
@@ -239,6 +244,11 @@ type Query {
 
   """query mendapatkan project semua user, data: [{...project}]"""
   projects(options: GetProjectsInput = {}): [Project!]
+
+  """
+  message mendapatkan document, data: "Success mendapatkan document"
+  """
+  messageDocument: String!
 
   """
   query total dokumen user, data: "1"
@@ -255,6 +265,11 @@ type Query {
 
   """query mendapatkan document semua user, data: [{...document}]"""
   documents(options: GetDocumentsInput): [DocumentEntity!]
+
+  """
+  message mendapatkan prioritas, contoh: "Success mendapatkan priority"
+  """
+  messagePriorities: String!
 
   """
   query total prioritas, data: "1"
@@ -333,11 +348,6 @@ type Mutation {
   """
   messageCreateProject: String!
 
-  """
-  message mendapatkan projek, data: "Success mendapatkan project"
-  """
-  messageProject: String!
-
   """mutation delete project, data: {...project}"""
   deleteProject(idProject: String!): Project!
 
@@ -362,11 +372,6 @@ type Mutation {
   """
   messageUpdloadDocument: String!
 
-  """
-  message mendapatkan document, data: "Success mendapatkan document"
-  """
-  messageDocument: String!
-
   """mutation delete document user, data: {...document}"""
   deleteDocument(idDocument: String!): DocumentEntity!
 
@@ -390,11 +395,6 @@ type Mutation {
   message create prioritas, contoh: "Success create priority"
   """
   messageCreatePriority: String!
-
-  """
-  message mendapatkan prioritas, contoh: "Success mendapatkan priority"
-  """
-  messagePriorities: String!
 
   """mutation delete prioritas, data: {...prioritas}"""
   deletePriority(idPriority: String!): Priority!

@@ -70,7 +70,7 @@ export class DocumentResolver {
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, {
+  @Query((returns) => String, {
     name: 'messageDocument',
     description:
       'message mendapatkan document, data: "Success mendapatkan document"',

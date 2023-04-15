@@ -59,7 +59,7 @@ export class PriorityResolver {
 
   @Roles(Role.Admin, Role.User)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, {
+  @Query((returns) => String, {
     name: 'messagePriorities',
     description:
       'message mendapatkan prioritas, contoh: "Success mendapatkan priority"',

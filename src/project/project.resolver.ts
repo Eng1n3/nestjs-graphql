@@ -78,7 +78,7 @@ export class ProjectResolver {
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Mutation((returns) => String, {
+  @Query((returns) => String, {
     name: 'messageProject',
     description:
       'message mendapatkan projek, data: "Success mendapatkan project"',
