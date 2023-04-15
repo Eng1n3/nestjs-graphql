@@ -2,9 +2,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { graphqlUploadExpress } from 'graphql-upload-ts';
-// import { graphqlUploadExpress } from 'graphql-upload-minimal';
 import { AppModule } from './app.module';
 import * as Sentry from '@sentry/node';
+import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -34,6 +34,7 @@ async function bootstrap() {
   //   dsn: configService.get('SENTRY_DSN'),
   //   tracesSampleRate: 1.0,
   // });
+  app.useGlobalInterceptors(new SentryInterceptor());
   const port = configService.get<number>('PORT');
   await app.listen(port);
 }

@@ -15,7 +15,14 @@ import { GetUserInput } from './dto/get-user.input';
 import { UsersService } from './users.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import { Inject, UseGuards } from '@nestjs/common';
+import {
+  CacheInterceptor,
+  CacheKey,
+  CacheTTL,
+  Inject,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdateUserInput } from './dto/update.input';
@@ -33,6 +40,7 @@ const USER_UPDATED_EVENT = 'userUpdated';
 const USER_DELETED_EVENT = 'userDeleted';
 
 @Resolver(() => User)
+// @UseInterceptors(CacheInterceptor)
 export class UsersResolver {
   constructor(
     private userService: UsersService,
@@ -174,6 +182,8 @@ export class UsersResolver {
     }
   }
 
+  // @CacheKey('user')
+  // @CacheTTL(3)
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => User, {

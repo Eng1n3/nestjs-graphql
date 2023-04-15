@@ -13,6 +13,8 @@ import GraphQLJSON from 'graphql-type-json';
 import { Context } from 'graphql-ws';
 import { join } from 'path';
 import { ComplexityPlugin } from 'src/common/plugins/complexity.plugin';
+import { RedisCache } from 'apollo-server-cache-redis';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -33,7 +35,11 @@ import { ComplexityPlugin } from 'src/common/plugins/complexity.plugin';
           inject: [ConfigService],
         }),
       ],
-      useFactory: (configService: ConfigService, jwtService: JwtService) => ({
+      useFactory: (
+        configService: ConfigService,
+        jwtService: JwtService,
+        // cache,
+      ) => ({
         subscriptions: {
           //   'graphql-ws': {
           //     onConnect: (context: Context<any>) => {
@@ -70,8 +76,13 @@ import { ComplexityPlugin } from 'src/common/plugins/complexity.plugin';
         validationRules: [depthLimit(3)],
         resolvers: { JSON: GraphQLJSON },
         introspection: true,
+        // cache,
       }),
-      inject: [ConfigService, JwtService],
+      inject: [
+        ConfigService,
+        JwtService,
+        // CACHE_MANAGER
+      ],
     }),
   ],
   providers: [ComplexityPlugin],

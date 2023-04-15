@@ -259,7 +259,7 @@ type Query {
   """
   query total prioritas, data: "1"
   """
-  countPriorities(search: SearchPrioritiesInput = {}): Int!
+  countPriorities(search: String = ""): Int!
 
   """query mendapatkan prioritas, data: [{...prioritas}]"""
   priorities(options: GetPrioritiesInput = {}): [Priority!]!
@@ -280,18 +280,6 @@ input GetUserInput {
   search: String
 }
 
-input SearchPrioritiesInput {
-  """
-  nama untuk prioritas, contoh: "nama prioritas"
-  """
-  name: String
-
-  """
-  deskripsi untuk prioritas, contoh: "deskripsi prioritas"
-  """
-  description: String
-}
-
 input GetPrioritiesInput {
   """{skip: 0 or take: 10}"""
   pagination: PaginationInput
@@ -302,7 +290,7 @@ input GetPrioritiesInput {
   sort: JSON
 
   """{key: "cari kata"}"""
-  search: SearchPrioritiesInput
+  search: String
 }
 
 type Mutation {

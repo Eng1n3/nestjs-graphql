@@ -6,10 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Priority } from './entities/priority.entity';
 import { ILike, Repository } from 'typeorm';
-import {
-  GetPrioritiesInput,
-  SearchPrioritiesInput,
-} from './dto/get-priority.input';
+import { GetPrioritiesInput } from './dto/get-priority.input';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class PriorityService {
@@ -18,13 +16,17 @@ export class PriorityService {
     private priorityRepository: Repository<Priority>,
   ) {}
 
-  async count(searchPrioritiesInput?: SearchPrioritiesInput) {
+  async count(searchPrioritiesInput?: string) {
     try {
       const result = await this.priorityRepository.count({
-        where: {
-          name: ILike(`%${searchPrioritiesInput?.name || ''}%`),
-          description: ILike(`%${searchPrioritiesInput?.description || ''}%`),
-        },
+        where: [
+          {
+            name: ILike(`%${searchPrioritiesInput || ''}%`),
+          },
+          {
+            description: ILike(`%${searchPrioritiesInput || ''}%`),
+          },
+        ],
       });
       return result;
     } catch (error) {
@@ -44,10 +46,14 @@ export class PriorityService {
     const skip = optionsInput?.pagination?.skip;
     const take = optionsInput?.pagination?.take;
     const result = await this.priorityRepository.find({
-      where: {
-        name: ILike(`%${optionsInput?.search?.name || ''}%`),
-        description: ILike(`%${optionsInput?.search?.description || ''}%`),
-      },
+      where: [
+        {
+          name: ILike(`%${optionsInput?.search || ''}%`),
+        },
+        {
+          description: ILike(`%${optionsInput?.search || ''}%`),
+        },
+      ],
       skip,
       take,
       order,
@@ -56,18 +62,27 @@ export class PriorityService {
   }
 
   async create(name: string, description: string) {
-    const result = this.priorityRepository.create({ name, description });
-    await this.priorityRepository.save(result);
-    return result;
-  }
-
-  async update(idPriority: string, name: string, description: string) {
+    const idPriority = uuidv4();
     const result = this.priorityRepository.create({
       idPriority,
       name,
       description,
     });
     await this.priorityRepository.save(result);
+    return result;
+  }
+
+  async update(idPriority: string, name: string, description: string) {
+    const { project, ...result } = await this.priorityRepository.findOne({
+      where: { idPriority },
+      relations: { project: true },
+    });
+    if (!result) throw new NotFoundException('Prioritas tidak ada!');
+    const value = this.priorityRepository.create({
+      name,
+      description,
+    });
+    await this.priorityRepository.update(idPriority, value);
     return result;
   }
 

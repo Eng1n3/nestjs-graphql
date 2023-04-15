@@ -9,10 +9,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Priority } from './entities/priority.entity';
-import {
-  GetPrioritiesInput,
-  SearchPrioritiesInput,
-} from './dto/get-priority.input';
+import { GetPrioritiesInput } from './dto/get-priority.input';
 
 @Resolver()
 export class PriorityResolver {
@@ -83,8 +80,8 @@ export class PriorityResolver {
     defaultValue: 0,
   })
   async projectAdminCount(
-    @Args('search', { nullable: true, defaultValue: {} })
-    searchPrioritiesInput?: SearchPrioritiesInput,
+    @Args('search', { nullable: true, defaultValue: '' })
+    searchPrioritiesInput?: string,
   ) {
     try {
       const count = await this.priorityService.count(searchPrioritiesInput);

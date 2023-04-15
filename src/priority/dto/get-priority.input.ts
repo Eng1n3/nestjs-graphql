@@ -1,12 +1,8 @@
-import { Field, InputType, OmitType, PartialType } from '@nestjs/graphql';
+import { Field, InputType } from '@nestjs/graphql';
 import { IsOptional, IsString } from 'class-validator';
 import { PaginationInput } from 'src/common/dto/pagination.input';
 import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
-import { CreatePriorityInput } from './create-priority.input';
-
-@InputType()
-export class SearchPrioritiesInput extends PartialType(CreatePriorityInput) {}
 
 @InputType()
 export class GetPrioritiesInput<T> {
@@ -25,10 +21,10 @@ export class GetPrioritiesInput<T> {
   @IsOptional()
   sort?: FindOptionsOrder<T>;
 
-  @Field((types) => SearchPrioritiesInput, {
+  @Field({
     nullable: true,
     description: '{key: "cari kata"}',
   })
   @IsOptional()
-  search?: SearchPrioritiesInput;
+  search?: string;
 }
