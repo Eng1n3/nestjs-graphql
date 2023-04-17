@@ -26,8 +26,8 @@
     "migration:run:prod": "NODE_ENV=production npm run typeorm-config -- migration:run",
     "migration:revert:prod": "NODE_ENV=production npm run typeorm-config -- migration:revert && rm -rf ./uploads/profiles ./uploads/projects",
     "seed:run": "npm run build && typeorm-seeding seed -d dist/database/data-source.js dist/database/seeds/*.js",
-    "seed:run:prod": "NODE_ENV=production npm run build && NODE_ENV=production typeorm-seeding seed -d dist/database/data-source.js dist/database/seeds/*.js",
-    "pm2:start:prod": "NODE_ENV=production npm run build && pm2 start ecosystem.config.js --env=production"
+    "seed:run:prod": "npm run build && NODE_ENV=production typeorm-seeding seed -d dist/database/data-source.js dist/database/seeds/*.js",
+    "pm2:start:prod": "npm run build && pm2 start ecosystem.config.js --env=production"
   },
   "dependencies": {
     "@apollo/server": "^4.5.0",
