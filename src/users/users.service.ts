@@ -59,9 +59,15 @@ export class UsersService {
     try {
       let pathImageToSave;
       const validImage = /(png|jpeg|image|img)/g;
-      const images = await registerUserInput?.image;
+      const image = await registerUserInput?.image;
       const existUser = await this.userRepository.findOne({
         where: { idUser },
+        relations: {
+          project: {
+            priority: true,
+            document: true,
+          },
+        },
       });
       if (registerUserInput?.password) {
         registerUserInput.password = await bcrypt.hash(
@@ -69,22 +75,28 @@ export class UsersService {
           this.getSalt,
         );
       }
-      if (images) {
+
+      if (image) {
         const existImage = readdirSync(
           join(process.cwd(), '/uploads/profiles/', idUser),
         );
         if (existImage.length) rmSync(join(process.cwd(), existUser.pathImage));
-        if (!validImage.test(images.mimetype))
+        if (!validImage.test(image.mimetype))
           throw new BadRequestException('File tidak valid!');
         const pathImage = `/uploads/profiles/${idUser}`;
-        pathImageToSave = await this.saveDocumentToDir(images, pathImage);
+        pathImageToSave = await this.saveDocumentToDir(image, pathImage);
       }
       const value = this.userRepository.create({
+        idUser,
         ...registerUserInput,
         pathImage: pathImageToSave,
       });
       await this.userRepository.update(idUser, value);
-      return value;
+      const result = {
+        ...existUser,
+        ...value,
+      };
+      return result;
     } catch (error) {
       if (
         error.message.includes('duplicate key value') &&
@@ -100,20 +112,23 @@ export class UsersService {
     try {
       const checkUser = await this.userRepository.findOne({
         where: { idUser },
-        relations: { project: true },
+        relations: { project: { priority: true, document: true } },
       });
       if (!checkUser) throw new NotFoundException('User not found');
+
       await this.userRepository.delete(idUser);
+
       rmSync(join(process.cwd(), `/uploads/profiles/${checkUser?.idUser}`), {
         recursive: true,
         force: true,
-      }),
-        checkUser?.project?.forEach(({ idProject }) =>
-          rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
-            recursive: true,
-            force: true,
-          }),
-        );
+      });
+
+      checkUser?.project?.forEach(({ idProject }) =>
+        rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
+          recursive: true,
+          force: true,
+        }),
+      );
       return checkUser;
     } catch (error) {
       throw error;
@@ -130,15 +145,15 @@ export class UsersService {
 
   async findOne(email: string): Promise<User> {
     try {
-      const user = await this.userRepository.findOne({
+      const result = await this.userRepository.findOne({
         where: { email: email },
         relations: {
           project: {
+            priority: true,
             document: true,
           },
         },
       });
-      const result = plainToInstance(User, user);
       return result;
     } catch (error) {
       throw error;
@@ -183,7 +198,7 @@ export class UsersService {
       const order = getUserInput?.sort;
       const skip = getUserInput?.pagination?.skip;
       const take = getUserInput?.pagination?.take;
-      const users = await this.userRepository.find({
+      const result = await this.userRepository.find({
         where: [
           {
             email: ILike(`%${getUserInput?.search || ''}%`),
@@ -196,6 +211,7 @@ export class UsersService {
         ],
         relations: {
           project: {
+            priority: true,
             document: true,
           },
         },
@@ -203,7 +219,6 @@ export class UsersService {
         take,
         order,
       });
-      const result = plainToInstance(User, users);
       return result;
     } catch (error) {
       throw error;

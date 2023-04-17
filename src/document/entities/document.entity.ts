@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Directive, Field, ObjectType } from '@nestjs/graphql';
 import { Transform } from 'class-transformer';
 import { Project } from 'src/project/entities/project.entity';
 import {
@@ -10,7 +10,6 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import '../../common/config/config.env';
 import { ConfigService } from '@nestjs/config';
 
 const configService = new ConfigService();
@@ -46,6 +45,7 @@ export class DocumentEntity {
   @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`, {
     toClassOnly: true,
   })
+  @Directive('@backendUrl')
   @Field({
     description:
       'path dokumen, contoh: "http://domain.com/uploads/sodjo-dsbdib-sndd-ndni/ahsah-323innd-2839-mod-file.pdf"',

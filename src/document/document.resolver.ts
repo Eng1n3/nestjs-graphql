@@ -3,8 +3,16 @@ import {
   Inject,
   NotFoundException,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Int,
+  Mutation,
+  Query,
+  Resolver,
+  Subscription,
+} from '@nestjs/graphql';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -17,14 +25,49 @@ import { GetDocumentsInput } from './dto/get-documents.input';
 import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
+import { CacheKey } from '@nestjs/cache-manager';
+import { HttpCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
+import { PUB_SUB } from 'src/pubsub/pubsub.module';
+import { PubSub } from 'graphql-subscriptions';
+
+const DOCUMENT_DELETED_EVENT = 'documentDeleted';
+const DOCUMENT_UPDATED_EVENT = 'documentUpdated';
+const DOCUMENT_ADDED_EVENT = 'documentAdded';
 
 @Resolver((of) => DocumentEntity)
 export class DocumentResolver {
   constructor(
+    @Inject(PUB_SUB) private pubSub: PubSub,
     private documentService: DocumentService,
-    @Inject(forwardRef(() => ProjectService))
     private projectService: ProjectService,
   ) {}
+
+  @Subscription((returns) => DocumentEntity, {
+    name: 'documentDeleted',
+    filter: (payload, variables) =>
+      payload.documentDeleted.title === variables.title,
+  })
+  wsDocumentDeleted() {
+    return this.pubSub.asyncIterator(DOCUMENT_DELETED_EVENT);
+  }
+
+  @Subscription((returns) => DocumentEntity, {
+    name: 'documentUpdated',
+    filter: (payload, variables) =>
+      payload.documentUpdated.title === variables.title,
+  })
+  wsDocumentUpdated() {
+    return this.pubSub.asyncIterator(DOCUMENT_UPDATED_EVENT);
+  }
+
+  @Subscription((returns) => DocumentEntity, {
+    name: 'documentAdded',
+    filter: (payload, variables) =>
+      payload.documentAdded.title === variables.title,
+  })
+  wsDocumentAdded() {
+    return this.pubSub.asyncIterator(DOCUMENT_ADDED_EVENT);
+  }
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -147,6 +190,7 @@ export class DocumentResolver {
       user.idUser,
       idDocument,
     );
+    this.pubSub.publish(DOCUMENT_DELETED_EVENT, { documentDeleted: result });
     return result;
   }
 
@@ -165,9 +209,12 @@ export class DocumentResolver {
       user.idUser,
       updateDocumentInput,
     );
+    this.pubSub.publish(DOCUMENT_UPDATED_EVENT, { documentUpdated: result });
     return result;
   }
 
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('document')
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [DocumentEntity], {
@@ -196,6 +243,8 @@ export class DocumentResolver {
     }
   }
 
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('documents')
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [DocumentEntity], {
@@ -243,6 +292,7 @@ export class DocumentResolver {
       const result = await this.documentService.createDocument(
         uploadDocumentInput,
       );
+      this.pubSub.publish(DOCUMENT_ADDED_EVENT, { documentAdded: result });
       return result;
     } catch (error) {
       throw error;

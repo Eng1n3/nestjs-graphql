@@ -1,21 +1,13 @@
-import {
-  CACHE_MANAGER,
-  CacheInterceptor,
-  CacheManagerOptions,
-} from '@nestjs/cache-manager';
-import { ExecutionContext, Inject, Injectable } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { ExecutionContext, Injectable } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
-export class CustomCacheInterceptor extends CacheInterceptor {
-  constructor(
-    @Inject(CACHE_MANAGER) readonly cacheManager: CacheManagerOptions,
-    readonly reflector: Reflector,
-  ) {
-    super(cacheManager, reflector);
-  }
-
+export class HttpCacheInterceptor extends CacheInterceptor {
   trackBy(context: ExecutionContext): string {
-    return 'oke';
+    const ctx = GqlExecutionContext.create(context);
+    const cacheKey = super.trackBy(context);
+    const resolverName = ctx.getInfo().fieldName;
+    return `${resolverName}-${cacheKey}`;
   }
 }

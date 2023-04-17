@@ -45,10 +45,5 @@ export class Priority {
   updatedAt: Date;
 
   @OneToMany((type) => Project, (project) => project.priority)
-  @Field(() => [Project], {
-    nullable: true,
-    defaultValue: [],
-    description: 'project bedasarkan prioritas contoh: [{...project}]',
-  })
   project?: Project[];
 }

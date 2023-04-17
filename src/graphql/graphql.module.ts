@@ -13,8 +13,10 @@ import GraphQLJSON from 'graphql-type-json';
 import { Context } from 'graphql-ws';
 import { join } from 'path';
 import { ComplexityPlugin } from 'src/common/plugins/complexity.plugin';
-import { RedisCache } from 'apollo-server-cache-redis';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { upperDirectiveTransformer } from 'src/common/directives/custom.directive';
+import { DirectiveLocation, GraphQLDirective } from 'graphql';
+import { DirectiveTranform } from 'src/common/enums/directive.enum';
 
 @Module({
   imports: [
@@ -38,7 +40,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
       useFactory: (
         configService: ConfigService,
         jwtService: JwtService,
-        // cache,
+        cache,
       ) => ({
         subscriptions: {
           //   'graphql-ws': {
@@ -76,13 +78,26 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
         validationRules: [depthLimit(3)],
         resolvers: { JSON: GraphQLJSON },
         introspection: true,
-        // cache,
+        cache,
+        transformSchema: (schema) => upperDirectiveTransformer(schema),
+        buildSchemaOptions: {
+          directives: [
+            new GraphQLDirective({
+              name: DirectiveTranform.Upper,
+              locations: [DirectiveLocation.FIELD_DEFINITION],
+            }),
+            new GraphQLDirective({
+              name: DirectiveTranform.BackEndUrl,
+              locations: [DirectiveLocation.FIELD_DEFINITION],
+            }),
+          ],
+        },
+        // plugins: [
+        //   ApolloServerPluginCacheControl({ defaultMaxAge: 5 }), // optional
+        //   responseCachePlugin(),
+        // ],
       }),
-      inject: [
-        ConfigService,
-        JwtService,
-        // CACHE_MANAGER
-      ],
+      inject: [ConfigService, JwtService, CACHE_MANAGER],
     }),
   ],
   providers: [ComplexityPlugin],

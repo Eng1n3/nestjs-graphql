@@ -16,7 +16,6 @@ import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
 import { v4 as uuid4 } from 'uuid';
-import { plainToInstance } from 'class-transformer';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Injectable()
@@ -72,7 +71,7 @@ export class DocumentService {
           idDocument: updateDocumentInput.idDocument,
         },
         relations: {
-          project: true,
+          project: { user: true, priority: true },
         },
       });
       if (!existDocument)
@@ -90,10 +89,10 @@ export class DocumentService {
       });
       await this.documentRepository.update(idDocument, value);
       rmSync(join(process.cwd(), existDocument.pathDocument));
-      const result = plainToInstance(DocumentEntity, {
+      const result = {
         ...existDocument,
         ...value,
-      });
+      };
       return result;
     } catch (error) {
       throw error;
@@ -115,7 +114,7 @@ export class DocumentService {
           idProject,
         },
       };
-      const document = await this.documentRepository.find({
+      const result = await this.documentRepository.find({
         where: [
           {
             documentName: ILike(`%${optionsInput?.search || ''}%`),
@@ -131,13 +130,12 @@ export class DocumentService {
           },
         ],
         relations: {
-          project: { user: true },
+          project: { user: true, priority: true },
         },
         skip,
         take,
         order,
       });
-      const result = plainToInstance(DocumentEntity, document);
       return result;
     } catch (error) {
       throw error;
@@ -148,6 +146,9 @@ export class DocumentService {
     try {
       const result = await this.documentRepository.find({
         where: { project: { idProject } },
+        relations: {
+          project: { user: true, priority: true },
+        },
       });
       return result;
     } catch (error) {
@@ -212,8 +213,14 @@ export class DocumentService {
         document,
         pathName,
       );
+      const project = await this.documentRepository.findOne({
+        where: { project: { idProject: uploadDocumentInput.idProject } },
+        relations: {
+          project: { user: true, priority: true },
+        },
+      });
       const value = this.documentRepository.create({
-        project: { idProject: uploadDocumentInput.idProject },
+        project,
         idDocument: uuid4(),
         ...uploadDocumentInput,
         pathDocument: pathDocumentToSave,

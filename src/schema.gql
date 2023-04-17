@@ -2,6 +2,10 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+directive @upper on FIELD_DEFINITION
+
+directive @backendUrl on FIELD_DEFINITION
+
 type DocumentEntity {
   """Project bedasarkan dokumen contoh: {...project}"""
   project: Project!
@@ -62,9 +66,6 @@ type Priority {
   update dibuatnya data berupa tanggal, contoh: "2002-03-23"
   """
   updatedAt: Date!
-
-  """project bedasarkan prioritas contoh: [{...project}]"""
-  project: [Project!]
 }
 
 type Project {
@@ -596,4 +597,13 @@ type Subscription {
   userDeleted: User!
   userUpdated: User!
   userAdded: User!
+  projectDeleted: Project!
+  projectUpdated: Project!
+  projectAdded: Project!
+  documentDeleted: DocumentEntity!
+  documentUpdated: DocumentEntity!
+  documentAdded: DocumentEntity!
+  priorityDeleted: Priority!
+  priorityUpdated: Priority!
+  priorityAdded: Priority!
 }

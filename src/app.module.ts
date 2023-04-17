@@ -13,7 +13,7 @@ import { dataSourceOptions } from './database/data-source';
 import { PubsubModule } from './pubsub/pubsub.module';
 import { PriorityModule } from './priority/priority.module';
 import { GraphqlModule } from './graphql/graphql.module';
-import { CacheModule } from '@nestjs/cache-manager';
+import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
 
 @Module({
@@ -27,19 +27,27 @@ import { redisStore } from 'cache-manager-redis-store';
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
-    // CacheModule.registerAsync({
-    //   isGlobal: true,
-    //   imports: [ConfigModule],
-    //   useFactory: async (configService: ConfigService) => {
-    //     return {
-    //       ttl: 60,
-    //       store: (await redisStore({
-    //         url: `redis://localhost:6379/0`,
-    //       })) as unknown as CacheStore,
-    //     };
-    //   },
-    //   inject: [ConfigService],
-    // }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          max: +configService.get<number>('CACHE_MAXIMUM'),
+          ttl: +configService.get<number>('CACHE_TTL_IN_SECOND'),
+          // store: (await redisStore({
+          //   ttl: configService.get<number>('REDIS_CACHE_TTL_IN_SECOND'),
+          //   url: `redis://${
+          //     configService.get<string>('REDIS_PASSWORD')
+          //       ? configService.get<string>('REDIS_PASSWORD') + '@'
+          //       : ''
+          //   }${configService.get<string>(
+          //     'REDIS_HOST',
+          //   )}:${configService.get<string>('REDIS_PORT')}/0`,
+          // })) as unknown as CacheStore,
+        };
+      },
+      inject: [ConfigService],
+    }),
     GraphqlModule,
     UsersModule,
     ProjectModule,

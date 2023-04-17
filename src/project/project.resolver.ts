@@ -6,13 +6,19 @@ import {
   Query,
   ResolveField,
   Resolver,
+  Subscription,
 } from '@nestjs/graphql';
 import { Project } from './entities/project.entity';
 import { CreateProjectInput } from './dto/create-project.input';
 import { ProjectService } from './project.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import { NotFoundException, UseGuards } from '@nestjs/common';
+import {
+  Inject,
+  NotFoundException,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
@@ -25,14 +31,50 @@ import { DocumentEntity } from 'src/document/entities/document.entity';
 import { GetDocumentsInput } from 'src/document/dto/get-documents.input';
 import { PriorityService } from 'src/priority/priority.service';
 import { Priority } from 'src/priority/entities/priority.entity';
+import { HttpCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
+import { CacheKey } from '@nestjs/cache-manager';
+import { PUB_SUB } from 'src/pubsub/pubsub.module';
+import { PubSub } from 'graphql-subscriptions';
+
+const PROJECT_DELETED_EVENT = 'projectDeleted';
+const PROJECT_UPDATED_EVENT = 'projectUpdated';
+const PROJECT_ADDED_EVENT = 'projectAdded';
 
 @Resolver((of) => Project)
 export class ProjectResolver {
   constructor(
+    @Inject(PUB_SUB) private pubSub: PubSub,
     private priorityService: PriorityService,
     private projectService: ProjectService,
     private documentService: DocumentService,
   ) {}
+
+  @Subscription((returns) => Project, {
+    name: 'projectDeleted',
+    filter: (payload, variables) =>
+      payload.projectDeleted.title === variables.title,
+  })
+  wsProjectDeleted() {
+    return this.pubSub.asyncIterator(PROJECT_DELETED_EVENT);
+  }
+
+  @Subscription((returns) => Project, {
+    name: 'projectUpdated',
+    filter: (payload, variables) =>
+      payload.projectUpdated.title === variables.title,
+  })
+  wsProjectUpdated() {
+    return this.pubSub.asyncIterator(PROJECT_UPDATED_EVENT);
+  }
+
+  @Subscription((returns) => Project, {
+    name: 'projectAdded',
+    filter: (payload, variables) =>
+      payload.projectAdded.title === variables.title,
+  })
+  wsProjectAdded() {
+    return this.pubSub.asyncIterator(PROJECT_ADDED_EVENT);
+  }
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -152,6 +194,9 @@ export class ProjectResolver {
         recursive: true,
         force: true,
       });
+      this.pubSub.publish(PROJECT_DELETED_EVENT, {
+        projectDeleted: existProject,
+      });
       return existProject;
     } catch (error) {
       throw error;
@@ -168,17 +213,17 @@ export class ProjectResolver {
     @Args('input') updateProjectInput: UpdateProjectInput,
   ) {
     try {
-      const checkPriority: Priority =
-        await this.priorityService.findByIdPriority(
-          updateProjectInput?.idPriority,
-        );
-      if (updateProjectInput?.idPriority && !checkPriority)
+      const priority: Priority = await this.priorityService.findByIdPriority(
+        updateProjectInput?.idPriority,
+      );
+      if (updateProjectInput?.idPriority && !priority)
         throw new NotFoundException('Priority tidak ditemukan!');
       const result = await this.projectService.updateByIdProject(
         user.idUser,
-        checkPriority,
+        priority,
         updateProjectInput,
       );
+      this.pubSub.publish(PROJECT_UPDATED_EVENT, { projectUpdated: result });
       return result;
     } catch (error) {
       throw error;
@@ -197,22 +242,25 @@ export class ProjectResolver {
     @Args('input') createProjectInput: CreateProjectInput,
   ) {
     try {
-      const checkPriority: Priority =
-        await this.priorityService.findByIdPriority(
-          createProjectInput?.idPriority,
-        );
-      if (createProjectInput?.idPriority && !checkPriority)
+      const priority: Priority = await this.priorityService.findByIdPriority(
+        createProjectInput?.idPriority,
+      );
+      if (createProjectInput?.idPriority && !priority)
         throw new NotFoundException('Priority tidak ditemukan!');
       const result = await this.projectService.create(
         user.idUser,
         createProjectInput,
+        priority,
       );
+      this.pubSub.publish(PROJECT_ADDED_EVENT, { projectAdded: result });
       return result;
     } catch (error) {
       throw error;
     }
   }
 
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('project')
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [Project], {
@@ -237,6 +285,8 @@ export class ProjectResolver {
     }
   }
 
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('projects')
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [Project], {

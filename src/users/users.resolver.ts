@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Args,
+  Directive,
   Int,
   Mutation,
   Parent,
@@ -15,14 +16,7 @@ import { GetUserInput } from './dto/get-user.input';
 import { UsersService } from './users.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import {
-  CacheInterceptor,
-  CacheKey,
-  CacheTTL,
-  Inject,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { CacheKey, Inject, UseGuards, UseInterceptors } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdateUserInput } from './dto/update.input';
@@ -33,6 +27,8 @@ import { ProjectService } from 'src/project/project.service';
 import { Project } from 'src/project/entities/project.entity';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
+import { HttpCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
+import { CacheControl } from 'nestjs-gql-cache-control';
 // import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 const USER_ADDED_EVENT = 'userAdded';
@@ -40,7 +36,6 @@ const USER_UPDATED_EVENT = 'userUpdated';
 const USER_DELETED_EVENT = 'userDeleted';
 
 @Resolver(() => User)
-// @UseInterceptors(CacheInterceptor)
 export class UsersResolver {
   constructor(
     private userService: UsersService,
@@ -50,7 +45,8 @@ export class UsersResolver {
 
   @Subscription((returns) => User, {
     name: 'userDeleted',
-    filter: (payload, variables) => payload.userAdded.title === variables.title,
+    filter: (payload, variables) =>
+      payload.userDeleted.title === variables.title,
   })
   wsUserDeleted() {
     return this.pubSub.asyncIterator(USER_DELETED_EVENT);
@@ -58,7 +54,8 @@ export class UsersResolver {
 
   @Subscription((returns) => User, {
     name: 'userUpdated',
-    filter: (payload, variables) => payload.userAdded.title === variables.title,
+    filter: (payload, variables) =>
+      payload.userUpdated.title === variables.title,
   })
   wsUserUpdated() {
     return this.pubSub.asyncIterator(USER_UPDATED_EVENT);
@@ -136,7 +133,7 @@ export class UsersResolver {
   async deleteUser(@Args('idUser') idUser: string) {
     try {
       const result = await this.userService.deleteUser(idUser);
-      this.pubSub.publish(USER_ADDED_EVENT, { userDeleted: result });
+      this.pubSub.publish(USER_DELETED_EVENT, { userDeleted: result });
       return result;
     } catch (error) {
       throw error;
@@ -158,7 +155,7 @@ export class UsersResolver {
         user.idUser,
         updateUserInput,
       );
-      this.pubSub.publish(USER_ADDED_EVENT, { userUpdated: result });
+      this.pubSub.publish(USER_UPDATED_EVENT, { userUpdated: result });
       return result;
     } catch (error) {
       throw error;
@@ -182,10 +179,13 @@ export class UsersResolver {
     }
   }
 
-  // @CacheKey('user')
-  // @CacheTTL(3)
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('user')
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
+  @Directive(
+    '@deprecated(reason: "This query will be removed in the next version")',
+  )
   @Query((returns) => User, {
     name: 'user',
     complexity: (options: ComplexityEstimatorArgs) =>
@@ -201,6 +201,8 @@ export class UsersResolver {
     }
   }
 
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('users')
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [User], {

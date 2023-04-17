@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Directive, Field, ObjectType } from '@nestjs/graphql';
 import { IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { Project } from 'src/project/entities/project.entity';
@@ -10,7 +10,6 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import '../../common/config/config.env';
 import { ConfigService } from '@nestjs/config';
 
 const configService = new ConfigService();
@@ -59,6 +58,7 @@ export class User {
   @Transform(({ value }) => `${configService.get<string>('DOMAIN')}${value}`, {
     toClassOnly: true,
   })
+  @Directive('@backendUrl')
   @Field({
     description:
       'path image, contoh: "/uploads/sodjo-dsbdib-sndd-ndni/ahsah-323innd-2839-mod-file.jpg"',

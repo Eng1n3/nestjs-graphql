@@ -1,19 +1,65 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Int,
+  Mutation,
+  Query,
+  Resolver,
+  Subscription,
+} from '@nestjs/graphql';
 import { PriorityService } from './priority.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
 import {
   ClassSerializerInterceptor,
+  Inject,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Priority } from './entities/priority.entity';
 import { GetPrioritiesInput } from './dto/get-priority.input';
+import { HttpCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
+import { CacheKey } from '@nestjs/cache-manager';
+import { PUB_SUB } from 'src/pubsub/pubsub.module';
+import { PubSub } from 'graphql-subscriptions';
 
-@Resolver()
+const PRIORITY_DELETED_EVENT = 'priorityDeleted';
+const PRIORITY_UPDATED_EVENT = 'priorityUpdated';
+const PRIORITY_ADDED_EVENT = 'priorityAdded';
+
+@Resolver((of) => Priority)
 export class PriorityResolver {
-  constructor(private priorityService: PriorityService) {}
+  constructor(
+    @Inject(PUB_SUB) private pubSub: PubSub,
+    private priorityService: PriorityService,
+  ) {}
+
+  @Subscription((returns) => Priority, {
+    name: 'priorityDeleted',
+    filter: (payload, variables) =>
+      payload.priorityDeleted.title === variables.title,
+  })
+  wsPriorityDeleted() {
+    return this.pubSub.asyncIterator(PRIORITY_DELETED_EVENT);
+  }
+
+  @Subscription((returns) => Priority, {
+    name: 'priorityUpdated',
+    filter: (payload, variables) =>
+      payload.priorityUpdated.title === variables.title,
+  })
+  wsPriorityUpdated() {
+    return this.pubSub.asyncIterator(PRIORITY_UPDATED_EVENT);
+  }
+
+  @Subscription((returns) => Priority, {
+    name: 'priorityAdded',
+    filter: (payload, variables) =>
+      payload.priorityAdded.title === variables.title,
+  })
+  wsPriorityAdded() {
+    return this.pubSub.asyncIterator(PRIORITY_ADDED_EVENT);
+  }
 
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -99,6 +145,7 @@ export class PriorityResolver {
   })
   async delete(@Args('idPriority') idPriority: string) {
     const result = await this.priorityService.delete(idPriority);
+    this.pubSub.publish(PRIORITY_DELETED_EVENT, { priorityDeleted: result });
     return result;
   }
 
@@ -118,9 +165,12 @@ export class PriorityResolver {
       name,
       description,
     );
+    this.pubSub.publish(PRIORITY_UPDATED_EVENT, { priorityUpdated: result });
     return result;
   }
 
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('priorities')
   @Roles(Role.Admin, Role.User)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -148,6 +198,7 @@ export class PriorityResolver {
     @Args('description') description: string,
   ) {
     const result = await this.priorityService.create(name, description);
+    this.pubSub.publish(PRIORITY_ADDED_EVENT, { priorityAdded: result });
     return result;
   }
 }

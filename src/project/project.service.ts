@@ -9,7 +9,6 @@ import { GetProjectsInput } from './dto/get-project.input';
 import { UpdateProjectInput } from './dto/update-project.input';
 import { Project } from './entities/project.entity';
 import { v4 as uuid4 } from 'uuid';
-import { plainToInstance } from 'class-transformer';
 import { Priority } from 'src/priority/entities/priority.entity';
 
 @Injectable()
@@ -22,6 +21,11 @@ export class ProjectService {
     try {
       const result = await this.projectRepository.find({
         where: { user: { idUser } },
+        relations: {
+          user: true,
+          priority: true,
+          document: true,
+        },
       });
       return result;
     } catch (error) {
@@ -62,6 +66,11 @@ export class ProjectService {
           user: { idUser },
           idProject: updateProjectInput?.idProject,
         },
+        relations: {
+          user: true,
+          priority: true,
+          document: true,
+        },
       });
       if (!existProject)
         throw new NotFoundException('Project tidak ditemukan!');
@@ -71,7 +80,7 @@ export class ProjectService {
         ...project,
       });
       await this.projectRepository.update(idProject, value);
-      const result = plainToInstance(Project, { ...existProject, ...value });
+      const result = { ...existProject, ...value };
       return result;
     } catch (error) {
       throw error;
@@ -82,6 +91,11 @@ export class ProjectService {
     try {
       const result = await this.projectRepository.findOne({
         where: { idProject },
+        relations: {
+          user: true,
+          priority: true,
+          document: true,
+        },
       });
       return result;
     } catch (error) {
@@ -106,7 +120,7 @@ export class ProjectService {
       const skip = getProjectsInput?.pagination?.skip;
       const take = getProjectsInput?.pagination?.take;
       const filter = { user: { idUser, role: 'user' } };
-      const project = await this.projectRepository.find({
+      const result = await this.projectRepository.find({
         where: [
           {
             projectName: ILike(`%${getProjectsInput?.search || ''}%`),
@@ -134,7 +148,6 @@ export class ProjectService {
         take,
         order,
       });
-      const result = plainToInstance(Project, project);
       return result;
     } catch (error) {
       throw error;
@@ -144,12 +157,14 @@ export class ProjectService {
   async create(
     idUser?: string,
     createProjectModel?: CreateProjectInput,
+    priority?: Priority,
   ): Promise<Project | any> {
     try {
       const { idPriority, ...projectInput } = createProjectModel;
+      const user = await this.projectRepository.findOneBy({ user: { idUser } });
       const value = this.projectRepository.create({
-        user: { idUser },
-        priority: { idPriority },
+        user,
+        priority,
         idProject: uuid4(),
         ...projectInput,
       });
