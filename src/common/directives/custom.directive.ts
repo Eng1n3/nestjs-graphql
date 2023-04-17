@@ -2,6 +2,7 @@ import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 import { defaultFieldResolver, GraphQLSchema } from 'graphql';
 import { DirectiveTranform } from '../enums/directive.enum';
 import { ConfigService } from '@nestjs/config';
+import '../common/config/config.env';
 
 const configService = new ConfigService();
 
