@@ -108,72 +108,56 @@ export class UsersService {
   }
 
   async deleteUser(idUser: string) {
-    try {
-      const checkUser = await this.userRepository.findOne({
-        where: { idUser },
-        relations: { project: { priority: true, document: true } },
-      });
-      if (!checkUser) throw new NotFoundException('User not found');
+    const checkUser = await this.userRepository.findOne({
+      where: { idUser },
+      relations: { project: { priority: true, document: true } },
+    });
+    if (!checkUser) throw new NotFoundException('User not found');
 
-      await this.userRepository.delete(idUser);
+    await this.userRepository.delete(idUser);
 
-      rmSync(join(process.cwd(), `/uploads/profiles/${checkUser?.idUser}`), {
+    rmSync(join(process.cwd(), `/uploads/profiles/${checkUser?.idUser}`), {
+      recursive: true,
+      force: true,
+    });
+
+    checkUser?.project?.forEach(({ idProject }) =>
+      rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
         recursive: true,
         force: true,
-      });
-
-      checkUser?.project?.forEach(({ idProject }) =>
-        rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
-          recursive: true,
-          force: true,
-        }),
-      );
-      return checkUser;
-    } catch (error) {
-      throw error;
-    }
+      }),
+    );
+    return checkUser;
   }
 
   async updatePassword(idUser: string, password: string) {
-    try {
-      await this.userRepository.update(idUser, { password });
-    } catch (error) {
-      throw error;
-    }
+    await this.userRepository.update(idUser, { password });
   }
 
   async findOneByIdUser(idUser: string): Promise<User> {
-    try {
-      const result = await this.userRepository.findOne({
-        where: { idUser },
-        relations: {
-          project: {
-            priority: true,
-            document: true,
-          },
+    const result = await this.userRepository.findOne({
+      where: { idUser },
+      relations: {
+        project: {
+          priority: true,
+          document: true,
         },
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+      },
+    });
+    return result;
   }
 
   async findOneByEmail(email: string): Promise<User> {
-    try {
-      const result = await this.userRepository.findOne({
-        where: { email },
-        relations: {
-          project: {
-            priority: true,
-            document: true,
-          },
+    const result = await this.userRepository.findOne({
+      where: { email },
+      relations: {
+        project: {
+          priority: true,
+          document: true,
         },
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+      },
+    });
+    return result;
   }
 
   async createUser(
@@ -210,54 +194,46 @@ export class UsersService {
   }
 
   async findAll(getUserInput: GetUserInput<User>) {
-    try {
-      const order = getUserInput?.sort;
-      const skip = getUserInput?.pagination?.skip;
-      const take = getUserInput?.pagination?.take;
-      const result = await this.userRepository.find({
-        where: [
-          {
-            email: ILike(`%${getUserInput?.search || ''}%`),
-            role: 'user',
-          },
-          {
-            fullname: ILike(`%${getUserInput?.search || ''}%`),
-            role: 'user',
-          },
-        ],
-        relations: {
-          project: {
-            priority: true,
-            document: true,
-          },
+    const order = getUserInput?.sort;
+    const skip = getUserInput?.pagination?.skip;
+    const take = getUserInput?.pagination?.take;
+    const result = await this.userRepository.find({
+      where: [
+        {
+          email: ILike(`%${getUserInput?.search || ''}%`),
+          role: 'user',
         },
-        skip,
-        take,
-        order,
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+        {
+          fullname: ILike(`%${getUserInput?.search || ''}%`),
+          role: 'user',
+        },
+      ],
+      relations: {
+        project: {
+          priority: true,
+          document: true,
+        },
+      },
+      skip,
+      take,
+      order,
+    });
+    return result;
   }
 
   async count(searchUserInput?: string) {
-    try {
-      const result = await this.userRepository.count({
-        where: [
-          {
-            email: ILike(`%${searchUserInput || ''}%`),
-            role: 'user',
-          },
-          {
-            fullname: ILike(`%${searchUserInput || ''}%`),
-            role: 'user',
-          },
-        ],
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.userRepository.count({
+      where: [
+        {
+          email: ILike(`%${searchUserInput || ''}%`),
+          role: 'user',
+        },
+        {
+          fullname: ILike(`%${searchUserInput || ''}%`),
+          role: 'user',
+        },
+      ],
+    });
+    return result;
   }
 }

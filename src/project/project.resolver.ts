@@ -213,7 +213,7 @@ export class ProjectResolver {
     @Args('input') updateProjectInput: UpdateProjectInput,
   ) {
     try {
-      const priority: Priority = await this.priorityService.findByIdPriority(
+      const priority: Priority = await this.priorityService.findOneByIdPriority(
         updateProjectInput?.idPriority,
       );
       if (updateProjectInput?.idPriority && !priority)
@@ -242,15 +242,17 @@ export class ProjectResolver {
     @Args('input') createProjectInput: CreateProjectInput,
   ) {
     try {
-      const priority: Priority = await this.priorityService.findByIdPriority(
+      const priority = await this.priorityService.findOneByIdPriority(
         createProjectInput?.idPriority,
       );
+
       if (createProjectInput?.idPriority && !priority)
         throw new NotFoundException('Priority tidak ditemukan!');
+
       const result = await this.projectService.create(
         user.idUser,
         createProjectInput,
-        priority,
+        createProjectInput?.idPriority,
       );
       this.pubSub.publish(PROJECT_ADDED_EVENT, { projectAdded: result });
       return result;

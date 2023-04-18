@@ -157,15 +157,15 @@ export class ProjectService {
   async create(
     idUser?: string,
     createProjectModel?: CreateProjectInput,
-    priority?: Priority,
+    idPriority?: string,
   ): Promise<Project | any> {
     try {
-      const { idPriority, ...projectInput } = createProjectModel;
+      const projectInput = createProjectModel;
       const value = this.projectRepository.create({
         user: { idUser },
-        priority,
         idProject: uuid4(),
         ...projectInput,
+        priority: { idPriority },
       });
       await this.projectRepository.save(value);
       mkdirSync(join(process.cwd(), '/uploads/projects/', value.idProject), {

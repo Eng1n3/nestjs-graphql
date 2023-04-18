@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Priority } from './entities/priority.entity';
-import { ILike, Repository } from 'typeorm';
+import { Equal, ILike, Repository } from 'typeorm';
 import { GetPrioritiesInput } from './dto/get-priority.input';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -34,9 +34,9 @@ export class PriorityService {
     }
   }
 
-  async findByIdPriority(idPriority: string) {
-    const result = await this.priorityRepository.findOne({
-      where: { idPriority },
+  async findOneByIdPriority(idPriority: string | null) {
+    const result = await this.priorityRepository.findOneBy({
+      idPriority: Equal(idPriority),
     });
     return result;
   }
