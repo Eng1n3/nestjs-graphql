@@ -161,9 +161,8 @@ export class ProjectService {
   ): Promise<Project | any> {
     try {
       const { idPriority, ...projectInput } = createProjectModel;
-      const user = await this.projectRepository.findOneBy({ user: { idUser } });
       const value = this.projectRepository.create({
-        user,
+        user: { idUser },
         priority,
         idProject: uuid4(),
         ...projectInput,
@@ -172,7 +171,15 @@ export class ProjectService {
       mkdirSync(join(process.cwd(), '/uploads/projects/', value.idProject), {
         recursive: true,
       });
-      return value;
+      const result = await this.projectRepository.findOne({
+        where: { idProject: value.idProject },
+        relations: {
+          user: true,
+          document: true,
+          priority: true,
+        },
+      });
+      return result;
     } catch (error) {
       throw error;
     }

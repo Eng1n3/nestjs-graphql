@@ -213,20 +213,18 @@ export class DocumentService {
         document,
         pathName,
       );
-      const project = await this.documentRepository.findOne({
-        where: { project: { idProject: uploadDocumentInput.idProject } },
-        relations: {
-          project: { user: true, priority: true },
-        },
-      });
       const value = this.documentRepository.create({
-        project,
+        project: { idProject: uploadDocumentInput.idProject },
         idDocument: uuid4(),
         ...uploadDocumentInput,
         pathDocument: pathDocumentToSave,
       });
       await this.documentRepository.save(value);
-      return value;
+      const result = await this.documentRepository.findOne({
+        where: { idDocument: value.idDocument },
+        relations: { project: { user: true, priority: true } },
+      });
+      return result;
     } catch (error) {
       throw error;
     }

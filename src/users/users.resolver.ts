@@ -194,7 +194,7 @@ export class UsersResolver {
   })
   async findOne(@CurrentUser() user: User) {
     try {
-      const result = await this.userService.findOne(user.email);
+      const result = await this.userService.findOneByEmail(user.email);
       return result;
     } catch (error) {
       throw error;
@@ -216,7 +216,7 @@ export class UsersResolver {
     optionsInput: GetUserInput<User>,
   ) {
     try {
-      const result = await this.userService.find(optionsInput);
+      const result = await this.userService.findAll(optionsInput);
       return result;
     } catch (error) {
       throw error;

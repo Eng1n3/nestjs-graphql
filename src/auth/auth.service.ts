@@ -73,7 +73,7 @@ export class AuthService {
 
   async findUser(email: string): Promise<User> {
     try {
-      const user = await this.usersService.findOne(email);
+      const user = await this.usersService.findOneByEmail(email);
       if (user) return user;
       return null;
     } catch (error) {
@@ -83,7 +83,7 @@ export class AuthService {
 
   async validateAdmin(email: string, password: string): Promise<User> {
     try {
-      const user = await this.usersService.findOne(email);
+      const user = await this.usersService.findOneByEmail(email);
       if (user && user.role === 'admin') {
         const comparePassword = await bcrypt.compare(password, user.password);
         if (comparePassword) {
@@ -98,7 +98,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User> {
     try {
-      const user = await this.usersService.findOne(email);
+      const user = await this.usersService.findOneByEmail(email);
       if (user && user.role === 'user') {
         const comparePassword = await bcrypt.compare(password, user.password);
         if (comparePassword) {

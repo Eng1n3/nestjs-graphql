@@ -14,11 +14,10 @@ import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { GetUserInput } from './dto/get-user.input';
 import * as bcrypt from 'bcrypt';
-import { UpdateAdminInput, UpdateUserInput } from './dto/update.input';
+import { UpdateUserInput } from './dto/update.input';
 import { createWriteStream, mkdirSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
 import { FileUpload } from 'graphql-upload-ts';
-import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class UsersService {
@@ -54,7 +53,7 @@ export class UsersService {
 
   async updateUser(
     idUser: string,
-    registerUserInput: UpdateUserInput | UpdateAdminInput,
+    registerUserInput: UpdateUserInput,
   ): Promise<User> {
     try {
       let pathImageToSave;
@@ -143,10 +142,27 @@ export class UsersService {
     }
   }
 
-  async findOne(email: string): Promise<User> {
+  async findOneByIdUser(idUser: string): Promise<User> {
     try {
       const result = await this.userRepository.findOne({
-        where: { email: email },
+        where: { idUser },
+        relations: {
+          project: {
+            priority: true,
+            document: true,
+          },
+        },
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findOneByEmail(email: string): Promise<User> {
+    try {
+      const result = await this.userRepository.findOne({
+        where: { email },
         relations: {
           project: {
             priority: true,
@@ -193,7 +209,7 @@ export class UsersService {
     }
   }
 
-  async find(getUserInput: GetUserInput<User>) {
+  async findAll(getUserInput: GetUserInput<User>) {
     try {
       const order = getUserInput?.sort;
       const skip = getUserInput?.pagination?.skip;
