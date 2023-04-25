@@ -72,7 +72,7 @@ export class PriorityService {
     return result;
   }
 
-  async update(idPriority: string, name: string, description: string) {
+  async update(idPriority: string, name?: string, description?: string) {
     const { project, ...result } = await this.priorityRepository.findOne({
       where: { idPriority },
       relations: { project: true },
@@ -96,6 +96,7 @@ export class PriorityService {
       throw new BadRequestException(
         `Tidak bisa menghapus prioritas karena sedang digunakan`,
       );
+    await this.priorityRepository.delete(idPriority);
     return result;
   }
 }
