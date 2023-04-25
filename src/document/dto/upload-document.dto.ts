@@ -1,5 +1,9 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+} from 'class-validator';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-ts';
 
 @InputType()
@@ -20,11 +24,13 @@ export class UploadDocumentInput {
   documentName: string;
 
   @Field({
+    nullable: true,
+    defaultValue: '',
     description: 'deskripsi data dokument, contoh: "ini adalah deskripsi"',
   })
   @IsString()
-  @IsNotEmpty()
-  description: string;
+  @IsOptional()
+  description?: string;
 
   @Field(() => GraphQLUpload, {
     description: 'File untuk project',

@@ -64,6 +64,7 @@ export class DocumentService {
     updateDocumentInput: UpdateDocumentInput,
   ) {
     try {
+      let pathDocument: string;
       const document = await updateDocumentInput.file;
       const existDocument = await this.documentRepository.findOne({
         where: {
@@ -77,15 +78,17 @@ export class DocumentService {
       if (!existDocument)
         throw new NotFoundException('Dokumen tidak ditemukan!');
       const pathName = `/uploads/projects/${existDocument?.project?.idProject}`;
-      const pathDocumentToSave = await this.saveDocumentToDir(
-        document,
-        pathName,
-      );
+      if(document) {
+        pathDocument = await this.saveDocumentToDir(
+          document,
+          pathName,
+        );
+      }
       const { idDocument, file, ...values } = updateDocumentInput;
       const value = this.documentRepository.create({
         idDocument,
         ...values,
-        pathDocument: pathDocumentToSave,
+        pathDocument,
       });
       await this.documentRepository.update(idDocument, value);
       rmSync(join(process.cwd(), existDocument.pathDocument));

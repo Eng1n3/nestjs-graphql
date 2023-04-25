@@ -45,11 +45,13 @@ export class DocumentEntity {
   })
   pathDocument: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   @Field({
+    nullable: true,
+    defaultValue: '',
     description: 'deskripsi data dokument, contoh: "ini adalah deskripsi"',
   })
-  description: string;
+  description?: string;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   @Field({
