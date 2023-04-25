@@ -25,7 +25,6 @@ export class UploadDocumentInput {
 
   @Field({
     nullable: true,
-    defaultValue: '',
     description: 'deskripsi data dokument, contoh: "ini adalah deskripsi"',
   })
   @IsString()
