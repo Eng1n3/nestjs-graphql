@@ -83,6 +83,7 @@ export class DocumentService {
           document,
           pathName,
         );
+        rmSync(join(process.cwd(), existDocument.pathDocument), { recursive: true, force: true, });
       }
       const { idDocument, file, ...values } = updateDocumentInput;
       const value = this.documentRepository.create({
@@ -91,7 +92,6 @@ export class DocumentService {
         pathDocument,
       });
       await this.documentRepository.update(idDocument, value);
-      rmSync(join(process.cwd(), existDocument.pathDocument));
       const result = {
         ...existDocument,
         ...value,
