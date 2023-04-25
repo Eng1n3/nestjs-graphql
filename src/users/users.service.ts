@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
+import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,
   Injectable,
@@ -6,14 +7,10 @@ import {
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  RegisterAdminInput,
-  RegisterUserInput,
-} from 'src/users/dto/register.input';
+import { RegisterUserInput } from 'src/users/dto/register.input';
 import { ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { GetUserInput } from './dto/get-user.input';
-import * as bcrypt from 'bcrypt';
 import { UpdateUserInput } from './dto/update.input';
 import { createWriteStream, mkdirSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
@@ -162,7 +159,7 @@ export class UsersService {
 
   async createUser(
     role: string,
-    registerUserInput: RegisterUserInput | RegisterAdminInput,
+    registerUserInput: RegisterUserInput,
   ): Promise<User> {
     try {
       const hashPassword = await bcrypt.hash(

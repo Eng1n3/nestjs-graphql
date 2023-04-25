@@ -78,12 +78,12 @@ export class DocumentService {
       if (!existDocument)
         throw new NotFoundException('Dokumen tidak ditemukan!');
       const pathName = `/uploads/projects/${existDocument?.project?.idProject}`;
-      if(document) {
-        pathDocument = await this.saveDocumentToDir(
-          document,
-          pathName,
-        );
-        rmSync(join(process.cwd(), existDocument.pathDocument), { recursive: true, force: true, });
+      if (document) {
+        pathDocument = await this.saveDocumentToDir(document, pathName);
+        rmSync(join(process.cwd(), existDocument.pathDocument), {
+          recursive: true,
+          force: true,
+        });
       }
       const { idDocument, file, ...values } = updateDocumentInput;
       const value = this.documentRepository.create({

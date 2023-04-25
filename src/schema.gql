@@ -28,7 +28,7 @@ type DocumentEntity {
   """
   deskripsi data dokument, contoh: "ini adalah deskripsi"
   """
-  description: String!
+  description: String
 
   """
   tanggal dibuatnya data berupa tanggal, contoh: "2002-03-23"
@@ -401,7 +401,7 @@ type Mutation {
   deletePriority(idPriority: String!): Priority!
 
   """mutation update prioritas, data: {...prioritas}"""
-  updatePriority(idPriority: String!, name: String!, description: String!): Priority!
+  updatePriority(idPriority: String!, name: String, description: String): Priority!
 
   """mutation create prioritas, data: {...prioritas}"""
   createPriority(name: String!, description: String!): Priority!
@@ -577,7 +577,7 @@ input UploadDocumentInput {
   """
   deskripsi data dokument, contoh: "ini adalah deskripsi"
   """
-  description: String!
+  description: String
 
   """File untuk project"""
   file: Upload!

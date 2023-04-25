@@ -10,6 +10,7 @@ import { PriorityService } from './priority.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
 import {
+  Body,
   ClassSerializerInterceptor,
   Inject,
   UseGuards,
@@ -22,6 +23,8 @@ import { HttpCacheInterceptor } from 'src/common/interceptors/cache.interceptor'
 import { CacheKey } from '@nestjs/cache-manager';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
+import { CreatePriorityInput } from './dto/create-priority.input';
+import { UpdatePriorityInput } from './dto/update-priority.input';
 
 const PRIORITY_DELETED_EVENT = 'priorityDeleted';
 const PRIORITY_UPDATED_EVENT = 'priorityUpdated';
@@ -156,9 +159,10 @@ export class PriorityResolver {
     description: 'mutation update prioritas, data: {...prioritas}',
   })
   async update(
+    @Body() body: UpdatePriorityInput,
     @Args('idPriority') idPriority: string,
-    @Args('name') name: string,
-    @Args('description') description: string,
+    @Args({ name: 'name', nullable: true }) name?: string,
+    @Args({ name: 'description', nullable: true }) description?: string,
   ) {
     const result = await this.priorityService.update(
       idPriority,
@@ -194,6 +198,7 @@ export class PriorityResolver {
     description: 'mutation create prioritas, data: {...prioritas}',
   })
   async create(
+    @Body() body: CreatePriorityInput,
     @Args('name') name: string,
     @Args('description') description: string,
   ) {
