@@ -186,7 +186,6 @@ export class UsersService {
       ) {
         throw new BadRequestException('Email sudah digunakan!');
       }
-      throw error;
     }
   }
 

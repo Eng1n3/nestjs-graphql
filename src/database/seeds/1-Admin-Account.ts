@@ -17,7 +17,7 @@ export default class AdminAccountSeeder extends Seeder {
       email: 'admin@gmail.com',
       password: hashPassword,
       role: 'admin',
-      pathImage: 'uploads/default-user.jpg',
+      pathImage: '/uploads/default-user.jpg',
     };
     const value = dataSource
       .createEntityManager()
