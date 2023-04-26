@@ -66,7 +66,7 @@ export class PriorityService {
       const idPriority = uuidv4();
       const result = this.priorityRepository.create({
         idPriority,
-        name,
+        name: name.toLowerCase(),
         description,
       });
       await this.priorityRepository.save(result);

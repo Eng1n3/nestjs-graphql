@@ -241,7 +241,7 @@ type Query {
   countProjectUser(search: String = ""): Int!
 
   """query mendapatkan project user, data: [{...project}]"""
-  project(options: GetProjectsInput = {}): [Project!]
+  project(options: GetProjectsInput = {}): [Project!]!
 
   """query mendapatkan project semua user, data: [{...project}]"""
   projects(options: GetProjectsInput = {}): [Project!]

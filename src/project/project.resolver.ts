@@ -35,6 +35,7 @@ import { HttpCacheInterceptor } from 'src/common/interceptors/cache.interceptor'
 import { CacheKey } from '@nestjs/cache-manager';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
+import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 
 const PROJECT_DELETED_EVENT = 'projectDeleted';
 const PROJECT_UPDATED_EVENT = 'projectUpdated';
@@ -267,8 +268,8 @@ export class ProjectResolver {
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [Project], {
     name: 'project',
-    nullable: true,
-    defaultValue: [],
+    complexity: (options: ComplexityEstimatorArgs) =>
+      options.args.count * options.childComplexity,
     description: 'query mendapatkan project user, data: [{...project}]',
   })
   async project(
