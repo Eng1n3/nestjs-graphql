@@ -24,7 +24,7 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
-  private saveDocumentToDir(
+  private async saveDocumentToDir(
     document: FileUpload,
     pathName: string,
   ): Promise<string> {
@@ -34,18 +34,16 @@ export class UsersService {
       /([\s]+)/g,
       '-',
     )}`;
-    return new Promise((resolve) => {
+    const saveImage: Promise<string> = new Promise((resolve) => {
       createReadStream()
         .pipe(
           createWriteStream(
             join(process.cwd(), pathName, `${convertFilename}`),
           ),
         )
-        .on('finish', () => resolve(`${pathName}/${convertFilename}`))
-        .on('error', () => {
-          new BadRequestException('Could not save image');
-        });
+        .on('finish', () => resolve(`${pathName}/${convertFilename}`));
     });
+    return await saveImage;
   }
 
   async updateUser(
@@ -53,7 +51,7 @@ export class UsersService {
     registerUserInput: UpdateUserInput,
   ): Promise<User> {
     try {
-      let pathImageToSave;
+      let pathImageToSave: string;
       const validImage = /(png|jpeg|image|img)/g;
       const image = await registerUserInput?.image;
       const existUser = await this.userRepository.findOne({
@@ -76,7 +74,13 @@ export class UsersService {
         const existImage = readdirSync(
           join(process.cwd(), '/uploads/profiles/', idUser),
         );
-        if (existImage.length) rmSync(join(process.cwd(), existUser.pathImage));
+        console.log(77, image);
+        if (existImage.length)
+          rmSync(join(process.cwd(), existUser.pathImage), {
+            recursive: true,
+            force: true,
+          });
+        console.log(83, image);
         if (!validImage.test(image.mimetype))
           throw new BadRequestException('File tidak valid!');
         const pathImage = `/uploads/profiles/${idUser}`;
@@ -92,6 +96,7 @@ export class UsersService {
         ...existUser,
         ...value,
       };
+      console.log(98, result);
       return result;
     } catch (error) {
       if (
@@ -100,7 +105,6 @@ export class UsersService {
       ) {
         throw new BadRequestException('Email sudah digunakan!');
       }
-      throw error;
     }
   }
 

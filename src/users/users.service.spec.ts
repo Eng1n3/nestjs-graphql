@@ -1,37 +1,41 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import * as fs from 'fs';
+import { Project } from 'src/project/entities/project.entity';
+import { Dirent } from 'fs';
+import { FileUpload } from 'graphql-upload-ts';
+import { createWriteStream } from 'fs';
+import { WriteStream } from 'fs';
 
 jest.mock('bcrypt');
+type MockType<T> = {
+  [P in keyof T]?: jest.Mock;
+};
 
 describe('UsersService', () => {
   let usersService: UsersService;
-  let findOne: jest.Mock;
-  let create: jest.Mock;
-  let save: jest.Mock;
-  let find: jest.Mock;
-  let count: jest.Mock;
+  const userRepositoryMock: MockType<Repository<User>> = {
+    findOne: jest.fn(),
+    create: jest.fn(),
+    save: jest.fn(),
+    find: jest.fn(),
+    update: jest.fn(),
+    count: jest.fn(),
+    delete: jest.fn(),
+  };
   beforeEach(async () => {
-    findOne = jest.fn();
-    create = jest.fn();
-    save = jest.fn();
-    find = jest.fn();
-    count = jest.fn();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: getRepositoryToken(User),
-          useValue: {
-            findOne,
-            create,
-            save,
-            find,
-            count,
-            delete: jest.fn(),
-          },
+          useValue: userRepositoryMock,
         },
       ],
     }).compile();
@@ -43,7 +47,7 @@ describe('UsersService', () => {
     let total: number;
     beforeEach(() => {
       total = 1;
-      count.mockReturnValue(Promise.resolve(total));
+      userRepositoryMock.count.mockReturnValue(Promise.resolve(total));
     });
     it('Kembalian success', async () => {
       const countUser = await usersService.count();
@@ -55,7 +59,7 @@ describe('UsersService', () => {
     let user: User[];
     beforeEach(() => {
       user = [new User()];
-      find.mockReturnValue(Promise.resolve(user));
+      userRepositoryMock.find.mockReturnValue(Promise.resolve(user));
     });
     it('Kembalian success', async () => {
       const fetchedUser = await usersService.findAll({});
@@ -67,7 +71,7 @@ describe('UsersService', () => {
     let user: User;
     beforeEach(() => {
       user = new User();
-      findOne.mockReturnValue(Promise.resolve(user));
+      userRepositoryMock.findOne.mockReturnValue(Promise.resolve(user));
     });
     it('Kembalian success', async () => {
       const fetchedUser = await usersService.findOneByIdUser('id-user');
@@ -79,7 +83,7 @@ describe('UsersService', () => {
     let user: User;
     beforeEach(() => {
       user = new User();
-      findOne.mockReturnValue(Promise.resolve(user));
+      userRepositoryMock.findOne.mockReturnValue(Promise.resolve(user));
     });
     it('Kembalian success', async () => {
       const fetchedUser = await usersService.findOneByEmail('test@test.com');
@@ -87,57 +91,16 @@ describe('UsersService', () => {
     });
   });
 
-  describe('Mendelete user', () => {
-    describe('Success delete user', () => {
-      let user: User;
-      beforeEach(() => {
-        user = new User();
-        create.mockReturnValue(Promise.resolve(user));
-        save.mockReturnValue(Promise.resolve(true));
-      });
-      it('Kembalian success', async () => {
-        const createUser = await usersService.createUser('user', {
-          email: 'test@test.com',
-          password: 'Sup3rstrong_password',
-          repassword: 'Sup3rstrong_password',
-          fullname: 'unit tesing',
-          birthDay: '2002-03-23',
-        });
-        expect(createUser).toEqual(user);
-      });
-    });
-
-    // describe('Duplikat membuat user', () => {
-    //   let user: User;
-    //   beforeEach(() => {
-    //     user = new User();
-    //     create.mockReturnValue(
-    //       Promise.reject({ message: 'duplicate key value', detail: 'email' }),
-    //     );
-    //     save.mockReturnValue(Promise.resolve(true));
-    //   });
-    //   it('Kembalian error', async () => {
-    //     await expect(
-    //       usersService.createUser('user', {
-    //         email: 'test@test.com',
-    //         password: 'Sup3rstrong_password',
-    //         repassword: 'Sup3rstrong_password',
-    //         fullname: 'unit tesing',
-    //         birthDay: '2002-03-23',
-    //       }),
-    //     ).rejects.toThrow();
-    //   });
-    // });
-  });
-
   describe('Membuat user', () => {
     describe('Success membuat user', () => {
       let user: User;
       beforeEach(() => {
         user = new User();
-        // jest.spyOn(fs, 'mkdirSync').mockImplementationOnce(() => 'false');
-        create.mockReturnValue(Promise.resolve(user));
-        save.mockReturnValue(Promise.resolve(true));
+        jest
+          .spyOn(fs, 'mkdirSync')
+          .mockImplementationOnce((pth, opts) => 'true');
+        userRepositoryMock.create.mockReturnValue(user);
+        userRepositoryMock.save.mockReturnValue(Promise.resolve(true));
       });
       it('Kembalian success', async () => {
         const createUser = await usersService.createUser('user', {
@@ -151,27 +114,161 @@ describe('UsersService', () => {
       });
     });
 
-    // describe('Duplikat membuat user', () => {
-    //   let user: User;
-    //   beforeEach(() => {
-    //     user = new User();
-    //     jest.spyOn(fs, 'mkdirSync').mockReturnValue('true');
-    //     create.mockReturnValue(
-    //       Promise.reject({ message: 'duplicate key value', detail: 'email' }),
-    //     );
-    //     save.mockReturnValue(Promise.resolve(true));
-    //   });
-    //   it('Kembalian error', async () => {
-    //     await expect(
-    //       usersService.createUser('user', {
-    //         email: 'test@test.com',
-    //         password: 'Sup3rstrong_password',
-    //         repassword: 'Sup3rstrong_password',
-    //         fullname: 'unit tesing',
-    //         birthDay: '2002-03-23',
-    //       }),
-    //     ).rejects.toThrow();
-    //   });
-    // });
+    describe('Duplikat membuat user', () => {
+      let user: User;
+      beforeEach(() => {
+        user = new User();
+        jest
+          .spyOn(fs, 'mkdirSync')
+          .mockImplementationOnce((pth, opts) => 'true');
+        userRepositoryMock.create.mockReturnValue(
+          Promise.reject({ message: 'duplicate key value', detail: 'email' }),
+        );
+        userRepositoryMock.save.mockReturnValue(Promise.resolve(true));
+      });
+      it('Kembalian error', async () => {
+        await expect(
+          usersService.createUser('user', {
+            email: 'test@test.com',
+            password: 'Sup3rstrong_password',
+            repassword: 'Sup3rstrong_password',
+            fullname: 'unit tesing',
+            birthDay: '2002-03-23',
+          }),
+        ).rejects.toThrow();
+      });
+    });
+  });
+  describe('Melakukan update password user', () => {
+    beforeEach(() => {
+      userRepositoryMock.update.mockReturnValue(Promise.resolve(true));
+    });
+    it('Kembalian success', async () => {
+      const updatePassword = await usersService.updatePassword(
+        'testing-12345',
+        'password_testing',
+      );
+      expect(updatePassword).toEqual(undefined);
+    });
+  });
+
+  describe('Melakukan update user', () => {
+    describe('Success dengan belum ada image', () => {
+      let user: User;
+      let mockFile: Promise<FileUpload>;
+      beforeEach(() => {
+        user = new User();
+        jest
+          .spyOn(fs, 'readdirSync')
+          .mockImplementationOnce((path, options) => []);
+        jest.spyOn(fs, 'rmSync').mockImplementationOnce((path, options) => {
+          true;
+        });
+        const mockWriteStream = {
+          on: jest.fn().mockImplementationOnce(function (this, event, handler) {
+            if (event === 'finish') {
+              handler();
+            }
+            return this;
+          }),
+        };
+        const mockReadStream = {
+          pipe: jest.fn().mockReturnValueOnce(mockWriteStream),
+        };
+        mockFile = new Promise((resolve) =>
+          resolve({
+            filename: 'test',
+            mimetype: 'image/jpeg',
+            encoding: '7bit',
+            createReadStream: jest.fn().mockReturnValueOnce(mockReadStream),
+            fieldName: '',
+          }),
+        );
+        jest
+          .spyOn(fs, 'createWriteStream')
+          .mockReturnValueOnce(mockWriteStream as unknown as WriteStream);
+        userRepositoryMock.findOne.mockReturnValue(Promise.resolve(user));
+        userRepositoryMock.create.mockReturnValue(user);
+        userRepositoryMock.update.mockReturnValue(Promise.resolve(true));
+      });
+      it('Kembalian success', async () => {
+        const updateUser = await usersService.updateUser('testing-1234', {
+          email: 'testin@gmail.com',
+          birthDay: '2023-04-01',
+          password: 'password_testing',
+          image: mockFile,
+        });
+        expect(updateUser).toEqual(user);
+      });
+    });
+
+    describe('error mimetype dan sudah ada image', () => {
+      let user: User;
+      let mockFile: Promise<FileUpload>;
+      beforeEach(() => {
+        user = new User();
+        jest
+          .spyOn(fs, 'readdirSync')
+          .mockImplementationOnce((path, options) => [{} as Dirent]);
+        jest.spyOn(fs, 'rmSync').mockImplementationOnce((path, options) => {
+          true;
+        });
+        const mockWriteStream = {
+          on: jest.fn().mockImplementationOnce(function (this, event, handler) {
+            if (event === 'finish') {
+              handler();
+            }
+            return this;
+          }),
+        };
+        const mockReadStream = {
+          pipe: jest.fn().mockReturnValueOnce(mockWriteStream),
+        };
+        mockFile = new Promise((resolve) =>
+          resolve({
+            filename: 'test',
+            mimetype: 'testmime',
+            encoding: '7bit',
+            createReadStream: jest.fn().mockReturnValueOnce(mockReadStream),
+            fieldName: '',
+          }),
+        );
+        jest
+          .spyOn(fs, 'createWriteStream')
+          .mockReturnValueOnce(mockWriteStream as unknown as WriteStream);
+        userRepositoryMock.findOne.mockReturnValue(Promise.resolve(user));
+        userRepositoryMock.create.mockReturnValue(user);
+        userRepositoryMock.update.mockReturnValue(Promise.resolve(true));
+      });
+      it('Kembalian error mime type', async () => {
+        // await expect(
+        const updateUser = await usersService.updateUser('testing-1234', {
+          email: 'testin@gmail.com',
+          birthDay: '2023-04-01',
+          password: 'password_testing',
+          image: mockFile,
+        });
+        console.log(259, updateUser);
+        // ).rejects.toThrow();
+      });
+    });
+  });
+
+  describe('Mendelete user', () => {
+    describe('Success delete user', () => {
+      let user: User;
+      beforeEach(() => {
+        user = { ...new User(), project: [{ ...new Project() }] };
+        jest.spyOn(fs, 'rmSync').mockImplementationOnce((path, options) => {
+          true;
+        });
+        userRepositoryMock.findOne.mockReturnValue(Promise.resolve(user));
+        userRepositoryMock.delete.mockReturnValue(Promise.resolve(true));
+      });
+      it('Kembalian success', async () => {
+        const createUser = await usersService.deleteUser('user-asdjoj-3283298');
+        expect(createUser).toEqual(user);
+      });
+    });
   });
 });
