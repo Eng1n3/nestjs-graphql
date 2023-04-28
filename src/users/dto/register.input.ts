@@ -8,6 +8,7 @@ import {
   IsStrongPassword,
 } from 'class-validator';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-ts';
+import { DeadlineDate } from 'src/common/decorators/deadline-date.decorator';
 import { IsHomepage } from 'src/common/decorators/is-homepage.decorator';
 import { IsOnlyDate } from 'src/common/decorators/is-only-date.decorator';
 import { Match } from 'src/common/decorators/match.decorator';
@@ -42,6 +43,7 @@ export class RegisterUserInput {
   })
   // @IsDate()
   @IsOnlyDate()
+  @DeadlineDate()
   birthDay: string;
 
   @Field({

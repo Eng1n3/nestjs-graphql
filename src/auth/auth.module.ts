@@ -9,6 +9,7 @@ import { ChangePasswordStrategy } from './strategies/change-password.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalAdmintrategy } from './strategies/local-admin.strategy';
 import { LocalUserStrategy } from './strategies/local-user.strategy';
+import { AuthController } from './auth.controller';
 
 @Module({
   imports: [
@@ -37,5 +38,6 @@ import { LocalUserStrategy } from './strategies/local-user.strategy';
     JwtStrategy,
     ChangePasswordStrategy,
   ],
+  controllers: [AuthController],
 })
 export class AuthModule {}

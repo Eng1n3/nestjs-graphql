@@ -30,7 +30,7 @@ export class UsersService {
   ): Promise<string> {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const { createReadStream, filename } = document;
-    const convertFilename = `${uniqueSuffix}-${filename?.replace(
+    const convertFilename = `${uniqueSuffix}-${filename.replace(
       /([\s]+)/g,
       '-',
     )}`;
@@ -53,7 +53,7 @@ export class UsersService {
     try {
       let pathImageToSave: string;
       const validImage = /(png|jpeg|image|img)/g;
-      const image = await registerUserInput?.image;
+      const image = await registerUserInput.image;
       const existUser = await this.userRepository.findOne({
         where: { idUser },
         relations: {
@@ -63,7 +63,7 @@ export class UsersService {
           },
         },
       });
-      if (registerUserInput?.password) {
+      if (registerUserInput.password) {
         registerUserInput.password = await bcrypt.hash(
           registerUserInput.password,
           this.getSalt,
@@ -74,13 +74,12 @@ export class UsersService {
         const existImage = readdirSync(
           join(process.cwd(), '/uploads/profiles/', idUser),
         );
-        console.log(77, image);
-        if (existImage.length)
+        if (existImage.length) {
           rmSync(join(process.cwd(), existUser.pathImage), {
             recursive: true,
             force: true,
           });
-        console.log(83, image);
+        }
         if (!validImage.test(image.mimetype))
           throw new BadRequestException('File tidak valid!');
         const pathImage = `/uploads/profiles/${idUser}`;
@@ -96,15 +95,15 @@ export class UsersService {
         ...existUser,
         ...value,
       };
-      console.log(98, result);
       return result;
     } catch (error) {
       if (
         error.message.includes('duplicate key value') &&
-        error?.detail?.includes('email')
+        error.detail.includes('email')
       ) {
         throw new BadRequestException('Email sudah digunakan!');
       }
+      throw error;
     }
   }
 
@@ -113,16 +112,16 @@ export class UsersService {
       where: { idUser },
       relations: { project: { priority: true, document: true } },
     });
-    if (!checkUser) throw new NotFoundException('User not found');
-
+    if (!checkUser.idUser) {
+      throw new NotFoundException('User tidak ada!');
+    }
     await this.userRepository.delete(idUser);
-
-    rmSync(join(process.cwd(), `/uploads/profiles/${checkUser?.idUser}`), {
+    rmSync(join(process.cwd(), `/uploads/profiles/${checkUser.idUser}`), {
       recursive: true,
       force: true,
     });
 
-    checkUser?.project?.forEach(({ idProject }) =>
+    checkUser.project.forEach(({ idProject }) =>
       rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
         recursive: true,
         force: true,
@@ -186,7 +185,7 @@ export class UsersService {
     } catch (error) {
       if (
         error.message.includes('duplicate key value') &&
-        error?.detail?.includes('email')
+        error.detail.includes('email')
       ) {
         throw new BadRequestException('Email sudah digunakan!');
       }
@@ -194,17 +193,20 @@ export class UsersService {
   }
 
   async findAll(getUserInput: GetUserInput<User>) {
-    const order = getUserInput?.sort;
-    const skip = getUserInput?.pagination?.skip;
-    const take = getUserInput?.pagination?.take;
+    let skip: number, take: number;
+    const order = getUserInput.sort;
+    if (getUserInput.pagination) {
+      skip = getUserInput.pagination.skip;
+      take = getUserInput.pagination.take;
+    }
     const result = await this.userRepository.find({
       where: [
         {
-          email: ILike(`%${getUserInput?.search || ''}%`),
+          email: ILike(`%${getUserInput.search || ''}%`),
           role: 'user',
         },
         {
-          fullname: ILike(`%${getUserInput?.search || ''}%`),
+          fullname: ILike(`%${getUserInput.search || ''}%`),
           role: 'user',
         },
       ],

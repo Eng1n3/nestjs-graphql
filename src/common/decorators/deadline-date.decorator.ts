@@ -9,7 +9,7 @@ export function DeadlineDate(validationOptions?: ValidationOptions) {
       propertyName: propertyName,
       constraints: [],
       options: {
-        message: 'Deadline tidak boleh dibawah waktu sekarang',
+        message: 'tanggal tidak boleh dibawah waktu sekarang',
         ...validationOptions,
       },
       validator: {

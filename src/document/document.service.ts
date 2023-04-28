@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadGatewayException,
+  BadRequestException,
   ClassSerializerInterceptor,
   Injectable,
   NotFoundException,
@@ -210,7 +211,10 @@ export class DocumentService {
 
   async createDocument(uploadDocumentInput: UploadDocumentInput) {
     try {
+      const validImage = /(pdf)/g;
       const document = await uploadDocumentInput.file;
+      if (!validImage.test(document.mimetype))
+        throw new BadRequestException('File tidak valid!');
       const pathName = `/uploads/projects/${uploadDocumentInput.idProject}`;
       const pathDocumentToSave = await this.saveDocumentToDir(
         document,

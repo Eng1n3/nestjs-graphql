@@ -1,5 +1,13 @@
 import { Inject, NotFoundException, UseGuards } from '@nestjs/common';
-import { Args, Mutation, Resolver, Subscription } from '@nestjs/graphql';
+import {
+  Args,
+  Context,
+  GqlContextType,
+  GqlExecutionContext,
+  Mutation,
+  Resolver,
+  Subscription,
+} from '@nestjs/graphql';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
@@ -107,12 +115,15 @@ export class AuthResolver {
   @Mutation((returns) => LoginModel, { name: 'loginUser' })
   @UseGuards(LocalUserAuthGuard)
   async loginUser(
+    @Context() context,
     @CurrentUser() user: User,
     @Args('email') email: string,
     @Args('password') password: string,
   ) {
     try {
       const token = await this.authService.login(user);
+      const { res } = context;
+      res.cookie('Set-Cookie', token, { httpOnly: true });
       return { token };
     } catch (error) {
       throw error;

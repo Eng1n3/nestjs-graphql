@@ -5,10 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 
 @Injectable()
-export class ChangePasswordStrategy extends PassportStrategy(
-  Strategy,
-  'changePassword',
-) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private configService: ConfigService,
     private authService: AuthService,
@@ -16,7 +13,7 @@ export class ChangePasswordStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get('JWT_FORGOT_PASSWORD_PRIVATE_KEY'),
+      secretOrKey: configService.get('JWT_REFRESH_PRIVATE_KEY'),
     });
   }
 
@@ -25,7 +22,7 @@ export class ChangePasswordStrategy extends PassportStrategy(
       const user = await this.authService.findUser(
         payload.email.toLowerCase() as string,
       );
-      if (!user) throw new UnauthorizedException('Email atau password salah!');
+      if (!user) throw new UnauthorizedException('User tidak ada!');
       return {
         idUser: payload.idUser,
         email: payload.email,

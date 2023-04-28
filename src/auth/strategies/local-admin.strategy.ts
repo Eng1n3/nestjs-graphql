@@ -15,7 +15,10 @@ export class LocalAdmintrategy extends PassportStrategy(
 
   async validate(email: string, password: string): Promise<User> {
     try {
-      const user = await this.authService.validateAdmin(email, password);
+      const user = await this.authService.validateAdmin(
+        email.toLocaleLowerCase(),
+        password,
+      );
       if (!user) throw new UnauthorizedException('Email atau password salah!');
       return user;
     } catch (error) {

@@ -73,7 +73,7 @@ import { DirectiveTranform } from 'src/common/enums/directive.enum';
         },
         autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
         playground: configService.get<boolean>('PLAYGROUND'),
-        context: ({ req, connection }) => ({ req }),
+        context: ({ req, res, connection }) => ({ req, res }),
         csrfPrevention: false,
         validationRules: [depthLimit(3)],
         resolvers: { JSON: GraphQLJSON },
