@@ -203,6 +203,22 @@ input GetProjectsInput {
   search: String
 }
 
+type CountProjectByDate {
+  """Tahun dan bulan data proyek"""
+  date: String!
+
+  """menghitung total projek"""
+  count: Int
+}
+
+type YearProjectModel {
+  """uuid untuk id year"""
+  id: Int!
+
+  """Tahun pembuatan project"""
+  year: Int!
+}
+
 type LoginModel {
   token: String!
 }
@@ -239,6 +255,14 @@ type Query {
 
   """query total project user"""
   countProjectUser(search: String = ""): Int!
+
+  """query mendapatkan tahun pembuatan project user, data: [number]"""
+  yearProject(limit: Int = 5): [YearProjectModel!]
+
+  """
+  query mendapatkan project user berdasarkan filter dari tangggal, data: [{...project}]
+  """
+  countProjectByDate(year: Int = 2023): [CountProjectByDate!]!
 
   """query mendapatkan project user, data: [{...project}]"""
   project(options: GetProjectsInput = {}): [Project!]!
@@ -279,6 +303,7 @@ type Query {
 
   """query mendapatkan prioritas, data: [{...prioritas}]"""
   priorities(options: GetPrioritiesInput = {}): [Priority!]!
+  resfreshToken: LoginModel!
 }
 
 input GetUserInput {

@@ -1,14 +1,14 @@
 import { Field, InputType, OmitType } from '@nestjs/graphql';
 import {
-  IsDate,
   IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsStrongPassword,
+  MinDate,
 } from 'class-validator';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-ts';
-import { DeadlineDate } from 'src/common/decorators/deadline-date.decorator';
+import { IsBirthdayDate } from 'src/common/decorators/birthday-date.decorato';
 import { IsHomepage } from 'src/common/decorators/is-homepage.decorator';
 import { IsOnlyDate } from 'src/common/decorators/is-only-date.decorator';
 import { Match } from 'src/common/decorators/match.decorator';
@@ -41,9 +41,8 @@ export class RegisterUserInput {
     description:
       'tanggal lahir user berupa nilai tanggal, contoh: "2002-03-23"',
   })
-  // @IsDate()
+  @IsBirthdayDate()
   @IsOnlyDate()
-  @DeadlineDate()
   birthDay: string;
 
   @Field({

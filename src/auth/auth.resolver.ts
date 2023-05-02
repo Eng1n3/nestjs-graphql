@@ -2,9 +2,8 @@ import { Inject, NotFoundException, UseGuards } from '@nestjs/common';
 import {
   Args,
   Context,
-  GqlContextType,
-  GqlExecutionContext,
   Mutation,
+  Query,
   Resolver,
   Subscription,
 } from '@nestjs/graphql';
@@ -21,6 +20,8 @@ import { LoginModel } from './models/login.model';
 import { ForgotUserModel } from './models/forgot-user.model';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
+import { JwtRefreshAuthGuard } from './guards/jwt-refresh.auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 const USER_DELETED_EVENT = 'userDeleted';
 
@@ -66,6 +67,21 @@ export class AuthResolver {
     }
   }
 
+  @Roles(Role.User, Role.Admin)
+  @UseGuards(JwtRefreshAuthGuard)
+  @Query((returns) => LoginModel, { name: 'resfreshToken' })
+  async resfreshToken(@CurrentUser() user: User, @Context() context: any) {
+    try {
+      const tokenRefresh = this.authService.refreshToken(user);
+      const token = await this.authService.login(user);
+      const { res } = context;
+      res.cookie('Refresh-Token', tokenRefresh, { httpOnly: true });
+      return { token };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Roles(Role.User)
   @UseGuards(JwtChangePasswordAuthGuard)
   @Mutation((returns) => String, { name: 'changePassword' })
@@ -97,33 +113,38 @@ export class AuthResolver {
     }
   }
 
-  @Mutation((returns) => LoginModel, { name: 'loginAdmin' })
   @UseGuards(LocalAdminAuthGuard)
+  @Mutation((returns) => LoginModel, { name: 'loginAdmin' })
   async loginAdmin(
+    @Context() context: any,
     @CurrentUser() user: User,
     @Args('email') email: string,
     @Args('password') password: string,
   ) {
     try {
       const token = await this.authService.login(user);
+      const tokenRefresh = this.authService.refreshToken(user);
+      const { res } = context;
+      res.cookie('Refresh-Token', tokenRefresh, { httpOnly: true });
       return { token };
     } catch (error) {
       throw error;
     }
   }
 
-  @Mutation((returns) => LoginModel, { name: 'loginUser' })
   @UseGuards(LocalUserAuthGuard)
+  @Mutation((returns) => LoginModel, { name: 'loginUser' })
   async loginUser(
-    @Context() context,
+    @Context() context: any,
     @CurrentUser() user: User,
     @Args('email') email: string,
     @Args('password') password: string,
   ) {
     try {
       const token = await this.authService.login(user);
+      const tokenRefresh = this.authService.refreshToken(user);
       const { res } = context;
-      res.cookie('Set-Cookie', token, { httpOnly: true });
+      res.cookie('Refresh-Token', tokenRefresh, { httpOnly: true });
       return { token };
     } catch (error) {
       throw error;

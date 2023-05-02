@@ -3,17 +3,30 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
+import { Request } from 'express';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class JwtRefreshStrategy extends PassportStrategy(
+  Strategy,
+  'jwtRefresh',
+) {
+  private static extractJWT(req: Request): string | null {
+    if (req.headers.cookie && req.headers.cookie.includes('Refresh-Token')) {
+      return req.headers.cookie.split('Refresh-Token=')[1];
+    }
+    return null;
+  }
   constructor(
     private configService: ConfigService,
     private authService: AuthService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        JwtRefreshStrategy.extractJWT,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       ignoreExpiration: false,
-      secretOrKey: configService.get('JWT_REFRESH_PRIVATE_KEY'),
+      secretOrKey: configService.get('JWT_REFRESH_TOKEN_PRIVATE_KEY'),
     });
   }
 
@@ -26,7 +39,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       return {
         idUser: payload.idUser,
         email: payload.email,
-        roles: payload.role,
+        role: payload.role,
       };
     } catch (error) {
       throw error;

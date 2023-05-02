@@ -36,6 +36,8 @@ import { CacheKey } from '@nestjs/cache-manager';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
 import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
+import { CountProjectByDate } from './models/count-project-by-date.mode';
+import { YearProjectModel } from './models/year-project.model';
 
 const PROJECT_DELETED_EVENT = 'projectDeleted';
 const PROJECT_UPDATED_EVENT = 'projectUpdated';
@@ -174,6 +176,60 @@ export class ProjectResolver {
         searchProjectInput,
       );
       return count;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('yearProject')
+  @Roles(Role.User, Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  @Query((returns) => [YearProjectModel], {
+    name: 'yearProject',
+    nullable: true,
+    complexity: (options: ComplexityEstimatorArgs) =>
+      options.args.count * options.childComplexity,
+    description:
+      'query mendapatkan tahun pembuatan project user, data: [number]',
+  })
+  async yearProject(
+    @CurrentUser() user: User,
+    @Args('limit', { type: () => Int, defaultValue: 5, nullable: true })
+    limit?: number,
+  ) {
+    try {
+      const result = await this.projectService.yearProject(user.idUser, limit);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // @UseInterceptors(HttpCacheInterceptor)
+  // @CacheKey('project')
+  @Roles(Role.User)
+  @UseGuards(JwtAuthGuard)
+  @Query((returns) => [CountProjectByDate], {
+    name: 'countProjectByDate',
+    complexity: (options: ComplexityEstimatorArgs) =>
+      options.args.count * options.childComplexity,
+    description:
+      'query mendapatkan project user berdasarkan filter dari tangggal, data: [{...project}]',
+  })
+  async countProjectFilterByDate(
+    @CurrentUser() user: User,
+    @Args('year', {
+      type: () => Int,
+      defaultValue: new Date().getFullYear(),
+      nullable: true,
+    })
+    year?: number,
+  ) {
+    try {
+      const idUser = user.idUser;
+      const result = await this.projectService.countProjectByDate(idUser, year);
+      return result;
     } catch (error) {
       throw error;
     }

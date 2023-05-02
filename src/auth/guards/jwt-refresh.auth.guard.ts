@@ -1,12 +1,17 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { GqlExecutionContext } from '@nestjs/graphql';
+import { GqlExecutionContext, MiddlewareContext } from '@nestjs/graphql';
 import { AuthGuard } from '@nestjs/passport';
 import { ROLES_KEY } from 'src/common/constants';
 import { Role } from 'src/common/enums/roles.enum';
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
+export class JwtRefreshAuthGuard extends AuthGuard('jwtRefresh') {
   constructor(private reflector: Reflector) {
     super();
   }
@@ -30,6 +35,21 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
-    return ctx.getContext().req;
+    const request = ctx.getContext().req;
+    request.body = ctx.getArgs();
+    return request;
+  }
+
+  handleRequest<TUser = any>(
+    err: any,
+    user: any,
+    info: any,
+    context: ExecutionContext,
+    status?: any,
+  ): TUser {
+    if (err || !user) {
+      throw err || new UnauthorizedException('Sesi anda telah berakhir!');
+    }
+    return user;
   }
 }

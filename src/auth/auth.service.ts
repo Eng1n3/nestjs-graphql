@@ -11,13 +11,32 @@ import { emailTemplate } from './templates/email.template';
 
 @Injectable()
 export class AuthService {
+  private getSalt = bcrypt.genSaltSync();
+
   constructor(
     private configService: ConfigService,
     private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
 
-  private getSalt = bcrypt.genSaltSync();
+  refreshToken(user: User) {
+    const payload = {
+      idUser: user.idUser,
+      email: user.email,
+      role: user.role,
+    };
+    const secret = this.configService.get<string>(
+      'JWT_REFRESH_TOKEN_PRIVATE_KEY',
+    );
+    const expiresIn = this.configService.get<string>(
+      'JWT_REFRESH_TOKEN_EXPIRES_IN',
+    );
+    const tokenRefresh: string = this.jwtService.sign(payload, {
+      secret,
+      expiresIn,
+    });
+    return tokenRefresh;
+  }
 
   async updatePassword(idUser: string, password: string) {
     try {
@@ -52,8 +71,6 @@ export class AuthService {
         From: this.configService.get<string>('POSTMARKAPP_FROM'),
         To: user.email,
         Subject: 'Forgot password',
-        // InlineCss: true,
-        // TextBody: 'Coba kirim',
         HtmlBody: emailTemplate(tokenForgotPassword),
       });
     } catch (error) {

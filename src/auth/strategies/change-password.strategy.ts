@@ -29,7 +29,7 @@ export class ChangePasswordStrategy extends PassportStrategy(
       return {
         idUser: payload.idUser,
         email: payload.email,
-        roles: payload.role,
+        role: payload.role,
       };
     } catch (error) {
       throw error;

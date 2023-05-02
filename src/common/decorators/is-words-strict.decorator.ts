@@ -16,7 +16,6 @@ export function IsWordStrict(validationOptions?: ValidationOptions) {
       validator: {
         validate(value: any) {
           const regex = /^[a-zA-Z0-9_]+( [a-zA-Z0-9_]+)*$/;
-          console.log(regex.test(value), 19);
           return typeof value === 'string' && regex.test(value);
         },
       },

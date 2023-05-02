@@ -22,7 +22,7 @@ export class JwtChangePasswordAuthGuard extends AuthGuard('changePassword') {
       if (!requiredRoles) return true;
       const request = ctx.getContext().req;
       const user = request.user;
-      return requiredRoles.some((role) => user.roles?.includes(role));
+      return requiredRoles.some((role) => user.role?.includes(role));
     } catch (error) {
       throw error;
     }

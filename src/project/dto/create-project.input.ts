@@ -1,5 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDeadlineDate } from 'src/common/decorators/deadline-date.decorator';
 import { IsOnlyDate } from 'src/common/decorators/is-only-date.decorator';
 
 @InputType()
@@ -18,6 +19,7 @@ export class CreateProjectInput {
   })
   // @IsDate()
   @IsOnlyDate()
+  @IsDeadlineDate()
   deadLine: string;
 
   @Field({

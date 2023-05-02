@@ -72,7 +72,16 @@ import { DirectiveTranform } from 'src/common/enums/directive.enum';
           },
         },
         autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-        playground: configService.get<boolean>('PLAYGROUND'),
+        includeStacktraceInErrorResponses: configService.get<boolean>(
+          'INCLUDE_STACKTRACE_IN_ERROR_RESPONSES',
+        ),
+        playground: configService.get<boolean>('PLAYGROUND')
+          ? {
+              settings: {
+                'request.credentials': 'include',
+              },
+            }
+          : false,
         context: ({ req, res, connection }) => ({ req, res }),
         csrfPrevention: false,
         validationRules: [depthLimit(3)],
