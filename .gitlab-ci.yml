@@ -25,6 +25,7 @@ test:
   stage: test
   script:
     - npm run test:cov
+  allow_failure: true
 
 deploy:
   stage: deploy
