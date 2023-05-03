@@ -25,7 +25,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
       const user = await this.authService.findUser(
         payload.email.toLowerCase() as string,
       );
-      if (!user) throw new UnauthorizedException('User tidak ada!');
+      if (!user) throw new UnauthorizedException();
       return {
         idUser: payload.idUser,
         email: payload.email,
