@@ -6,5 +6,5 @@ export class LoginModel {
   token: string;
 
   @Field()
-  refreshToken: string;
+  tokenRefresh: string;
 }
