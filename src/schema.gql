@@ -303,7 +303,7 @@ type Query {
 
   """query mendapatkan prioritas, data: [{...prioritas}]"""
   priorities(options: GetPrioritiesInput = {}): [Priority!]!
-  resfreshToken: LoginModel!
+  refreshToken: LoginModel!
 }
 
 input GetUserInput {

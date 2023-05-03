@@ -5,6 +5,7 @@ import { graphqlUploadExpress } from 'graphql-upload-ts';
 import { AppModule } from './app.module';
 import * as Sentry from '@sentry/node';
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +16,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.use(cookieParser());
   app.use(
     graphqlUploadExpress({
       maxFileSize: configService.get<number>('MAX_FILE_SIZE_IN_BYTE'),

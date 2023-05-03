@@ -21,18 +21,18 @@ export class ProjectService {
 
   private _countProjectByDate(dataMonth: any[], dataMonthUser: any[]) {
     const result = dataMonth.map((month) => {
-      const dataMonth = dataMonthUser.find(
+      const resultDataMonth = dataMonthUser.find(
         (monthUser: { date: string; count: number }) =>
           month.date === monthUser.date,
       );
-      if (dataMonth) {
+      if (resultDataMonth) {
         return {
-          date: moment(dataMonth.date).format('MMM YY'),
-          count: +dataMonth.count,
+          date: moment(new Date(resultDataMonth.date)).format('MMM YY'),
+          count: +resultDataMonth.count,
         };
       } else {
         return {
-          date: moment(month.date).format('MMM YY'),
+          date: moment(new Date(month.date)).format('MMM YY'),
           count: +month.count,
         };
       }

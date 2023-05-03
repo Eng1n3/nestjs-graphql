@@ -69,13 +69,16 @@ export class AuthResolver {
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtRefreshAuthGuard)
-  @Query((returns) => LoginModel, { name: 'resfreshToken' })
-  async resfreshToken(@CurrentUser() user: User, @Context() context: any) {
+  @Query((returns) => LoginModel, { name: 'refreshToken' })
+  async refreshToken(@CurrentUser() user: User, @Context() context: any) {
     try {
       const tokenRefresh = this.authService.refreshToken(user);
       const token = await this.authService.login(user);
       const { res } = context;
-      res.cookie('Refresh-Token', tokenRefresh, { httpOnly: true });
+      res.cookie('Refresh-Token', tokenRefresh, {
+        httpOnly: true,
+        sameSite: 'none',
+      });
       return { token };
     } catch (error) {
       throw error;
@@ -125,7 +128,10 @@ export class AuthResolver {
       const token = await this.authService.login(user);
       const tokenRefresh = this.authService.refreshToken(user);
       const { res } = context;
-      res.cookie('Refresh-Token', tokenRefresh, { httpOnly: true });
+      res.cookie('Refresh-Token', tokenRefresh, {
+        httpOnly: true,
+        sameSite: 'none',
+      });
       return { token };
     } catch (error) {
       throw error;
@@ -144,7 +150,10 @@ export class AuthResolver {
       const token = await this.authService.login(user);
       const tokenRefresh = this.authService.refreshToken(user);
       const { res } = context;
-      res.cookie('Refresh-Token', tokenRefresh, { httpOnly: true });
+      res.cookie('Refresh-Token', tokenRefresh, {
+        httpOnly: true,
+        sameSite: 'none',
+      });
       return { token };
     } catch (error) {
       throw error;
