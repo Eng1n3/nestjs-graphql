@@ -27,11 +27,10 @@ test:
 deploy:
   stage: deploy
   environment:
-    NODE_ENV: production
+    name: production
   script:
     - pm2 stop adam-onboard-app
     - pm2 delete adam-onboard-app
     - npm run pm2:start:prod
     - pm2 update
     - pm2 save
-  
