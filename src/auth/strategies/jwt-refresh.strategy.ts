@@ -3,28 +3,18 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
-import { Request } from 'express';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
   'jwtRefresh',
 ) {
-  private static extractJWT(req: Request): string | null {
-    if (req.cookies && req.cookies['Refresh-Token']) {
-      return req.cookies['Refresh-Token'];
-    }
-    return null;
-  }
   constructor(
     private configService: ConfigService,
     private authService: AuthService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        JwtRefreshStrategy.extractJWT,
-        ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ]),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get('JWT_REFRESH_TOKEN_PRIVATE_KEY'),
     });
