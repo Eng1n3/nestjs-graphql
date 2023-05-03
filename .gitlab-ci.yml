@@ -1,0 +1,37 @@
+stages:
+  - build
+  - test
+  - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+before_script:
+  - npm install -g @nestjs/cli
+
+build:
+  stage: build
+  script:
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+test:
+  stage: test
+  script:
+    - npm run test:cov
+
+deploy:
+  stage: deploy
+  environment:
+    NODE_ENV: production
+  script:
+    - pm2 stop adam-onboard-app
+    - pm2 delete adam-onboard-app
+    - npm run pm2:start:prod
+    - pm2 update
+    - pm2 save
+  
