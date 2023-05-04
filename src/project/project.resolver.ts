@@ -31,7 +31,7 @@ import { DocumentEntity } from 'src/document/entities/document.entity';
 import { GetDocumentsInput } from 'src/document/dto/get-documents.input';
 import { PriorityService } from 'src/priority/priority.service';
 import { Priority } from 'src/priority/entities/priority.entity';
-import { HttpCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
+import { GraphqlRedisCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
 import { CacheKey } from '@nestjs/cache-manager';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
@@ -181,8 +181,8 @@ export class ProjectResolver {
     }
   }
 
-  // @UseInterceptors(HttpCacheInterceptor)
-  @CacheKey('yearProject')
+  // @UseInterceptors(GraphqlRedisCacheInterceptor)
+  // @CacheKey('yearProject')
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [YearProjectModel], {
@@ -206,7 +206,7 @@ export class ProjectResolver {
     }
   }
 
-  // @UseInterceptors(HttpCacheInterceptor)
+  // @UseInterceptors(GraphqlRedisCacheInterceptor)
   // @CacheKey('project')
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
@@ -318,8 +318,8 @@ export class ProjectResolver {
     }
   }
 
-  @UseInterceptors(HttpCacheInterceptor)
-  @CacheKey('project')
+  // @UseInterceptors(GraphqlRedisCacheInterceptor)
+  // @CacheKey('project')
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [Project], {
@@ -344,8 +344,8 @@ export class ProjectResolver {
     }
   }
 
-  @UseInterceptors(HttpCacheInterceptor)
-  @CacheKey('projects')
+  // @UseInterceptors(GraphqlRedisCacheInterceptor)
+  // @CacheKey('projects')
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [Project], {

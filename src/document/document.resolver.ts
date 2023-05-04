@@ -26,7 +26,7 @@ import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
 import { CacheKey } from '@nestjs/cache-manager';
-import { HttpCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
+import { GraphqlRedisCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
 
@@ -213,8 +213,8 @@ export class DocumentResolver {
     return result;
   }
 
-  @UseInterceptors(HttpCacheInterceptor)
-  @CacheKey('document')
+  // @UseInterceptors(GraphqlRedisCacheInterceptor)
+  // @CacheKey('document')
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [DocumentEntity], {
@@ -243,8 +243,8 @@ export class DocumentResolver {
     }
   }
 
-  @UseInterceptors(HttpCacheInterceptor)
-  @CacheKey('documents')
+  // @UseInterceptors(GraphqlRedisCacheInterceptor)
+  // @CacheKey('documents')
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [DocumentEntity], {

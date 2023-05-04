@@ -19,7 +19,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Priority } from './entities/priority.entity';
 import { GetPrioritiesInput } from './dto/get-priority.input';
-import { HttpCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
+import { GraphqlRedisCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
 import { CacheKey } from '@nestjs/cache-manager';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
@@ -173,11 +173,10 @@ export class PriorityResolver {
     return result;
   }
 
-  @UseInterceptors(HttpCacheInterceptor)
-  @CacheKey('priorities')
+  // @UseInterceptors(GraphqlRedisCacheInterceptor)
+  // @CacheKey('priorities')
   @Roles(Role.Admin, Role.User)
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
   @Query((returns) => [Priority], {
     name: 'priorities',
     defaultValue: [],

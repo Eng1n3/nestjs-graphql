@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Args,
-  Directive,
+  // Directive,
   Int,
   Mutation,
   Parent,
@@ -16,7 +16,13 @@ import { GetUserInput } from './dto/get-user.input';
 import { UsersService } from './users.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
-import { CacheKey, Inject, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  CacheKey,
+  CacheTTL,
+  Inject,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdateUserInput } from './dto/update.input';
@@ -27,7 +33,7 @@ import { ProjectService } from 'src/project/project.service';
 import { Project } from 'src/project/entities/project.entity';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
-import { HttpCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
+import { GraphqlRedisCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
 import { CacheControl } from 'nestjs-gql-cache-control';
 // import { RedisPubSub } from 'graphql-redis-subscriptions';
 
@@ -179,13 +185,12 @@ export class UsersResolver {
     }
   }
 
-  @UseInterceptors(HttpCacheInterceptor)
-  @CacheKey('user')
+  // @UseInterceptors(GraphqlRedisCacheInterceptor)
+  // @CacheTTL(90)
+  // @CacheKey('user')
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
-  @Directive(
-    '@deprecated(reason: "This query will be removed in the next version")',
-  )
+  // @Directive()
   @Query((returns) => User, {
     name: 'user',
     complexity: (options: ComplexityEstimatorArgs) =>
@@ -201,8 +206,9 @@ export class UsersResolver {
     }
   }
 
-  @UseInterceptors(HttpCacheInterceptor)
-  @CacheKey('users')
+  // @UseInterceptors(GraphqlRedisCacheInterceptor)
+  // @CacheTTL(90)
+  // @CacheKey('users')
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   @Query((returns) => [User], {
@@ -231,7 +237,7 @@ export class UsersResolver {
   })
   async userCount(
     @Args('search', { nullable: true, defaultValue: '' })
-    searchUserInput: string,
+    searchUserInput?: string,
   ) {
     try {
       const count = await this.userService.count(searchUserInput);

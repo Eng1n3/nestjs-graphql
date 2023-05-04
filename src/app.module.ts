@@ -35,14 +35,16 @@ import { redisStore } from 'cache-manager-redis-store';
           max: +configService.get<number>('CACHE_MAXIMUM'),
           ttl: +configService.get<number>('CACHE_TTL_IN_SECOND'),
           // store: (await redisStore({
-          //   ttl: configService.get<number>('REDIS_CACHE_TTL_IN_SECOND'),
+          //   ttl: configService.get<number>('REDIS_TTL_IN_SECOND'),
           //   url: `redis://${
           //     configService.get<string>('REDIS_PASSWORD')
           //       ? configService.get<string>('REDIS_PASSWORD') + '@'
           //       : ''
           //   }${configService.get<string>(
           //     'REDIS_HOST',
-          //   )}:${configService.get<string>('REDIS_PORT')}/0`,
+          //   )}:${configService.get<string>(
+          //     'REDIS_PORT',
+          //   )}/${configService.get<number>('REDIS_DATABASE')}`,
           // })) as unknown as CacheStore,
         };
       },

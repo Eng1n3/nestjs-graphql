@@ -2,10 +2,8 @@
 import {
   BadGatewayException,
   BadRequestException,
-  ClassSerializerInterceptor,
   Injectable,
   NotFoundException,
-  UseInterceptors,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createWriteStream, rmSync } from 'fs';
@@ -18,7 +16,6 @@ import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
 import { v4 as uuid4 } from 'uuid';
 
-@UseInterceptors(ClassSerializerInterceptor)
 @Injectable()
 export class DocumentService {
   constructor(
