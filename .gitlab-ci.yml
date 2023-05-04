@@ -27,13 +27,13 @@ test:
     - npm run test:cov
   allow_failure: true
 
-deploy:
-  stage: deploy
-  environment:
-    name: production
-  script:
-    - pm2 stop adam-onboard-app
-    - pm2 delete adam-onboard-app
-    - npm run pm2:start:prod
-    - pm2 update
-    - pm2 save
+# deploy:
+#   stage: deploy
+#   environment:
+#     name: production
+#   script:
+#     - pm2 stop adam-onboard-app
+#     - pm2 delete adam-onboard-app
+#     - npm run pm2:start:prod
+#     - pm2 update
+#     - pm2 save
