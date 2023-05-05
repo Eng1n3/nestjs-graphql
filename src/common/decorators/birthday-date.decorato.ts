@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { registerDecorator, ValidationOptions } from 'class-validator';
+import * as moment from 'moment';
 
 export function IsBirthdayDate(validationOptions?: ValidationOptions) {
   return function (object: Object, propertyName: string) {
@@ -14,7 +15,7 @@ export function IsBirthdayDate(validationOptions?: ValidationOptions) {
       },
       validator: {
         validate(value: any) {
-          return new Date(value).getTime() <= new Date().getTime();
+          return moment(value).valueOf() <= moment().startOf('day').valueOf();
         },
       },
     });

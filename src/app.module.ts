@@ -10,7 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getEnvPath } from './common/functions/env.function';
 import { dataSourceOptions } from './database/data-source';
-import { PubsubModule } from './pubsub/pubsub.module';
+import { PUB_SUB, PubsubModule } from './pubsub/pubsub.module';
 import { PriorityModule } from './priority/priority.module';
 import { GraphqlModule } from './graphql/graphql.module';
 import { CacheModule, CacheStore } from '@nestjs/cache-manager';

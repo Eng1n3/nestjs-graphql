@@ -1,5 +1,6 @@
 import { Directive, Field, ObjectType } from '@nestjs/graphql';
 import { IsOptional } from 'class-validator';
+import { IsBirthdayDate } from 'src/common/decorators/birthday-date.decorato';
 import { Project } from 'src/project/entities/project.entity';
 import {
   Column,
@@ -47,6 +48,7 @@ export class User {
     description:
       'tanggal lahir user berupa nilai tanggal, contoh: "2002-03-23"',
   })
+  @IsBirthdayDate()
   @IsOptional()
   birthDay?: Date;
 

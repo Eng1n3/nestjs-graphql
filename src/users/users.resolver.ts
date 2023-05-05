@@ -17,11 +17,11 @@ import { UsersService } from './users.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
 import {
-  CacheKey,
-  CacheTTL,
+  // CacheKey,
+  // CacheTTL,
   Inject,
   UseGuards,
-  UseInterceptors,
+  // UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
@@ -82,11 +82,7 @@ export class UsersResolver {
     description: 'message delete user, contoh: "Success delete user"',
   })
   async messageDeleteUser() {
-    try {
-      return 'Success delete user';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success delete user';
   }
 
   @Mutation((returns) => String, {
@@ -94,11 +90,7 @@ export class UsersResolver {
     description: 'message registrasi user, contoh: "Success registrasi user"',
   })
   async messageRegister() {
-    try {
-      return 'Success registrasi user';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success registrasi user';
   }
 
   @Roles(Role.User, Role.Admin)
@@ -109,11 +101,7 @@ export class UsersResolver {
       'message mendapatkan user, contoh: "Success mendapatkan data user"',
   })
   async messageUser() {
-    try {
-      return 'Success mendapatkan data user';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success mendapatkan data user';
   }
 
   @Roles(Role.User)
@@ -123,11 +111,7 @@ export class UsersResolver {
     description: 'message update user, contoh: "Success update user"',
   })
   async messageUpdateUser() {
-    try {
-      return 'Success update user';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success update user';
   }
 
   @Roles(Role.Admin)
@@ -137,13 +121,9 @@ export class UsersResolver {
     description: 'Mutation delete user, contoh: {...user}',
   })
   async deleteUser(@Args('idUser') idUser: string) {
-    try {
-      const result = await this.userService.deleteUser(idUser);
-      this.pubSub.publish(USER_DELETED_EVENT, { userDeleted: result });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.userService.deleteUser(idUser);
+    this.pubSub.publish(USER_DELETED_EVENT, { userDeleted: result });
+    return result;
   }
 
   @Roles(Role.User)
@@ -156,16 +136,12 @@ export class UsersResolver {
     @CurrentUser() user: User,
     @Args('input') updateUserInput: UpdateUserInput,
   ) {
-    try {
-      const result = await this.userService.updateUser(
-        user.idUser,
-        updateUserInput,
-      );
-      this.pubSub.publish(USER_UPDATED_EVENT, { userUpdated: result });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.userService.updateUser(
+      user.idUser,
+      updateUserInput,
+    );
+    this.pubSub.publish(USER_UPDATED_EVENT, { userUpdated: result });
+    return result;
   }
 
   @Mutation((returns) => User, {
@@ -173,16 +149,9 @@ export class UsersResolver {
     description: 'mutation register akun, data: {...user}',
   })
   async registerUser(@Args('input') registerUserInput: RegisterUserInput) {
-    try {
-      const result = await this.userService.createUser(
-        'user',
-        registerUserInput,
-      );
-      this.pubSub.publish(USER_ADDED_EVENT, { userAdded: result });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.userService.createUser('user', registerUserInput);
+    this.pubSub.publish(USER_ADDED_EVENT, { userAdded: result });
+    return result;
   }
 
   // @UseInterceptors(GraphqlRedisCacheInterceptor)
@@ -190,7 +159,6 @@ export class UsersResolver {
   // @CacheKey('user')
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtAuthGuard)
-  // @Directive()
   @Query((returns) => User, {
     name: 'user',
     complexity: (options: ComplexityEstimatorArgs) =>
@@ -198,12 +166,8 @@ export class UsersResolver {
     description: 'query mendapatkan akun, data: {...user}',
   })
   async findOne(@CurrentUser() user: User) {
-    try {
-      const result = await this.userService.findOneByEmail(user.email);
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.userService.findOneByEmail(user.email);
+    return result;
   }
 
   // @UseInterceptors(GraphqlRedisCacheInterceptor)
@@ -219,14 +183,10 @@ export class UsersResolver {
   })
   async findAll(
     @Args('options', { nullable: true, defaultValue: {} })
-    optionsInput: GetUserInput<User>,
+    optionsInput?: GetUserInput<User>,
   ) {
-    try {
-      const result = await this.userService.findAll(optionsInput);
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.userService.findAll(optionsInput);
+    return result;
   }
 
   @Roles(Role.Admin)
@@ -239,12 +199,8 @@ export class UsersResolver {
     @Args('search', { nullable: true, defaultValue: '' })
     searchUserInput?: string,
   ) {
-    try {
-      const count = await this.userService.count(searchUserInput);
-      return count;
-    } catch (error) {
-      throw error;
-    }
+    const count = await this.userService.count(searchUserInput);
+    return count;
   }
 
   @ResolveField(() => [Project], {

@@ -36,10 +36,4 @@ export class GraphqlRedisCacheInterceptor extends CacheInterceptor {
       }),
     );
   }
-  // trackBy(context: ExecutionContext): string {
-  //   const ctx = GqlExecutionContext.create(context);
-  //   const cacheKey = super.trackBy(context);
-  //   const resolverName = ctx.getInfo().fieldName;
-  //   return `${resolverName}-${cacheKey}`;
-  // }
 }
