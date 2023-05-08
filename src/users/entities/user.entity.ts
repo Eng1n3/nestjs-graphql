@@ -1,6 +1,6 @@
 import { Directive, Field, ObjectType } from '@nestjs/graphql';
 import { IsOptional } from 'class-validator';
-import { IsBirthdayDate } from 'src/common/decorators/birthday-date.decorato';
+import { IsBirthdayDate } from 'src/common/decorators/birthday-date.decorator';
 import { Project } from 'src/project/entities/project.entity';
 import {
   Column,

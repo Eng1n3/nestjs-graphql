@@ -8,7 +8,7 @@ import {
   MinDate,
 } from 'class-validator';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-ts';
-import { IsBirthdayDate } from 'src/common/decorators/birthday-date.decorato';
+import { IsBirthdayDate } from 'src/common/decorators/birthday-date.decorator';
 import { IsHomepage } from 'src/common/decorators/is-homepage.decorator';
 import { IsOnlyDate } from 'src/common/decorators/is-only-date.decorator';
 import { Match } from 'src/common/decorators/match.decorator';

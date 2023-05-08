@@ -170,9 +170,10 @@ export class UsersService {
         this.getSalt,
       );
       const pathImage = '/uploads/default-user.jpg';
-      const value = await this.userRepository.create({
+      const value = this.userRepository.create({
         idUser: uuidv4(),
         ...registerUserInput,
+        email: registerUserInput.email.toLowerCase(),
         pathImage,
         password: hashPassword,
         role,
