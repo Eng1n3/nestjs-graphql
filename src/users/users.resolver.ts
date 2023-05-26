@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Args,
+  Info,
   // Directive,
   Int,
   Mutation,
@@ -35,6 +36,7 @@ import { PUB_SUB } from 'src/pubsub/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
 import { GraphqlRedisCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
 import { CacheControl } from 'nestjs-gql-cache-control';
+import { Context } from '@nestjs/graphql';
 // import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 const USER_ADDED_EVENT = 'userAdded';
@@ -167,7 +169,6 @@ export class UsersResolver {
   })
   async findOne(@CurrentUser() user: User) {
     const result = await this.userService.findOneByEmail(user.email);
-    console.log(result, 170);
     return result;
   }
 
@@ -237,7 +238,6 @@ export class UsersResolver {
       parent.idUser,
       getProjectsInput,
     );
-    console.log(result, 240);
     return result;
   }
 }

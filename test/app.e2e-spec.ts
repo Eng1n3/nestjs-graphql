@@ -42,34 +42,16 @@ describe('AppController (e2e)', () => {
     deleteUser: jest.fn(),
   };
 
-  const repositoryMock: MockType<Repository<User>> = {
-    findOne: jest.fn(),
-    create: jest.fn(),
-    save: jest.fn(),
-    find: jest.fn(),
-    update: jest.fn(),
-    count: jest.fn(),
-    delete: jest.fn(),
-  };
-
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(PUB_SUB)
       .useValue(pubsubMock)
-      // .overrideProvider(UsersService)
-      // .useValue(usersServiceMock)
-      // .overrideProvider(ProjectService)
-      // .useValue(projectServiceMock)
-      // .overrideProvider(getRepositoryToken(User))
-      // .useValue(repositoryMock)
-      // .overrideProvider(getRepositoryToken(Project))
-      // .useValue(repositoryMock)
-      // .overrideProvider(getRepositoryToken(DocumentEntity))
-      // .useValue(repositoryMock)
-      // .overrideProvider(getRepositoryToken(Priority))
-      // .useValue(repositoryMock)
+      .overrideProvider(UsersService)
+      .useValue(usersServiceMock)
+      .overrideProvider(ProjectService)
+      .useValue(projectServiceMock)
       .compile();
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -133,8 +115,8 @@ describe('AppController (e2e)', () => {
               role: 'admin',
             }),
           );
-        // usersServiceMock.findOneByEmail.mockResolvedValueOnce(user);
-        // usersServiceMock.count.mockResolvedValueOnce(total);
+        usersServiceMock.findOneByEmail.mockResolvedValueOnce(user);
+        usersServiceMock.count.mockResolvedValueOnce(total);
       });
       it('query countAccount', async () => {
         const response = await request(app.getHttpServer())
@@ -156,29 +138,26 @@ describe('AppController (e2e)', () => {
   describe('e2e user', () => {
     describe('Success user', () => {
       let query: string;
-      let user: Partial<User>;
-
+      let user: User;
+      let project: Project;
+      let document: DocumentEntity;
+      let priority: Priority;
       beforeEach(() => {
-        user = {
-          email: 'adambrilian003@gmail.com',
-          role: 'user',
-          // project: [
-          //   {
-          //     projectName:
-          //       "ab%' UNION ALL SELECT 50 AS ID, C.CFGVALUE AS NAME, NULL AS VETERINARY_ID FROM CONFIG C LIMIT ? --",
-          //     priority: {
-          //       name: 'normal',
-          //       // name: 'normal',
-          //     },
-          //     document: [
-          //       {
-          //         documentName: 'Baru',
-          //       },
-          //     ],
-          // },
-          // ],
-        };
-        query = `query { user { email } }`;
+        user = new User();
+        project = new Project();
+        priority = new Priority();
+        document = new DocumentEntity();
+        priority.name = 'priority testing';
+        document.documentName = 'dokumen testing';
+        project.projectName = 'project testing';
+        project.document = [document];
+        project.priority = priority;
+        user.idUser = '2bb16d2e-a316-4ced-8f32-94263a3aa7a4';
+        user.email = 'adambrilian003@gmail.com';
+        user.role = 'user';
+        project.user = user;
+        document.project = project;
+        query = `query { user { idUser email role project(options: { sort: {}, search: "" }) { projectName priority { name } document { documentName } } } }`;
         jest
           .spyOn(jwt, 'verify')
           .mockImplementationOnce((token, secretOrKey, options, callback) =>
@@ -188,10 +167,8 @@ describe('AppController (e2e)', () => {
               role: 'user',
             }),
           );
-        // usersServiceMock.findOneByEmail.mockResolvedValueOnce(user);
-        // projectServiceMock.findAll.mockResolvedValueOnce([new Project()]);
-        // repositoryMock.findOne.mockResolvedValueOnce(user);
-        // usersServiceMock.findOneByEmail.mockResolvedValueOnce(user);
+        usersServiceMock.findOneByEmail.mockResolvedValue(user);
+        projectServiceMock.findAll.mockResolvedValue([project]);
       });
       it('query countAccount', async () => {
         const response = await request(app.getHttpServer())
@@ -202,11 +179,25 @@ describe('AppController (e2e)', () => {
           )
           .send({
             query,
-          });
-        // .expect(200);
+          })
+          .expect(200);
 
-        console.log(response.body, 176);
-        // expect(response.body).toEqual({ data: { countAccount: 1 } });
+        expect(response.body).toEqual({
+          data: {
+            user: {
+              idUser: '2bb16d2e-a316-4ced-8f32-94263a3aa7a4',
+              email: 'adambrilian003@gmail.com',
+              role: 'user',
+              project: [
+                {
+                  projectName: 'project testing',
+                  priority: { name: 'priority testing' },
+                  document: [],
+                },
+              ],
+            },
+          },
+        });
       });
     });
   });

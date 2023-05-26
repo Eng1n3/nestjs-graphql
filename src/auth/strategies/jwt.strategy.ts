@@ -22,7 +22,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       const user = await this.authService.findUser(
         payload.email.toLowerCase() as string,
       );
-      console.log(user, 25);
       if (!user) throw new UnauthorizedException('Email atau password salah!');
       return {
         idUser: payload.idUser,

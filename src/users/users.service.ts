@@ -153,7 +153,6 @@ export class UsersService {
         },
       },
     });
-    console.log(result, 156);
     return result;
   }
 
@@ -209,10 +208,10 @@ export class UsersService {
         },
       ],
       relations: {
-        project: {
-          priority: true,
-          document: true,
-        },
+        // project: {
+        //   priority: true,
+        //   document: true,
+        // },
       },
       skip,
       take,
