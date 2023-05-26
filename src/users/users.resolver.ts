@@ -167,6 +167,7 @@ export class UsersResolver {
   })
   async findOne(@CurrentUser() user: User) {
     const result = await this.userService.findOneByEmail(user.email);
+    console.log(result, 170);
     return result;
   }
 
@@ -236,6 +237,7 @@ export class UsersResolver {
       parent.idUser,
       getProjectsInput,
     );
+    console.log(result, 240);
     return result;
   }
 }

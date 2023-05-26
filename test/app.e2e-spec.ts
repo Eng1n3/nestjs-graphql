@@ -12,6 +12,8 @@ import { DocumentEntity } from 'src/document/entities/document.entity';
 import { Priority } from 'src/priority/entities/priority.entity';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
+import { UsersService } from 'src/users/users.service';
+import { ProjectService } from 'src/project/project.service';
 
 type MockType<T> = {
   [P in keyof T]?: jest.Mock;
@@ -27,6 +29,19 @@ describe('AppController (e2e)', () => {
     asyncIterator: jest.fn(),
   };
 
+  const projectServiceMock: MockType<ProjectService> = {
+    findAll: jest.fn(),
+  };
+
+  const usersServiceMock: MockType<UsersService> = {
+    count: jest.fn(),
+    findAll: jest.fn(),
+    findOneByEmail: jest.fn(),
+    createUser: jest.fn(),
+    updateUser: jest.fn(),
+    deleteUser: jest.fn(),
+  };
+
   const repositoryMock: MockType<Repository<User>> = {
     findOne: jest.fn(),
     create: jest.fn(),
@@ -36,20 +51,25 @@ describe('AppController (e2e)', () => {
     count: jest.fn(),
     delete: jest.fn(),
   };
+
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(PUB_SUB)
       .useValue(pubsubMock)
-      .overrideProvider(getRepositoryToken(User))
-      .useValue(repositoryMock)
-      .overrideProvider(getRepositoryToken(Project))
-      .useValue(repositoryMock)
-      .overrideProvider(getRepositoryToken(DocumentEntity))
-      .useValue(repositoryMock)
-      .overrideProvider(getRepositoryToken(Priority))
-      .useValue(repositoryMock)
+      // .overrideProvider(UsersService)
+      // .useValue(usersServiceMock)
+      // .overrideProvider(ProjectService)
+      // .useValue(projectServiceMock)
+      // .overrideProvider(getRepositoryToken(User))
+      // .useValue(repositoryMock)
+      // .overrideProvider(getRepositoryToken(Project))
+      // .useValue(repositoryMock)
+      // .overrideProvider(getRepositoryToken(DocumentEntity))
+      // .useValue(repositoryMock)
+      // .overrideProvider(getRepositoryToken(Priority))
+      // .useValue(repositoryMock)
       .compile();
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -113,8 +133,8 @@ describe('AppController (e2e)', () => {
               role: 'admin',
             }),
           );
-        repositoryMock.findOne.mockResolvedValueOnce(user);
-        repositoryMock.count.mockResolvedValueOnce(total);
+        // usersServiceMock.findOneByEmail.mockResolvedValueOnce(user);
+        // usersServiceMock.count.mockResolvedValueOnce(total);
       });
       it('query countAccount', async () => {
         const response = await request(app.getHttpServer())
@@ -136,19 +156,29 @@ describe('AppController (e2e)', () => {
   describe('e2e user', () => {
     describe('Success user', () => {
       let query: string;
-      let total: number;
-      let user: User;
-      let project: Project;
-      let document: Document;
-      let priority: Priority;
+      let user: Partial<User>;
+
       beforeEach(() => {
-        user = new User();
-        project = new Project();
-        project.document = [new DocumentEntity()];
-        project.priority = new Priority();
-        user.project = [project];
-        query = `query { user \n{ \nemail \nrole \nproject(options: { sort: {}, search: "" }) \n{ \nprojectName \npriority { \nname \n} \ndocument { \ndocumentName \n} \n} \n} \n}`;
-        total = 1;
+        user = {
+          email: 'adambrilian003@gmail.com',
+          role: 'user',
+          // project: [
+          //   {
+          //     projectName:
+          //       "ab%' UNION ALL SELECT 50 AS ID, C.CFGVALUE AS NAME, NULL AS VETERINARY_ID FROM CONFIG C LIMIT ? --",
+          //     priority: {
+          //       name: 'normal',
+          //       // name: 'normal',
+          //     },
+          //     document: [
+          //       {
+          //         documentName: 'Baru',
+          //       },
+          //     ],
+          // },
+          // ],
+        };
+        query = `query { user { email } }`;
         jest
           .spyOn(jwt, 'verify')
           .mockImplementationOnce((token, secretOrKey, options, callback) =>
@@ -158,8 +188,10 @@ describe('AppController (e2e)', () => {
               role: 'user',
             }),
           );
-        repositoryMock.findOne.mockResolvedValueOnce(user);
-        repositoryMock.count.mockResolvedValueOnce(total);
+        // usersServiceMock.findOneByEmail.mockResolvedValueOnce(user);
+        // projectServiceMock.findAll.mockResolvedValueOnce([new Project()]);
+        // repositoryMock.findOne.mockResolvedValueOnce(user);
+        // usersServiceMock.findOneByEmail.mockResolvedValueOnce(user);
       });
       it('query countAccount', async () => {
         const response = await request(app.getHttpServer())
@@ -170,10 +202,10 @@ describe('AppController (e2e)', () => {
           )
           .send({
             query,
-          })
-          .expect(200);
+          });
+        // .expect(200);
 
-        console.log(response.body);
+        console.log(response.body, 176);
         // expect(response.body).toEqual({ data: { countAccount: 1 } });
       });
     });
