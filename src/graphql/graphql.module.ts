@@ -15,7 +15,11 @@ import { join } from 'path';
 import { ComplexityPlugin } from 'src/common/plugins/complexity.plugin';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { upperDirectiveTransformer } from 'src/common/directives/custom.directive';
-import { DirectiveLocation, GraphQLDirective } from 'graphql';
+import {
+  DirectiveLocation,
+  GraphQLDirective,
+  GraphQLFormattedError,
+} from 'graphql';
 import { DirectiveTranform } from 'src/common/enums/directive.enum';
 
 @Module({
@@ -101,10 +105,59 @@ import { DirectiveTranform } from 'src/common/enums/directive.enum';
             }),
           ],
         },
-        // plugins: [
-        //   ApolloServerPluginCacheControl({ defaultMaxAge: 5 }), // optional
-        //   responseCachePlugin(),
-        // ],
+        // debug: false,
+        // autoTransformHttpErrors: true,
+        formatError: (
+          formattedError: GraphQLFormattedError,
+          error: unknown,
+        ): GraphQLFormattedError => {
+          if (formattedError.message === 'VALIDATION_ERROR') {
+            const extensions = {
+              code: 'VALIDATION_ERROR',
+              errors: [],
+            };
+
+            Object.keys(formattedError.extensions.invalidArgs).forEach(
+              (key) => {
+                const constraints = [];
+                Object.keys(
+                  formattedError.extensions.invalidArgs[key].constraints,
+                ).forEach((_key) => {
+                  constraints.push(
+                    formattedError.extensions.invalidArgs[key].constraints[
+                      _key
+                    ],
+                  );
+                });
+
+                extensions.errors.push({
+                  field: formattedError.extensions.invalidArgs[key].property,
+                  errors: constraints,
+                });
+              },
+            );
+
+            const graphQLFormattedError: GraphQLFormattedError = {
+              message: 'VALIDATION_ERROR',
+              extensions: extensions,
+            };
+            return graphQLFormattedError;
+          }
+
+          return formattedError;
+        },
+        plugins: [
+          // ApolloServerPluginLandingPageLocalDefault({
+          //   embed: true,
+          // }),
+          // ApolloServerPlugin
+          // ApolloServerPluginUsageReporting({
+          //   rewriteError: (err) => {
+          //     console.log(err);
+          //     return err;
+          //   },
+          // }),
+        ],
       }),
       inject: [ConfigService, JwtService, CACHE_MANAGER],
     }),

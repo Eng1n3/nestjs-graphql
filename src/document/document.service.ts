@@ -1,13 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  BadGatewayException,
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createWriteStream, rmSync } from 'fs';
-import { FileUpload } from 'graphql-upload-ts';
+import { FileUpload } from 'graphql-upload';
 import { join } from 'path';
 import { ILike, In, Repository } from 'typeorm';
 import { GetDocumentsInput } from './dto/get-documents.input';
@@ -63,7 +58,7 @@ export class DocumentService {
   ) {
     try {
       let pathDocument: string;
-      const document = await updateDocumentInput.file;
+      const document = updateDocumentInput.file;
       const existDocument = await this.documentRepository.findOne({
         where: {
           project: { user: { idUser } },
@@ -74,7 +69,7 @@ export class DocumentService {
         },
       });
       if (!existDocument)
-        throw new NotFoundException('Dokumen tidak ditemukan!');
+        throw new BadRequestException('Dokumen tidak ditemukan!');
       const pathName = `/uploads/projects/${existDocument?.project?.idProject}`;
       if (document) {
         pathDocument = await this.saveDocumentToDir(document, pathName);
@@ -83,7 +78,7 @@ export class DocumentService {
           force: true,
         });
       }
-      const { idDocument, file, ...values } = updateDocumentInput;
+      const { idDocument, ...values } = updateDocumentInput;
       const value = this.documentRepository.create({
         idDocument,
         ...values,
@@ -170,7 +165,7 @@ export class DocumentService {
       const document = await this.documentRepository.findOne({
         where: { project: { user: { idUser } }, idDocument },
       });
-      if (!document) throw new NotFoundException('Document not found!');
+      if (!document) throw new BadRequestException('Document not found!');
       rmSync(join(process.cwd(), document.pathDocument), {
         force: true,
         recursive: true,
@@ -201,12 +196,14 @@ export class DocumentService {
         )
         .on('finish', () => resolve(`${pathName}/${convertFilename}`))
         .on('error', () => {
-          new BadGatewayException('Could not save image');
+          new BadRequestException('Could not save image');
         });
     });
   }
 
-  async createDocument(uploadDocumentInput: UploadDocumentInput) {
+  async createDocument(
+    uploadDocumentInput: UploadDocumentInput,
+  ) {
     try {
       const validImage = /(pdf)/g;
       const document = await uploadDocumentInput.file;

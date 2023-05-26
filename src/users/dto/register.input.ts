@@ -5,9 +5,8 @@ import {
   IsOptional,
   IsString,
   IsStrongPassword,
-  MinDate,
 } from 'class-validator';
-import { FileUpload, GraphQLUpload } from 'graphql-upload-ts';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { IsBirthdayDate } from 'src/common/decorators/birthday-date.decorator';
 import { IsHomepage } from 'src/common/decorators/is-homepage.decorator';
 import { IsOnlyDate } from 'src/common/decorators/is-only-date.decorator';
@@ -62,6 +61,7 @@ export class RegisterUserInput {
   homepage?: string;
 
   @Field(() => GraphQLUpload, {
+    name: 'image',
     nullable: true,
     description: 'image user, upload file berupa image',
   })

@@ -3,85 +3,31 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
-import { UsersResolver } from 'src/users/users.resolver';
-import { Client, Pool } from 'pg';
-import { Repository } from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Repository } from 'typeorm';
+import * as jwt from 'jsonwebtoken';
+import { Project } from 'src/project/entities/project.entity';
+import { DocumentEntity } from 'src/document/entities/document.entity';
+import { Priority } from 'src/priority/entities/priority.entity';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from 'src/pubsub/pubsub.module';
 
 type MockType<T> = {
   [P in keyof T]?: jest.Mock;
 };
 
-jest.mock('pg', () => {
-  const mClient = {
-    connect: jest.fn(),
-    query: jest.fn().mockImplementationOnce((aa, bb) => {
-      console.log(aa);
-      console.log(bb);
-      console.log(19);
-    }),
-    end: jest.fn(),
-  };
-  return {
-    // Client: jest.fn(() => mClient),
-    Pool: jest.fn().mockReturnValueOnce({
-      on: jest.fn().mockImplementationOnce(function (this, event, listener) {
-        console.log('Ini di on');
-        console.log(event, 31);
-        if (event === 'connect') {
-          return this;
-        }
-      }),
-      connect: jest.fn().mockResolvedValueOnce({ release: jest.fn() }),
-    }) as unknown as Pool,
-  };
-});
-// jest.mock('pg', () => {
-//   const mClient = {
-//     connect: jest.fn(),
-//     query: jest.fn().mockImplementationOnce((aa, bb) => {
-//       console.log(aa);
-//       console.log(bb);
-//       console.log(19);
-//     }),
-//     end: jest.fn(),
-//   };
-//   const mockEventEmitter = jest
-//     .fn()
-//     .mockImplementationOnce(function (this, event, handler) {
-//       console.log(event, 52);
-//       if (event === 'finish') {
-//         handler();
-//       }
-//       return this;
-//     });
-//   const mockConnect = jest.fn().mockImplementationOnce(function (this, cb) {
-//     cb({ relase: jest.fn() });
-//   });
-//   return {
-//     // Client: jest.fn(() => mClient),
-//     Pool: jest
-//       .fn()
-//       .mockImplementationOnce(function (this, cek1, cek2) {
-//         console.log(this, cek1, cek2);
-//         return this;
-//       })
-//       .mockReturnValueOnce({
-//         connect: mockConnect,
-//         on: mockEventEmitter,
-//       }),
-//   };
-// });
 jest.setTimeout(1000000000);
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
 
-  const usersResolverMock: MockType<UsersResolver> = {
-    userCount: jest.fn(),
+  const pubsubMock: MockType<PubSub> = {
+    publish: jest.fn(),
+    asyncIterator: jest.fn(),
   };
-  const userRepositoryMock: MockType<Repository<User>> = {
+
+  const repositoryMock: MockType<Repository<User>> = {
     findOne: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
@@ -91,41 +37,145 @@ describe('AppController (e2e)', () => {
     delete: jest.fn(),
   };
   beforeEach(async () => {
-    console.log(41);
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-      providers: [
-        {
-          provide: getRepositoryToken(User),
-          useValue: userRepositoryMock,
-        },
-        {
-          provide: UsersResolver,
-          useValue: usersResolverMock,
-        },
-      ],
-    }).compile();
-    console.log(51);
+    })
+      .overrideProvider(PUB_SUB)
+      .useValue(pubsubMock)
+      .overrideProvider(getRepositoryToken(User))
+      .useValue(repositoryMock)
+      .overrideProvider(getRepositoryToken(Project))
+      .useValue(repositoryMock)
+      .overrideProvider(getRepositoryToken(DocumentEntity))
+      .useValue(repositoryMock)
+      .overrideProvider(getRepositoryToken(Priority))
+      .useValue(repositoryMock)
+      .compile();
     app = moduleFixture.createNestApplication();
     await app.init();
   });
 
   const gql = '/graphql';
 
+  // describe('e2e countAccount', () => {
+  //   describe('Success countAccount', () => {
+  //     let query: string;
+  //     let total: number;
+  //     let user: User;
+  //     beforeEach(() => {
+  //       user = new User();
+  //       query = 'query { countAccount }';
+  //       total = 1;
+  //       jest
+  //         .spyOn(jwt, 'verify')
+  //         .mockImplementationOnce((token, secretOrKey, options, callback) =>
+  //           callback(null, {
+  //             idUser: '2bb16d2e-a316-4ced-8f32-94263a3aa7a4',
+  //             email: 'admin@gmail.com',
+  //             role: 'admin',
+  //           }),
+  //         );
+  //       repositoryMock.findOne.mockResolvedValueOnce(user);
+  //       repositoryMock.count.mockResolvedValueOnce(total);
+  //     });
+  //     it('query countAccount', async () => {
+  //       const response = await request(app.getHttpServer())
+  //         .post(gql)
+  //         .set(
+  //           'Authorization',
+  //           'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZFVzZXIiOiIyYmIxNmQyZS1hMzE2LTRjZWQtOGYzMi05NDI2M2EzYWE3YTQiLCJlbWFpbCI6ImFkYW1icmlsaWFuMDAzQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNjg1MDg0MTA1LCJleHAiOjE2ODUxMTQxMDV9.ZjvD3zPNTFP5v71hp1q4VKCHWo6jR2JDbNRfm0aOP2A',
+  //         )
+  //         .send({
+  //           query,
+  //         })
+  //         .expect(200);
+
+  //       expect(response.body).toEqual({ data: { countAccount: 1 } });
+  //     });
+  //   });
+  // });
+
   describe('e2e countAccount', () => {
-    let query: string;
-    // let client: any;
-    beforeEach(async () => {
-      // client = new Client();
-      userRepositoryMock.count.mockResolvedValueOnce(1);
-      query = 'query { countAccount }';
-    });
-    it('query countAccount', async () => {
-      console.log(65);
-      const result = await request(app.getHttpServer()).get(gql).send({
-        query,
+    describe('Success countAccount', () => {
+      let query: string;
+      let total: number;
+      let user: User;
+      beforeEach(() => {
+        user = new User();
+        query = 'query { countAccount }';
+        total = 1;
+        jest
+          .spyOn(jwt, 'verify')
+          .mockImplementationOnce((token, secretOrKey, options, callback) =>
+            callback(null, {
+              idUser: '2bb16d2e-a316-4ced-8f32-94263a3aa7a4',
+              email: 'admin@gmail.com',
+              role: 'admin',
+            }),
+          );
+        repositoryMock.findOne.mockResolvedValueOnce(user);
+        repositoryMock.count.mockResolvedValueOnce(total);
       });
-      console.log(result, 50);
+      it('query countAccount', async () => {
+        const response = await request(app.getHttpServer())
+          .post(gql)
+          .set(
+            'Authorization',
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZFVzZXIiOiIyYmIxNmQyZS1hMzE2LTRjZWQtOGYzMi05NDI2M2EzYWE3YTQiLCJlbWFpbCI6ImFkYW1icmlsaWFuMDAzQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNjg1MDg0MTA1LCJleHAiOjE2ODUxMTQxMDV9.ZjvD3zPNTFP5v71hp1q4VKCHWo6jR2JDbNRfm0aOP2A',
+          )
+          .send({
+            query,
+          })
+          .expect(200);
+
+        expect(response.body).toEqual({ data: { countAccount: 1 } });
+      });
+    });
+  });
+
+  describe('e2e user', () => {
+    describe('Success user', () => {
+      let query: string;
+      let total: number;
+      let user: User;
+      let project: Project;
+      let document: Document;
+      let priority: Priority;
+      beforeEach(() => {
+        user = new User();
+        project = new Project();
+        project.document = [new DocumentEntity()];
+        project.priority = new Priority();
+        user.project = [project];
+        query = `query { user \n{ \nemail \nrole \nproject(options: { sort: {}, search: "" }) \n{ \nprojectName \npriority { \nname \n} \ndocument { \ndocumentName \n} \n} \n} \n}`;
+        total = 1;
+        jest
+          .spyOn(jwt, 'verify')
+          .mockImplementationOnce((token, secretOrKey, options, callback) =>
+            callback(null, {
+              idUser: '2bb16d2e-a316-4ced-8f32-94263a3aa7a4',
+              email: 'adambrilian003@gmail.com',
+              role: 'user',
+            }),
+          );
+        repositoryMock.findOne.mockResolvedValueOnce(user);
+        repositoryMock.count.mockResolvedValueOnce(total);
+      });
+      it('query countAccount', async () => {
+        const response = await request(app.getHttpServer())
+          .post(gql)
+          .set(
+            'Authorization',
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZFVzZXIiOiIyYmIxNmQyZS1hMzE2LTRjZWQtOGYzMi05NDI2M2EzYWE3YTQiLCJlbWFpbCI6ImFkYW1icmlsaWFuMDAzQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNjg1MDg0MTA1LCJleHAiOjE2ODUxMTQxMDV9.ZjvD3zPNTFP5v71hp1q4VKCHWo6jR2JDbNRfm0aOP2A',
+          )
+          .send({
+            query,
+          })
+          .expect(200);
+
+        console.log(response.body);
+        // expect(response.body).toEqual({ data: { countAccount: 1 } });
+      });
     });
   });
 });

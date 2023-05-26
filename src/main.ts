@@ -2,7 +2,7 @@
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { graphqlUploadExpress } from 'graphql-upload-ts';
+import { graphqlUploadExpress } from 'graphql-upload';
 import { AppModule } from './app.module';
 // import * as Sentry from '@sentry/node';
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor';

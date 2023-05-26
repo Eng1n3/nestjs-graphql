@@ -15,9 +15,10 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/roles.enum';
 import {
   Inject,
-  NotFoundException,
+  BadRequestException,
   UseGuards,
   UseInterceptors,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
@@ -219,11 +220,15 @@ export class ProjectResolver {
   })
   async countProjectFilterByDate(
     @CurrentUser() user: User,
-    @Args('year', {
-      type: () => Int,
-      defaultValue: new Date().getFullYear(),
-      nullable: true,
-    })
+    @Args(
+      'year',
+      {
+        type: () => Int,
+        defaultValue: new Date().getFullYear(),
+        nullable: true,
+      },
+      ParseIntPipe,
+    )
     year?: number,
   ) {
     try {
@@ -245,7 +250,7 @@ export class ProjectResolver {
     try {
       const existProject = await this.projectService.findByIdProject(idProject);
       if (!existProject)
-        throw new NotFoundException('Project tidak ditemukan!');
+        throw new BadRequestException('Project tidak ditemukan!');
       await this.projectService.deleteProject(idProject);
       rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
         recursive: true,
@@ -274,7 +279,7 @@ export class ProjectResolver {
         updateProjectInput?.idPriority,
       );
       if (updateProjectInput?.idPriority && !priority)
-        throw new NotFoundException('Priority tidak ditemukan!');
+        throw new BadRequestException('Priority tidak ditemukan!');
       const result = await this.projectService.updateByIdProject(
         user.idUser,
         priority,
@@ -304,7 +309,7 @@ export class ProjectResolver {
       );
 
       if (createProjectInput?.idPriority && !priority)
-        throw new NotFoundException('Priority tidak ditemukan!');
+        throw new BadRequestException('Priority tidak ditemukan!');
 
       const result = await this.projectService.create(
         user.idUser,

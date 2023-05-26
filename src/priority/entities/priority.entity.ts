@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-@ObjectType()
+@ObjectType({ isAbstract: true })
 export class Priority {
   @PrimaryColumn()
   @Field({

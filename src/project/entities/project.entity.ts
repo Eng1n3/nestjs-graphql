@@ -14,9 +14,9 @@ import {
 } from 'typeorm';
 
 @Entity()
-@ObjectType()
+@ObjectType({ isAbstract: true })
 export class Project {
-  @ManyToOne((type) => User, (user) => user.idUser, {
+  @ManyToOne((type) => User, (user) => user.project, {
     nullable: true,
     cascade: true,
     onDelete: 'CASCADE',
@@ -42,15 +42,16 @@ export class Project {
   @Field({ description: 'deskripsi project, contoh: "deskripsi project"' })
   description: string;
 
-  @ManyToOne((type) => Priority, (priority) => priority.idPriority, {
+  @ManyToOne((type) => Priority, (priority) => priority.project, {
     nullable: true,
   })
-  @JoinColumn({ name: 'priority' })
   @Field(() => Priority, {
+    name: 'priority',
     nullable: true,
     defaultValue: null,
     description: 'prioritas bedasarkan project contoh: {...priority}',
   })
+  @JoinColumn({ name: 'priority' })
   priority?: Priority;
 
   @Column({ type: 'timestamp with time zone' })

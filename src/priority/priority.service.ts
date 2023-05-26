@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Priority } from './entities/priority.entity';
 import { Equal, ILike, Repository } from 'typeorm';
@@ -87,7 +83,7 @@ export class PriorityService {
       const existPriority = await this.priorityRepository.findOne({
         where: { idPriority },
       });
-      if (!existPriority) throw new NotFoundException('Prioritas tidak ada!');
+      if (!existPriority) throw new BadRequestException('Prioritas tidak ada!');
       const value = this.priorityRepository.create({
         name,
         description,
@@ -111,7 +107,7 @@ export class PriorityService {
       where: { idPriority },
       relations: { project: true },
     });
-    if (!result) throw new NotFoundException('Prioritas tidak ada!');
+    if (!result) throw new BadRequestException('Prioritas tidak ada!');
     if (result?.project?.length)
       throw new BadRequestException(
         `Tidak bisa menghapus prioritas karena sedang digunakan`,

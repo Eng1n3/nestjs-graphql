@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import '../common/config/config.env';
+import { join } from 'path';
 
 const configService = new ConfigService();
 
@@ -11,9 +12,10 @@ export const dataSourceOptions: DataSourceOptions = {
   username: configService.get<string>('DATABASE_USERNAME'),
   password: configService.get<string>('DATABASE_PASSWORD'),
   database: configService.get<string>('DATABASE'),
-  entities: ['dist/**/*.entity{.js,.ts}'],
+  entities: [join(__dirname, '..', '**', '*.entity.{ts,js}')],
   synchronize: false,
-  migrations: ['dist/database/migrations/*{.ts,.js}'],
+  migrations: [join(__dirname, '..', 'database', 'migrations', '*{.ts,.js}')],
+  // migrations: ['dist/database/migrations/*{.ts,.js}'],
 };
 
 const dataSource = new DataSource(dataSourceOptions);

@@ -1,10 +1,6 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 import * as bcrypt from 'bcrypt';
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RegisterUserInput } from 'src/users/dto/register.input';
@@ -14,7 +10,7 @@ import { GetUserInput } from './dto/get-user.input';
 import { UpdateUserInput } from './dto/update.input';
 import { createWriteStream, mkdirSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
-import { FileUpload } from 'graphql-upload-ts';
+import { FileUpload } from 'graphql-upload';
 
 @Injectable()
 export class UsersService {
@@ -113,7 +109,7 @@ export class UsersService {
       relations: { project: { priority: true, document: true } },
     });
     if (!checkUser.idUser) {
-      throw new NotFoundException('User tidak ada!');
+      throw new BadRequestException('User tidak ada!');
     }
     await this.userRepository.delete(idUser);
     rmSync(join(process.cwd(), `/uploads/profiles/${checkUser.idUser}`), {

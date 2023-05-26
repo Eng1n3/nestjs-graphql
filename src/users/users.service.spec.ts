@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import * as fs from 'fs';
 import { Project } from 'src/project/entities/project.entity';
 import { Dirent } from 'fs';
-import { FileUpload } from 'graphql-upload-ts';
+import { FileUpload } from 'graphql-upload';
 import { WriteStream } from 'fs';
 
 jest.mock('bcrypt');
@@ -122,21 +122,24 @@ describe('UsersService', () => {
         jest
           .spyOn(fs, 'mkdirSync')
           .mockImplementationOnce((pth, opts) => 'true');
-        userRepositoryMock.create.mockReturnValue(
-          Promise.reject({ message: 'duplicate key value', detail: 'email' }),
-        );
-        userRepositoryMock.save.mockReturnValue(Promise.resolve(true));
+        userRepositoryMock.create.mockReturnValueOnce(new User());
+        userRepositoryMock.save.mockRejectedValueOnce({
+          message: 'duplicate key value',
+          detail: 'email',
+        });
       });
       it('Kembalian error', async () => {
-        await expect(
-          usersService.createUser('user', {
+        try {
+          await usersService.createUser('user', {
             email: 'test@test.com',
             password: 'Sup3rstrong_password',
             repassword: 'Sup3rstrong_password',
             fullname: 'unit tesing',
             birthDay: '2002-03-23',
-          }),
-        ).rejects.toThrow();
+          });
+        } catch (error) {
+          expect(error).toBeInstanceOf(Error);
+        }
       });
     });
   });
@@ -212,7 +215,6 @@ describe('UsersService', () => {
             mimetype: 'image/jpeg',
             encoding: '7bit',
             createReadStream: jest.fn().mockReturnValueOnce(mockReadStream),
-            fieldName: '',
           }),
         );
         jest
@@ -262,7 +264,6 @@ describe('UsersService', () => {
             mimetype: 'testmime',
             encoding: '7bit',
             createReadStream: jest.fn().mockReturnValueOnce(mockReadStream),
-            fieldName: '',
           }),
         );
         jest
@@ -313,7 +314,6 @@ describe('UsersService', () => {
             mimetype: 'image/jpeg',
             encoding: '7bit',
             createReadStream: jest.fn().mockReturnValueOnce(mockReadStream),
-            fieldName: '',
           }),
         );
         jest

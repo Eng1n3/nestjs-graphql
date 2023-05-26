@@ -6,203 +6,6 @@ directive @upper on FIELD_DEFINITION
 
 directive @backendUrl on FIELD_DEFINITION
 
-type DocumentEntity {
-  """Project bedasarkan dokumen contoh: {...project}"""
-  project: Project!
-
-  """
-  id dokumen berupa uuid, contoh: "0900ec8d-a3e3-46d0-ac9f-288acbdd0ew"
-  """
-  idDocument: String!
-
-  """
-  Nama untuk document, contoh: "Ini adalah nama dokumen"
-  """
-  documentName: String!
-
-  """
-  path dokumen, contoh: "http://domain.com/uploads/sodjo-dsbdib-sndd-ndni/ahsah-323innd-2839-mod-file.pdf"
-  """
-  pathDocument: String!
-
-  """
-  deskripsi data dokument, contoh: "ini adalah deskripsi"
-  """
-  description: String
-
-  """
-  tanggal dibuatnya data berupa tanggal, contoh: "2002-03-23"
-  """
-  createdAt: Date!
-
-  """
-  update dibuatnya data berupa tanggal, contoh: "2002-03-23"
-  """
-  updatedAt: Date!
-}
-
-type Priority {
-  """
-  id prioritas berupa uuid, contoh: "0900ec8d-a3e3-46d0-ac9f-288acbdd0ew"
-  """
-  idPriority: String!
-
-  """
-  nama untuk prioritas, contoh: "nama prioritas"
-  """
-  name: String!
-
-  """
-  deskripsi untuk prioritas, contoh: "deskripsi prioritas"
-  """
-  description: String!
-
-  """
-  tanggal dibuatnya data berupa tanggal, contoh: "2002-03-23"
-  """
-  createdAt: Date!
-
-  """
-  update dibuatnya data berupa tanggal, contoh: "2002-03-23"
-  """
-  updatedAt: Date!
-}
-
-type Project {
-  """user bedasarkan project contoh: {...user}"""
-  user: User!
-
-  """
-  id project berupa uuid, contoh: "0900ec8d-a3e3-46d0-ac9f-288acbdd0ew"
-  """
-  idProject: String!
-
-  """
-  nama project, contoh: "nama project"
-  """
-  projectName: String!
-
-  """
-  deskripsi project, contoh: "deskripsi project"
-  """
-  description: String!
-
-  """prioritas bedasarkan project contoh: {...priority}"""
-  priority: Priority
-
-  """
-  dead line project berupa tanggal, contoh: "2002-03-23"
-  """
-  deadLine: Date!
-
-  """
-  tanggal dibuatnya data berupa tanggal, contoh: "2002-03-23"
-  """
-  createdAt: Date!
-
-  """
-  update dibuatnya data berupa tanggal, contoh: "2002-03-23"
-  """
-  updatedAt: Date!
-
-  """dokumen bedasarkan project contoh: [{...document}]"""
-  document(options: GetDocumentsInput = {}): [DocumentEntity!]
-}
-
-input GetDocumentsInput {
-  """{skip: 0 or take: 10}"""
-  pagination: PaginationInput
-
-  """
-  {key: "ASC" or "DESC" or "asc" or "desc" or 1 or -1} or {key: {direction: "ASC" or "DESC" or "asc" or "desc", nulls: "first" or "last" or "FIRST" or "LAST"}}}
-  """
-  sort: JSON
-
-  """{key: "cari apa"}"""
-  search: String
-}
-
-input PaginationInput {
-  """Start from 0, default skip 0"""
-  skip: Int = 0
-
-  """default take 10 data"""
-  take: Int = 10
-}
-
-"""
-The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
-"""
-scalar JSON
-
-type User {
-  """
-  id user berupa uuid, contoh: "0900ec8d-a3e3-46d0-ac9f-288acbdd0ew"
-  """
-  idUser: String!
-
-  """
-  email user, contoh: "email@gmail.com"
-  """
-  email: String!
-
-  """
-  nama lengkap user, contoh: "nama lengkap user"
-  """
-  fullname: String
-
-  """
-  tanggal lahir user berupa nilai tanggal, contoh: "2002-03-23"
-  """
-  birthDay: Date
-
-  """
-  path image, contoh: "/uploads/sodjo-dsbdib-sndd-ndni/ahsah-323innd-2839-mod-file.jpg"
-  """
-  pathImage: String!
-
-  """
-  role user, contoh: "user"
-  """
-  role: String!
-
-  """
-  bio user, contoh: "bio user"
-  """
-  bio: String
-
-  """
-  homepage user, contoh: "https://domain.com/home"
-  """
-  homepage: String
-
-  """
-  tanggal dibuatnya data berupa tanggal, contoh: "2002-03-23"
-  """
-  createdAt: Date!
-
-  """
-  update dibuatnya data berupa tanggal, contoh: "2002-03-23"
-  """
-  updatedAt: Date!
-
-  """Project bedasarkan user contoh: [{...project}]"""
-  project(options: GetProjectsInput = {}): [Project!]
-}
-
-input GetProjectsInput {
-  """{skip: 0 or take: 10}"""
-  pagination: PaginationInput
-
-  """
-  {key: "ASC" or "DESC" or "asc" or "desc" or 1 or -1} or {key: {direction: "ASC" or "DESC" or "asc" or "desc", nulls: "first" or "last" or "FIRST" or "LAST"}}}
-  """
-  sort: JSON
-
-  """{key: "cari kata"}"""
-  search: String
-}
-
 type CountProjectByDate {
   """Tahun dan bulan data proyek"""
   date: String!
@@ -305,6 +108,206 @@ type Query {
   """query mendapatkan prioritas, data: [{...prioritas}]"""
   priorities(options: GetPrioritiesInput = {}): [Priority!]!
   refreshToken: LoginModel!
+}
+
+type User {
+  """
+  id user berupa uuid, contoh: "0900ec8d-a3e3-46d0-ac9f-288acbdd0ew"
+  """
+  idUser: String!
+
+  """
+  email user, contoh: "email@gmail.com"
+  """
+  email: String!
+
+  """
+  nama lengkap user, contoh: "nama lengkap user"
+  """
+  fullname: String
+
+  """
+  tanggal lahir user berupa nilai tanggal, contoh: "2002-03-23"
+  """
+  birthDay: Date
+
+  """
+  path image, contoh: "/uploads/sodjo-dsbdib-sndd-ndni/ahsah-323innd-2839-mod-file.jpg"
+  """
+  pathImage: String!
+
+  """
+  role user, contoh: "user"
+  """
+  role: String!
+
+  """
+  bio user, contoh: "bio user"
+  """
+  bio: String
+
+  """
+  homepage user, contoh: "https://domain.com/home"
+  """
+  homepage: String
+
+  """
+  tanggal dibuatnya data berupa tanggal, contoh: "2002-03-23"
+  """
+  createdAt: Date!
+
+  """
+  update dibuatnya data berupa tanggal, contoh: "2002-03-23"
+  """
+  updatedAt: Date!
+
+  """Project bedasarkan user contoh: [{...project}]"""
+  project(options: GetProjectsInput = {}): [Project!]
+
+  """resolver project berdasarkan user, data: [{...project}]"""
+  countProject(options: GetProjectsInput = {}): [Project!]
+}
+
+type Project {
+  """user bedasarkan project contoh: {...user}"""
+  user: User!
+
+  """
+  id project berupa uuid, contoh: "0900ec8d-a3e3-46d0-ac9f-288acbdd0ew"
+  """
+  idProject: String!
+
+  """
+  nama project, contoh: "nama project"
+  """
+  projectName: String!
+
+  """
+  deskripsi project, contoh: "deskripsi project"
+  """
+  description: String!
+
+  """prioritas bedasarkan project contoh: {...priority}"""
+  priority: Priority
+
+  """
+  dead line project berupa tanggal, contoh: "2002-03-23"
+  """
+  deadLine: Date!
+
+  """
+  tanggal dibuatnya data berupa tanggal, contoh: "2002-03-23"
+  """
+  createdAt: Date!
+
+  """
+  update dibuatnya data berupa tanggal, contoh: "2002-03-23"
+  """
+  updatedAt: Date!
+
+  """dokumen bedasarkan project contoh: [{...document}]"""
+  document(options: GetDocumentsInput = {}): [DocumentEntity!]
+}
+
+type Priority {
+  """
+  id prioritas berupa uuid, contoh: "0900ec8d-a3e3-46d0-ac9f-288acbdd0ew"
+  """
+  idPriority: String!
+
+  """
+  nama untuk prioritas, contoh: "nama prioritas"
+  """
+  name: String!
+
+  """
+  deskripsi untuk prioritas, contoh: "deskripsi prioritas"
+  """
+  description: String!
+
+  """
+  tanggal dibuatnya data berupa tanggal, contoh: "2002-03-23"
+  """
+  createdAt: Date!
+
+  """
+  update dibuatnya data berupa tanggal, contoh: "2002-03-23"
+  """
+  updatedAt: Date!
+}
+
+type DocumentEntity {
+  """Project bedasarkan dokumen contoh: {...project}"""
+  project: Project!
+
+  """
+  id dokumen berupa uuid, contoh: "0900ec8d-a3e3-46d0-ac9f-288acbdd0ew"
+  """
+  idDocument: String!
+
+  """
+  Nama untuk document, contoh: "Ini adalah nama dokumen"
+  """
+  documentName: String!
+
+  """
+  path dokumen, contoh: "http://domain.com/uploads/sodjo-dsbdib-sndd-ndni/ahsah-323innd-2839-mod-file.pdf"
+  """
+  pathDocument: String!
+
+  """
+  deskripsi data dokument, contoh: "ini adalah deskripsi"
+  """
+  description: String
+
+  """
+  tanggal dibuatnya data berupa tanggal, contoh: "2002-03-23"
+  """
+  createdAt: Date!
+
+  """
+  update dibuatnya data berupa tanggal, contoh: "2002-03-23"
+  """
+  updatedAt: Date!
+}
+
+input GetDocumentsInput {
+  """{skip: 0 or take: 10}"""
+  pagination: PaginationInput
+
+  """
+  {key: "ASC" or "DESC" or "asc" or "desc" or 1 or -1} or {key: {direction: "ASC" or "DESC" or "asc" or "desc", nulls: "first" or "last" or "FIRST" or "LAST"}}}
+  """
+  sort: JSON
+
+  """{key: "cari apa"}"""
+  search: String
+}
+
+input PaginationInput {
+  """Start from 0, default skip 0"""
+  skip: Int = 0
+
+  """default take 10 data"""
+  take: Int = 10
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+input GetProjectsInput {
+  """{skip: 0 or take: 10}"""
+  pagination: PaginationInput
+
+  """
+  {key: "ASC" or "DESC" or "asc" or "desc" or 1 or -1} or {key: {direction: "ASC" or "DESC" or "asc" or "desc", nulls: "first" or "last" or "FIRST" or "LAST"}}}
+  """
+  sort: JSON
+
+  """{key: "cari kata"}"""
+  search: String
 }
 
 input GetUserInput {

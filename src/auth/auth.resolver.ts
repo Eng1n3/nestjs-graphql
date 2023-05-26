@@ -1,4 +1,4 @@
-import { Inject, NotFoundException, UseGuards } from '@nestjs/common';
+import { Inject, BadRequestException, UseGuards } from '@nestjs/common';
 import {
   Args,
   Context,
@@ -103,7 +103,7 @@ export class AuthResolver {
     try {
       const user = await this.authService.findUser(email);
       if (!user || (user && user.role !== 'user'))
-        throw new NotFoundException('User tidak ditemukan!');
+        throw new BadRequestException('User tidak ditemukan!');
       await this.authService.sendEmail(user);
       return { email: user.email };
     } catch (error) {

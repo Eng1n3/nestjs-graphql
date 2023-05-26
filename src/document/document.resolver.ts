@@ -1,9 +1,10 @@
 import {
   forwardRef,
   Inject,
-  NotFoundException,
+  BadRequestException,
   UseGuards,
   UseInterceptors,
+  HttpException,
 } from '@nestjs/common';
 import {
   Args,
@@ -25,10 +26,11 @@ import { GetDocumentsInput } from './dto/get-documents.input';
 import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
-import { CacheKey } from '@nestjs/cache-manager';
-import { GraphqlRedisCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
+// import { CacheKey } from '@nestjs/cache-manager';
+// import { GraphqlRedisCacheInterceptor } from 'src/common/interceptors/cache.interceptor';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
 
 const DOCUMENT_DELETED_EVENT = 'documentDeleted';
 const DOCUMENT_UPDATED_EVENT = 'documentUpdated';
@@ -288,7 +290,7 @@ export class DocumentResolver {
       const project = projects.find(
         ({ idProject }) => uploadDocumentInput.idProject === idProject,
       );
-      if (!project) throw new NotFoundException('Project tidak ditemukan!');
+      if (!project) throw new BadRequestException('Project tidak ditemukan!');
       const result = await this.documentService.createDocument(
         uploadDocumentInput,
       );

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
@@ -77,7 +77,6 @@ export class ProjectService {
         `to_char("createdAt", 'YYYY-MM') BETWEEN :startYear AND :endYear`,
         { startYear: `${year}-01-01`, endYear: `${year}-12-31` },
       );
-
     const months = this._dataMonth(year);
     const monthsUser = await dataProjectUser.execute();
     const result = this._countProjectByDate(months, monthsUser);
@@ -140,7 +139,7 @@ export class ProjectService {
         },
       });
       if (!existProject)
-        throw new NotFoundException('Project tidak ditemukan!');
+        throw new BadRequestException('Project tidak ditemukan!');
       const value = this.projectRepository.create({
         idProject,
         priority,

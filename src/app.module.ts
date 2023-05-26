@@ -24,7 +24,7 @@ import { redisStore } from 'cache-manager-redis-store';
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
+      rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
     }),
     CacheModule.registerAsync({

@@ -11,9 +11,9 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'document' })
-@ObjectType()
+@ObjectType({ isAbstract: true })
 export class DocumentEntity {
-  @ManyToOne((type) => Project, (project) => project.idProject, {
+  @ManyToOne((type) => Project, (project) => project.document, {
     nullable: true,
     cascade: true,
     onDelete: 'CASCADE',
