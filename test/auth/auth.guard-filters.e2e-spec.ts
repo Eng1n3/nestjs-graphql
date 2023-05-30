@@ -78,9 +78,7 @@ describe('AppController (e2e)', () => {
   describe('e2e refreshToken', () => {
     describe('Error sesi anda telah berakhir', () => {
       let query: string;
-      let user: User;
       beforeEach(() => {
-        user = new User();
         query = 'query { refreshToken { token tokenRefresh } }';
         jest
           .spyOn(jwt, 'verify')
