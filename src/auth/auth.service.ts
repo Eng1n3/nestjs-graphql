@@ -39,43 +39,35 @@ export class AuthService {
   }
 
   async updatePassword(idUser: string, password: string) {
-    try {
-      const hashPassword = await bcrypt.hash(password, this.getSalt);
-      await this.usersService.updatePassword(idUser, hashPassword);
-    } catch (error) {
-      throw error;
-    }
+    const hashPassword = await bcrypt.hash(password, this.getSalt);
+    await this.usersService.updatePassword(idUser, hashPassword);
   }
 
   async sendEmail(user: User) {
-    try {
-      const payload = {
-        idUser: user.idUser,
-        email: user.email,
-        role: user.role,
-      };
-      const serverToken = this.configService.get<string>('POSTMARKAPP_TOKEN');
-      const client = new postmark.ServerClient(serverToken);
-      const secret = this.configService.get<string>(
-        'JWT_FORGOT_PASSWORD_PRIVATE_KEY',
-      );
-      const expiresIn = this.configService.get<string>(
-        'JWT_FORGOT_PASSWORD_EXPIRES_IN',
-      );
-      const tokenForgotPassword: string = await this.jwtService.sign(payload, {
-        secret,
-        expiresIn,
-      });
+    const payload = {
+      idUser: user.idUser,
+      email: user.email,
+      role: user.role,
+    };
+    const serverToken = this.configService.get<string>('POSTMARKAPP_TOKEN');
+    const client = new postmark.ServerClient(serverToken);
+    const secret = this.configService.get<string>(
+      'JWT_FORGOT_PASSWORD_PRIVATE_KEY',
+    );
+    const expiresIn = this.configService.get<string>(
+      'JWT_FORGOT_PASSWORD_EXPIRES_IN',
+    );
+    const tokenForgotPassword: string = this.jwtService.sign(payload, {
+      secret,
+      expiresIn,
+    });
 
-      client.sendEmail({
-        From: this.configService.get<string>('POSTMARKAPP_FROM'),
-        To: user.email,
-        Subject: 'Forgot password',
-        HtmlBody: emailTemplate(tokenForgotPassword),
-      });
-    } catch (error) {
-      throw error;
-    }
+    client.sendEmail({
+      From: this.configService.get<string>('POSTMARKAPP_FROM'),
+      To: user.email,
+      Subject: 'Forgot password',
+      HtmlBody: emailTemplate(tokenForgotPassword),
+    });
   }
 
   async login(user: User): Promise<string> {
@@ -89,42 +81,29 @@ export class AuthService {
   }
 
   async findUser(email: string): Promise<User> {
-    try {
-      const user = await this.usersService.findOneByEmail(email);
-      if (user) return user;
-      return null;
-    } catch (error) {
-      throw error;
-    }
+    const user = await this.usersService.findOneByEmail(email);
+    return user;
   }
 
   async validateAdmin(email: string, password: string): Promise<User> {
-    try {
-      const user = await this.usersService.findOneByEmail(email);
-      if (user && user.role === 'admin') {
-        const comparePassword = await bcrypt.compare(password, user.password);
-        if (comparePassword) {
-          return user;
-        }
+    const user = await this.usersService.findOneByEmail(email);
+    if (user && user.role === 'admin') {
+      const comparePassword = await bcrypt.compare(password, user.password);
+      if (comparePassword) {
+        return user;
       }
-      return null;
-    } catch (error) {
-      throw error;
     }
+    return null;
   }
 
   async validateUser(email: string, password: string): Promise<User> {
-    try {
-      const user = await this.usersService.findOneByEmail(email);
-      if (user && user.role === 'user') {
-        const comparePassword = await bcrypt.compare(password, user.password);
-        if (comparePassword) {
-          return user;
-        }
+    const user = await this.usersService.findOneByEmail(email);
+    if (user && user.role === 'user') {
+      const comparePassword = await bcrypt.compare(password, user.password);
+      if (comparePassword) {
+        return user;
       }
-      return null;
-    } catch (error) {
-      throw error;
     }
+    return null;
   }
 }

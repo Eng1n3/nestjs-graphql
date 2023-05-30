@@ -208,24 +208,6 @@ export class UsersResolver {
   @ResolveField(() => [Project], {
     nullable: true,
     defaultValue: [],
-    name: 'countProject',
-    description: 'resolver project berdasarkan user, data: [{...project}]',
-  })
-  async countProject(
-    @Parent() parent: User,
-    @Args('options', { nullable: true, defaultValue: {} })
-    getProjectsInput?: GetProjectsInput<Project>,
-  ) {
-    const result = await this.projectService.findAll(
-      parent.idUser,
-      getProjectsInput,
-    );
-    return result;
-  }
-
-  @ResolveField(() => [Project], {
-    nullable: true,
-    defaultValue: [],
     name: 'project',
     description: 'resolver project berdasarkan user, data: [{...project}]',
   })

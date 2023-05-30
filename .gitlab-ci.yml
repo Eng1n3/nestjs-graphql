@@ -24,7 +24,7 @@ build:
 test:
   stage: test
   script:
-    - npm run test:cov
+    - npm run test:e2e:cov
   allow_failure: true
 
 # deploy:

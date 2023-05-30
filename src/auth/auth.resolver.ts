@@ -31,53 +31,33 @@ export class AuthResolver {
 
   @Mutation((returns) => String, { name: 'messageForgotUser' })
   async messageForgotUser() {
-    try {
-      return 'Success kirim email untuk konfirmasi lupa password';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success kirim email untuk konfirmasi lupa password';
   }
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtChangePasswordAuthGuard)
   @Mutation((returns) => String, { name: 'messageChangePassword' })
   async messageChangePassword() {
-    try {
-      return 'Success change password';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success change password';
   }
 
   @Mutation((returns) => String, { name: 'messageLoginAdmin' })
   async messageLoginAdmin() {
-    try {
-      return 'Success login admin';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success login admin';
   }
 
   @Mutation((returns) => String, { name: 'messageLoginUser' })
   async messageLoginUser() {
-    try {
-      return 'Success login user';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success login user';
   }
 
   @Roles(Role.User, Role.Admin)
   @UseGuards(JwtRefreshAuthGuard)
   @Query((returns) => LoginModel, { name: 'refreshToken' })
   async refreshToken(@CurrentUser() user: User) {
-    try {
-      const token = await this.authService.login(user);
-      const tokenRefresh = this.authService.refreshToken(user);
-      return { token, tokenRefresh };
-    } catch (error) {
-      throw error;
-    }
+    const token = await this.authService.login(user);
+    const tokenRefresh = this.authService.refreshToken(user);
+    return { token, tokenRefresh };
   }
 
   @Roles(Role.User)
@@ -87,28 +67,20 @@ export class AuthResolver {
     @CurrentUser() user: User,
     @Args('input') changePasswordInput: ChangePasswordInput,
   ) {
-    try {
-      await this.authService.updatePassword(
-        user.idUser,
-        changePasswordInput.password,
-      );
-      return 'Change password success';
-    } catch (error) {
-      throw error;
-    }
+    await this.authService.updatePassword(
+      user.idUser,
+      changePasswordInput.password,
+    );
+    return 'Change password success';
   }
 
   @Mutation((returns) => ForgotUserModel, { name: 'forgotUser' })
   async forgotUser(@Args('email') email: string) {
-    try {
-      const user = await this.authService.findUser(email);
-      if (!user || (user && user.role !== 'user'))
-        throw new BadRequestException('User tidak ditemukan!');
-      await this.authService.sendEmail(user);
-      return { email: user.email };
-    } catch (error) {
-      throw error;
-    }
+    const user = await this.authService.findUser(email);
+    if (!user || (user && user.role !== 'user'))
+      throw new BadRequestException('User tidak ditemukan!');
+    await this.authService.sendEmail(user);
+    return { email: user.email };
   }
 
   @UseGuards(LocalAdminAuthGuard)
@@ -118,13 +90,9 @@ export class AuthResolver {
     @Args('email') email: string,
     @Args('password') password: string,
   ) {
-    try {
-      const token = await this.authService.login(user);
-      const tokenRefresh = this.authService.refreshToken(user);
-      return { token, tokenRefresh };
-    } catch (error) {
-      throw error;
-    }
+    const token = await this.authService.login(user);
+    const tokenRefresh = this.authService.refreshToken(user);
+    return { token, tokenRefresh };
   }
 
   @UseGuards(LocalUserAuthGuard)
@@ -135,12 +103,8 @@ export class AuthResolver {
     @Args('email') email: string,
     @Args('password') password: string,
   ) {
-    try {
-      const token = await this.authService.login(user);
-      const tokenRefresh = this.authService.refreshToken(user);
-      return { token, tokenRefresh };
-    } catch (error) {
-      throw error;
-    }
+    const token = await this.authService.login(user);
+    const tokenRefresh = this.authService.refreshToken(user);
+    return { token, tokenRefresh };
   }
 }

@@ -163,9 +163,6 @@ type User {
 
   """Project bedasarkan user contoh: [{...project}]"""
   project(options: GetProjectsInput = {}): [Project!]
-
-  """resolver project berdasarkan user, data: [{...project}]"""
-  countProject(options: GetProjectsInput = {}): [Project!]
 }
 
 type Project {
@@ -398,9 +395,9 @@ type Mutation {
   messageUpdateDocument: String!
 
   """
-  message updload document, data: "Success updload document"
+  message upload document, data: "Success upload document"
   """
-  messageUpdloadDocument: String!
+  messageUploadDocument: String!
 
   """mutation delete document user, data: {...document}"""
   deleteDocument(idDocument: String!): DocumentEntity!

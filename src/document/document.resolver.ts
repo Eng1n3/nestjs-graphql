@@ -102,12 +102,12 @@ export class DocumentResolver {
   @Roles(Role.User)
   @UseGuards(JwtAuthGuard)
   @Mutation((returns) => String, {
-    name: 'messageUpdloadDocument',
-    description: 'message updload document, data: "Success updload document"',
+    name: 'messageUploadDocument',
+    description: 'message upload document, data: "Success upload document"',
   })
-  async messageUpdloadDocument() {
+  async messageUploadDocument() {
     try {
-      return 'Success updload document';
+      return 'Success upload document';
     } catch (error) {
       throw error;
     }
