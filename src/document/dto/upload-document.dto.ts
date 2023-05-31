@@ -32,5 +32,5 @@ export class UploadDocumentInput {
     description: 'File untuk project',
   })
   @IsNotEmpty()
-  file: FileUpload;
+  file: Promise<FileUpload>;
 }

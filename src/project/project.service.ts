@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable prettier/prettier */
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { mkdirSync } from 'fs';
@@ -12,6 +10,7 @@ import { Project } from './entities/project.entity';
 import { v4 as uuid4 } from 'uuid';
 import { Priority } from 'src/priority/entities/priority.entity';
 import * as moment from 'moment';
+import { isEmpty } from 'class-validator';
 
 @Injectable()
 export class ProjectService {
@@ -68,7 +67,7 @@ export class ProjectService {
   }
 
   async countProjectByDate(idUser: string | null, year: number) {
-    const dataProjectUser = await this.projectRepository
+    const dataProjectUser = this.projectRepository
       .createQueryBuilder()
       .select([`to_char("createdAt", 'YYYY-MM') AS date`, `count(*) AS count`])
       .where(`"idUser" = :idUser`, { idUser })
@@ -77,6 +76,7 @@ export class ProjectService {
         `to_char("createdAt", 'YYYY-MM') BETWEEN :startYear AND :endYear`,
         { startYear: `${year}-01-01`, endYear: `${year}-12-31` },
       );
+
     const months = this._dataMonth(year);
     const monthsUser = await dataProjectUser.execute();
     const result = this._countProjectByDate(months, monthsUser);
@@ -84,40 +84,32 @@ export class ProjectService {
   }
 
   async findByIdUser(idUser: string): Promise<Project[]> {
-    try {
-      const result = await this.projectRepository.find({
-        where: { user: { idUser } },
-        relations: {
-          user: true,
-          priority: true,
-          document: true,
-        },
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.projectRepository.find({
+      where: { user: { idUser } },
+      relations: {
+        user: true,
+        priority: true,
+        document: true,
+      },
+    });
+    return result;
   }
 
   async projectCount(idUser: string | null, searchProjectInput?: string) {
-    try {
-      const filter = { user: { idUser } };
-      const result = await this.projectRepository.count({
-        where: [
-          {
-            projectName: ILike(`%${searchProjectInput || ''}%`),
-            ...filter,
-          },
-          {
-            description: ILike(`%${searchProjectInput || ''}%`),
-            ...filter,
-          },
-        ],
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const filter = { user: { idUser } };
+    const result = await this.projectRepository.count({
+      where: [
+        {
+          projectName: ILike(`%${searchProjectInput || ''}%`),
+          ...filter,
+        },
+        {
+          description: ILike(`%${searchProjectInput || ''}%`),
+          ...filter,
+        },
+      ],
+    });
+    return result;
   }
 
   async updateByIdProject(
@@ -125,99 +117,83 @@ export class ProjectService {
     priority?: Priority,
     updateProjectInput?: UpdateProjectInput,
   ) {
-    try {
-      const { idProject, ...project } = updateProjectInput;
-      const existProject = await this.projectRepository.findOne({
-        where: {
-          user: { idUser },
-          idProject: updateProjectInput?.idProject,
-        },
-        relations: {
-          user: true,
-          priority: true,
-          document: true,
-        },
-      });
-      if (!existProject)
-        throw new BadRequestException('Project tidak ditemukan!');
-      const value = this.projectRepository.create({
-        idProject,
-        priority,
-        ...project,
-      });
-      await this.projectRepository.update(idProject, value);
-      const result = { ...existProject, ...value };
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const { idProject, ...project } = updateProjectInput;
+    const existProject = await this.projectRepository.findOne({
+      where: {
+        user: { idUser },
+        idProject: updateProjectInput?.idProject,
+      },
+      relations: {
+        user: true,
+        priority: true,
+        document: true,
+      },
+    });
+    if (isEmpty(existProject))
+      throw new BadRequestException('Project tidak ditemukan!');
+    const value = this.projectRepository.create({
+      idProject,
+      priority,
+      ...project,
+    });
+    await this.projectRepository.update(idProject, value);
+    const result = { ...existProject, ...value };
+    return result;
   }
 
   async findByIdProject(idProject: string) {
-    try {
-      const result = await this.projectRepository.findOne({
-        where: { idProject },
-        relations: {
-          user: true,
-          priority: true,
-          document: true,
-        },
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.projectRepository.findOne({
+      where: { idProject },
+      relations: {
+        user: true,
+        priority: true,
+        document: true,
+      },
+    });
+    return result;
   }
 
   async deleteProject(idProject: string) {
-    try {
-      await this.projectRepository.delete(idProject);
-    } catch (error) {
-      throw error;
-    }
+    await this.projectRepository.delete(idProject);
   }
 
   async findAll(
     idUser?: string | null,
     getProjectsInput?: GetProjectsInput<Project>,
   ) {
-    try {
-      const order = getProjectsInput?.sort;
-      const skip = getProjectsInput?.pagination?.skip;
-      const take = getProjectsInput?.pagination?.take;
-      const filter = { user: { idUser, role: 'user' } };
-      const result = await this.projectRepository.find({
-        where: [
-          {
-            projectName: ILike(`%${getProjectsInput?.search || ''}%`),
-            ...filter,
-          },
-          {
-            description: ILike(`%${getProjectsInput?.search || ''}%`),
-            ...filter,
-          },
-          {
-            priority: {
-              name: getProjectsInput?.search
-                ? ILike(`%${getProjectsInput?.search || ''}%`)
-                : null,
-            },
-            ...filter,
-          },
-        ],
-        relations: {
-          user: true,
-          document: true,
-          priority: true,
+    const order = getProjectsInput?.sort;
+    const skip = getProjectsInput?.pagination?.skip;
+    const take = getProjectsInput?.pagination?.take;
+    const filter = { user: { idUser, role: 'user' } };
+    const result = await this.projectRepository.find({
+      where: [
+        {
+          projectName: ILike(`%${getProjectsInput?.search || ''}%`),
+          ...filter,
         },
-        skip,
-        take,
-        order,
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+        {
+          description: ILike(`%${getProjectsInput?.search || ''}%`),
+          ...filter,
+        },
+        {
+          priority: {
+            name: getProjectsInput?.search
+              ? ILike(`%${getProjectsInput?.search || ''}%`)
+              : null,
+          },
+          ...filter,
+        },
+      ],
+      relations: {
+        user: true,
+        document: true,
+        priority: true,
+      },
+      skip,
+      take,
+      order,
+    });
+    return result;
   }
 
   async create(
@@ -225,29 +201,25 @@ export class ProjectService {
     createProjectModel?: CreateProjectInput,
     idPriority?: string,
   ): Promise<Project | any> {
-    try {
-      const projectInput = createProjectModel;
-      const value = this.projectRepository.create({
-        user: { idUser },
-        idProject: uuid4(),
-        ...projectInput,
-        priority: { idPriority },
-      });
-      await this.projectRepository.save(value);
-      mkdirSync(join(process.cwd(), '/uploads/projects/', value.idProject), {
-        recursive: true,
-      });
-      const result = await this.projectRepository.findOne({
-        where: { idProject: value.idProject },
-        relations: {
-          user: true,
-          document: true,
-          priority: true,
-        },
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const projectInput = createProjectModel;
+    const value = this.projectRepository.create({
+      user: { idUser },
+      idProject: uuid4(),
+      ...projectInput,
+      priority: { idPriority },
+    });
+    await this.projectRepository.save(value);
+    mkdirSync(join(process.cwd(), '/uploads/projects/', value.idProject), {
+      recursive: true,
+    });
+    const result = await this.projectRepository.findOne({
+      where: { idProject: value.idProject },
+      relations: {
+        user: true,
+        document: true,
+        priority: true,
+      },
+    });
+    return result;
   }
 }

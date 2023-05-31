@@ -4,6 +4,7 @@ import { Priority } from './entities/priority.entity';
 import { Equal, ILike, Repository } from 'typeorm';
 import { GetPrioritiesInput } from './dto/get-priority.input';
 import { v4 as uuidv4 } from 'uuid';
+import { isEmpty } from 'class-validator';
 
 @Injectable()
 export class PriorityService {
@@ -13,21 +14,17 @@ export class PriorityService {
   ) {}
 
   async count(searchPrioritiesInput?: string) {
-    try {
-      const result = await this.priorityRepository.count({
-        where: [
-          {
-            name: ILike(`%${searchPrioritiesInput || ''}%`),
-          },
-          {
-            description: ILike(`%${searchPrioritiesInput || ''}%`),
-          },
-        ],
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.priorityRepository.count({
+      where: [
+        {
+          name: ILike(`%${searchPrioritiesInput || ''}%`),
+        },
+        {
+          description: ILike(`%${searchPrioritiesInput || ''}%`),
+        },
+      ],
+    });
+    return result;
   }
 
   async findOneByIdPriority(idPriority: string | null) {
@@ -107,7 +104,7 @@ export class PriorityService {
       where: { idPriority },
       relations: { project: true },
     });
-    if (!result) throw new BadRequestException('Prioritas tidak ada!');
+    if (isEmpty(result)) throw new BadRequestException('Prioritas tidak ada!');
     if (result?.project?.length)
       throw new BadRequestException(
         `Tidak bisa menghapus prioritas karena sedang digunakan`,

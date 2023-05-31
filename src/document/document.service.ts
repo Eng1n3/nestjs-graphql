@@ -4,12 +4,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { createWriteStream, rmSync } from 'fs';
 import { FileUpload } from 'graphql-upload';
 import { join } from 'path';
-import { ILike, In, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { GetDocumentsInput } from './dto/get-documents.input';
 import { UpdateDocumentInput } from './dto/update-document.dto';
 import { UploadDocumentInput } from './dto/upload-document.dto';
 import { DocumentEntity } from './entities/document.entity';
 import { v4 as uuid4 } from 'uuid';
+import { isEmpty } from 'class-validator';
 
 @Injectable()
 export class DocumentService {
@@ -23,76 +24,68 @@ export class DocumentService {
     idProject: string | null,
     searchDocumentsInput: string,
   ) {
-    try {
-      const filter = {
-        project: {
-          user: { idUser },
-          idProject,
+    const filter = {
+      project: {
+        user: { idUser },
+        idProject,
+      },
+    };
+    const result = await this.documentRepository.count({
+      where: [
+        {
+          documentName: ILike(`%${searchDocumentsInput || ''}%`),
+          ...filter,
         },
-      };
-      const result = await this.documentRepository.count({
-        where: [
-          {
-            documentName: ILike(`%${searchDocumentsInput || ''}%`),
-            ...filter,
-          },
-          {
-            description: ILike(`%${searchDocumentsInput || ''}%`),
-            ...filter,
-          },
-          {
-            pathDocument: ILike(`%${searchDocumentsInput || ''}%`),
-            ...filter,
-          },
-        ],
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+        {
+          description: ILike(`%${searchDocumentsInput || ''}%`),
+          ...filter,
+        },
+        {
+          pathDocument: ILike(`%${searchDocumentsInput || ''}%`),
+          ...filter,
+        },
+      ],
+    });
+    return result;
   }
 
   async updateDocument(
     idUser: string,
     updateDocumentInput: UpdateDocumentInput,
   ) {
-    try {
-      let pathDocument: string;
-      const document = updateDocumentInput.file;
-      const existDocument = await this.documentRepository.findOne({
-        where: {
-          project: { user: { idUser } },
-          idDocument: updateDocumentInput.idDocument,
-        },
-        relations: {
-          project: { user: true, priority: true },
-        },
+    let pathDocument: string;
+    const document = await updateDocumentInput.file;
+    const existDocument = await this.documentRepository.findOne({
+      where: {
+        project: { user: { idUser } },
+        idDocument: updateDocumentInput.idDocument,
+      },
+      relations: {
+        project: { user: true, priority: true },
+      },
+    });
+    if (!existDocument)
+      throw new BadRequestException('Dokumen tidak ditemukan!');
+    const pathName = `/uploads/projects/${existDocument?.project?.idProject}`;
+    if (document) {
+      pathDocument = await this.saveDocumentToDir(document, pathName);
+      rmSync(join(process.cwd(), existDocument.pathDocument), {
+        recursive: true,
+        force: true,
       });
-      if (!existDocument)
-        throw new BadRequestException('Dokumen tidak ditemukan!');
-      const pathName = `/uploads/projects/${existDocument?.project?.idProject}`;
-      if (document) {
-        pathDocument = await this.saveDocumentToDir(document, pathName);
-        rmSync(join(process.cwd(), existDocument.pathDocument), {
-          recursive: true,
-          force: true,
-        });
-      }
-      const { idDocument, ...values } = updateDocumentInput;
-      const value = this.documentRepository.create({
-        idDocument,
-        ...values,
-        pathDocument,
-      });
-      await this.documentRepository.update(idDocument, value);
-      const result = {
-        ...existDocument,
-        ...value,
-      };
-      return result;
-    } catch (error) {
-      throw error;
     }
+    const { idDocument, ...values } = updateDocumentInput;
+    const value = this.documentRepository.create({
+      idDocument,
+      ...values,
+      pathDocument,
+    });
+    await this.documentRepository.update(idDocument, value);
+    const result = {
+      ...existDocument,
+      ...value,
+    };
+    return result;
   }
 
   async findAll(
@@ -100,81 +93,65 @@ export class DocumentService {
     idProject?: string | null,
     optionsInput?: GetDocumentsInput<DocumentEntity>,
   ) {
-    try {
-      const order = optionsInput?.sort;
-      const skip = optionsInput?.pagination?.skip;
-      const take = optionsInput?.pagination?.take;
-      const filter = {
-        project: {
-          user: { idUser },
-          idProject,
+    const order = optionsInput?.sort;
+    const skip = optionsInput?.pagination?.skip;
+    const take = optionsInput?.pagination?.take;
+    const filter = {
+      project: {
+        user: { idUser },
+        idProject,
+      },
+    };
+    const result = await this.documentRepository.find({
+      where: [
+        {
+          documentName: ILike(`%${optionsInput?.search || ''}%`),
+          ...filter,
         },
-      };
-      const result = await this.documentRepository.find({
-        where: [
-          {
-            documentName: ILike(`%${optionsInput?.search || ''}%`),
-            ...filter,
-          },
-          {
-            description: ILike(`%${optionsInput?.search || ''}%`),
-            ...filter,
-          },
-          {
-            pathDocument: ILike(`%${optionsInput?.search || ''}%`),
-            ...filter,
-          },
-        ],
-        relations: {
-          project: { user: true, priority: true },
+        {
+          description: ILike(`%${optionsInput?.search || ''}%`),
+          ...filter,
         },
-        skip,
-        take,
-        order,
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+        {
+          pathDocument: ILike(`%${optionsInput?.search || ''}%`),
+          ...filter,
+        },
+      ],
+      relations: {
+        project: { user: true, priority: true },
+      },
+      skip,
+      take,
+      order,
+    });
+    return result;
   }
 
   async getByIdProject(idProject: string) {
-    try {
-      const result = await this.documentRepository.find({
-        where: { project: { idProject } },
-        relations: {
-          project: { user: true, priority: true },
-        },
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.documentRepository.find({
+      where: { project: { idProject } },
+      relations: {
+        project: { user: true, priority: true },
+      },
+    });
+    return result;
   }
 
   async deleteByIdProject(idProject: string) {
-    try {
-      await this.documentRepository.delete({ project: { idProject } });
-    } catch (error) {
-      throw error;
-    }
+    await this.documentRepository.delete({ project: { idProject } });
   }
 
   async deleteById(idUser: string, idDocument: string) {
-    try {
-      const document = await this.documentRepository.findOne({
-        where: { project: { user: { idUser } }, idDocument },
-      });
-      if (!document) throw new BadRequestException('Document not found!');
-      rmSync(join(process.cwd(), document.pathDocument), {
-        force: true,
-        recursive: true,
-      });
-      await this.documentRepository.delete(idDocument);
-      return document;
-    } catch (error) {
-      throw error;
-    }
+    const document = await this.documentRepository.findOne({
+      where: { project: { user: { idUser } }, idDocument },
+    });
+    if (isEmpty(document)) throw new BadRequestException('Document not found!');
+    rmSync(join(process.cwd(), document.pathDocument), {
+      force: true,
+      recursive: true,
+    });
+    await this.documentRepository.delete(idDocument);
+    return document;
   }
 
   private saveDocumentToDir(
@@ -201,33 +178,24 @@ export class DocumentService {
     });
   }
 
-  async createDocument(
-    uploadDocumentInput: UploadDocumentInput,
-  ) {
-    try {
-      const validImage = /(pdf)/g;
-      const document = await uploadDocumentInput.file;
-      if (!validImage.test(document.mimetype))
-        throw new BadRequestException('File tidak valid!');
-      const pathName = `/uploads/projects/${uploadDocumentInput.idProject}`;
-      const pathDocumentToSave = await this.saveDocumentToDir(
-        document,
-        pathName,
-      );
-      const value = this.documentRepository.create({
-        project: { idProject: uploadDocumentInput.idProject },
-        idDocument: uuid4(),
-        ...uploadDocumentInput,
-        pathDocument: pathDocumentToSave,
-      });
-      await this.documentRepository.save(value);
-      const result = await this.documentRepository.findOne({
-        where: { idDocument: value.idDocument },
-        relations: { project: { user: true, priority: true } },
-      });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+  async createDocument(uploadDocumentInput: UploadDocumentInput) {
+    const validImage = /(pdf)/g;
+    const document = await uploadDocumentInput.file;
+    if (!validImage.test(document.mimetype))
+      throw new BadRequestException('File tidak valid!');
+    const pathName = `/uploads/projects/${uploadDocumentInput.idProject}`;
+    const pathDocumentToSave = await this.saveDocumentToDir(document, pathName);
+    const value = this.documentRepository.create({
+      project: { idProject: uploadDocumentInput.idProject },
+      idDocument: uuid4(),
+      ...uploadDocumentInput,
+      pathDocument: pathDocumentToSave,
+    });
+    await this.documentRepository.save(value);
+    const result = await this.documentRepository.findOne({
+      where: { idDocument: value.idDocument },
+      relations: { project: { user: true, priority: true } },
+    });
+    return result;
   }
 }

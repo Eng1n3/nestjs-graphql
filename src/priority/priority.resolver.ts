@@ -71,11 +71,7 @@ export class PriorityResolver {
     description: 'message delete prioritas, contoh: "Success delete priority"',
   })
   async messageDeletePriority() {
-    try {
-      return 'Success delete Priority';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success delete Priority';
   }
 
   @Roles(Role.Admin)
@@ -85,11 +81,7 @@ export class PriorityResolver {
     description: 'message update prioritas, contoh: "Success update priority"',
   })
   async messageUpdatePriority() {
-    try {
-      return 'Success update Priority';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success update Priority';
   }
 
   @Roles(Role.Admin)
@@ -99,11 +91,7 @@ export class PriorityResolver {
     description: 'message create prioritas, contoh: "Success create priority"',
   })
   async messageCreatePriority() {
-    try {
-      return 'Success create Priority';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success create Priority';
   }
 
   @Roles(Role.Admin, Role.User)
@@ -114,11 +102,7 @@ export class PriorityResolver {
       'message mendapatkan prioritas, contoh: "Success mendapatkan priority"',
   })
   async messagePriorities() {
-    try {
-      return 'Success mendapatkan data Priority';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success mendapatkan data Priority';
   }
 
   @Roles(Role.Admin)
@@ -132,12 +116,8 @@ export class PriorityResolver {
     @Args('search', { nullable: true, defaultValue: '' })
     searchPrioritiesInput?: string,
   ) {
-    try {
-      const count = await this.priorityService.count(searchPrioritiesInput);
-      return count;
-    } catch (error) {
-      throw error;
-    }
+    const count = await this.priorityService.count(searchPrioritiesInput);
+    return count;
   }
 
   @Roles(Role.Admin)
@@ -197,7 +177,6 @@ export class PriorityResolver {
     description: 'mutation create prioritas, data: {...prioritas}',
   })
   async create(
-    @Body() body: CreatePriorityInput,
     @Args('name') name: string,
     @Args('description') description: string,
   ) {

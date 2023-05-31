@@ -78,11 +78,7 @@ export class DocumentResolver {
     description: 'message delete document, data: "Success delete document"',
   })
   async messageDeleteDocument() {
-    try {
-      return 'Success delete document';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success delete document';
   }
 
   @Roles(Role.User)
@@ -92,11 +88,7 @@ export class DocumentResolver {
     description: 'message update document, data: "Success update document"',
   })
   async messageUpdateDocument() {
-    try {
-      return 'Success update document';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success update document';
   }
 
   @Roles(Role.User)
@@ -106,11 +98,7 @@ export class DocumentResolver {
     description: 'message upload document, data: "Success upload document"',
   })
   async messageUploadDocument() {
-    try {
-      return 'Success upload document';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success upload document';
   }
 
   @Roles(Role.User, Role.Admin)
@@ -121,11 +109,7 @@ export class DocumentResolver {
       'message mendapatkan document, data: "Success mendapatkan document"',
   })
   async messageDocument() {
-    try {
-      return 'Success mendapatkan data document';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success mendapatkan data document';
   }
 
   @Roles(Role.Admin)
@@ -141,16 +125,12 @@ export class DocumentResolver {
     @Args('search', { nullable: true, defaultValue: '' })
     searchDocumentsInput: string,
   ) {
-    try {
-      const count = await this.documentService.countDocument(
-        null,
-        null,
-        searchDocumentsInput,
-      );
-      return count;
-    } catch (error) {
-      throw error;
-    }
+    const count = await this.documentService.countDocument(
+      null,
+      null,
+      searchDocumentsInput,
+    );
+    return count;
   }
 
   @Roles(Role.User)
@@ -165,16 +145,12 @@ export class DocumentResolver {
     @Args('search', { nullable: true, defaultValue: '' })
     searchDocumentsInput: string,
   ) {
-    try {
-      const count = await this.documentService.countDocument(
-        user.idUser,
-        null,
-        searchDocumentsInput,
-      );
-      return count;
-    } catch (error) {
-      throw error;
-    }
+    const count = await this.documentService.countDocument(
+      user.idUser,
+      null,
+      searchDocumentsInput,
+    );
+    return count;
   }
 
   @Roles(Role.Admin, Role.User)
@@ -233,16 +209,12 @@ export class DocumentResolver {
     })
     optionsInput?: GetDocumentsInput<DocumentEntity>,
   ) {
-    try {
-      const result = await this.documentService.findAll(
-        user?.idUser,
-        null,
-        optionsInput,
-      );
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.documentService.findAll(
+      user?.idUser,
+      null,
+      optionsInput,
+    );
+    return result;
   }
 
   // @UseInterceptors(GraphqlRedisCacheInterceptor)
@@ -260,16 +232,8 @@ export class DocumentResolver {
     @Args('options', { nullable: true })
     optionsInput: GetDocumentsInput<DocumentEntity>,
   ) {
-    try {
-      const result = await this.documentService.findAll(
-        null,
-        null,
-        optionsInput,
-      );
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.documentService.findAll(null, null, optionsInput);
+    return result;
   }
 
   @Roles(Role.User)
@@ -283,21 +247,17 @@ export class DocumentResolver {
     @CurrentUser() user: User,
     @Args('input') uploadDocumentInput: UploadDocumentInput,
   ) {
-    try {
-      const projects: Project[] = await this.projectService.findByIdUser(
-        user.idUser,
-      );
-      const project = projects.find(
-        ({ idProject }) => uploadDocumentInput.idProject === idProject,
-      );
-      if (!project) throw new BadRequestException('Project tidak ditemukan!');
-      const result = await this.documentService.createDocument(
-        uploadDocumentInput,
-      );
-      this.pubSub.publish(DOCUMENT_ADDED_EVENT, { documentAdded: result });
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const projects: Project[] = await this.projectService.findByIdUser(
+      user.idUser,
+    );
+    const project = projects.find(
+      ({ idProject }) => uploadDocumentInput.idProject === idProject,
+    );
+    if (!project) throw new BadRequestException('Project tidak ditemukan!');
+    const result = await this.documentService.createDocument(
+      uploadDocumentInput,
+    );
+    this.pubSub.publish(DOCUMENT_ADDED_EVENT, { documentAdded: result });
+    return result;
   }
 }

@@ -8,14 +8,9 @@ import * as jwt from 'jsonwebtoken';
 import { Project } from 'src/project/entities/project.entity';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub/pubsub.module';
-import { ProjectService } from 'src/project/project.service';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import * as fs from 'fs';
-import { Dirent, WriteStream } from 'fs';
-import { FileUpload } from 'graphql-upload';
-import { ReadStream } from 'typeorm/platform/PlatformTools';
-import { join } from 'path';
 import { DocumentEntity } from 'src/document/entities/document.entity';
 import { Priority } from 'src/priority/entities/priority.entity';
 
@@ -489,7 +484,6 @@ describe('AppController (e2e)', () => {
             query,
           })
           .expect(200);
-
         expect(response.body.errors[0].message).toEqual(
           'Email sudah digunakan!',
         );

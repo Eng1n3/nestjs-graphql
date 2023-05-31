@@ -39,6 +39,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { ComplexityEstimatorArgs } from 'graphql-query-complexity';
 import { CountProjectByDate } from './models/count-project-by-date.mode';
 import { YearProjectModel } from './models/year-project.model';
+import { isEmpty } from 'class-validator';
 
 const PROJECT_DELETED_EVENT = 'projectDeleted';
 const PROJECT_UPDATED_EVENT = 'projectUpdated';
@@ -87,11 +88,7 @@ export class ProjectResolver {
     description: 'message delete projek, data: "Success delete project"',
   })
   async messageDeleteProject() {
-    try {
-      return 'Success delete project';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success delete project';
   }
 
   @Roles(Role.User)
@@ -101,11 +98,7 @@ export class ProjectResolver {
     description: 'message update projek, data: "Success update project"',
   })
   async messageUpdateProject() {
-    try {
-      return 'Success update project';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success update project';
   }
 
   @Roles(Role.User)
@@ -115,11 +108,7 @@ export class ProjectResolver {
     description: 'message buat projek, data: "Success buat project"',
   })
   async messageCreateProject() {
-    try {
-      return 'Success buat project';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success buat project';
   }
 
   @Roles(Role.User, Role.Admin)
@@ -130,11 +119,7 @@ export class ProjectResolver {
       'message mendapatkan projek, data: "Success mendapatkan project"',
   })
   async messageProject() {
-    try {
-      return 'Success mendapatkan data project';
-    } catch (error) {
-      throw error;
-    }
+    return 'Success mendapatkan data project';
   }
 
   @Roles(Role.Admin)
@@ -148,15 +133,11 @@ export class ProjectResolver {
     @Args('search', { nullable: true, defaultValue: '' })
     searchProjectInput?: string,
   ) {
-    try {
-      const count = await this.projectService.projectCount(
-        null,
-        searchProjectInput,
-      );
-      return count;
-    } catch (error) {
-      throw error;
-    }
+    const count = await this.projectService.projectCount(
+      null,
+      searchProjectInput,
+    );
+    return count;
   }
 
   @Roles(Role.User)
@@ -171,15 +152,11 @@ export class ProjectResolver {
     @Args('search', { nullable: true, defaultValue: '' })
     searchProjectInput?: string,
   ) {
-    try {
-      const count = await this.projectService.projectCount(
-        user.idUser,
-        searchProjectInput,
-      );
-      return count;
-    } catch (error) {
-      throw error;
-    }
+    const count = await this.projectService.projectCount(
+      user.idUser,
+      searchProjectInput,
+    );
+    return count;
   }
 
   // @UseInterceptors(GraphqlRedisCacheInterceptor)
@@ -199,12 +176,8 @@ export class ProjectResolver {
     @Args('limit', { type: () => Int, defaultValue: 5, nullable: true })
     limit?: number,
   ) {
-    try {
-      const result = await this.projectService.yearProject(user.idUser, limit);
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.projectService.yearProject(user.idUser, limit);
+    return result;
   }
 
   // @UseInterceptors(GraphqlRedisCacheInterceptor)
@@ -231,13 +204,9 @@ export class ProjectResolver {
     )
     year?: number,
   ) {
-    try {
-      const idUser = user.idUser;
-      const result = await this.projectService.countProjectByDate(idUser, year);
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const idUser = user.idUser;
+    const result = await this.projectService.countProjectByDate(idUser, year);
+    return result;
   }
 
   @Roles(Role.Admin, Role.User)
@@ -247,22 +216,18 @@ export class ProjectResolver {
     description: 'mutation delete project, data: {...project}',
   })
   async deleteProject(@Args('idProject') idProject: string) {
-    try {
-      const existProject = await this.projectService.findByIdProject(idProject);
-      if (!existProject)
-        throw new BadRequestException('Project tidak ditemukan!');
-      await this.projectService.deleteProject(idProject);
-      rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
-        recursive: true,
-        force: true,
-      });
-      this.pubSub.publish(PROJECT_DELETED_EVENT, {
-        projectDeleted: existProject,
-      });
-      return existProject;
-    } catch (error) {
-      throw error;
-    }
+    const existProject = await this.projectService.findByIdProject(idProject);
+    if (!existProject)
+      throw new BadRequestException('Project tidak ditemukan!');
+    await this.projectService.deleteProject(idProject);
+    rmSync(join(process.cwd(), `/uploads/projects/${idProject}`), {
+      recursive: true,
+      force: true,
+    });
+    this.pubSub.publish(PROJECT_DELETED_EVENT, {
+      projectDeleted: existProject,
+    });
+    return existProject;
   }
 
   @Roles(Role.User)
@@ -274,22 +239,20 @@ export class ProjectResolver {
     @CurrentUser() user: User,
     @Args('input') updateProjectInput: UpdateProjectInput,
   ) {
-    try {
-      const priority: Priority = await this.priorityService.findOneByIdPriority(
+    let priority: Priority;
+    if (updateProjectInput?.idPriority) {
+      priority = await this.priorityService.findOneByIdPriority(
         updateProjectInput?.idPriority,
       );
-      if (updateProjectInput?.idPriority && !priority)
-        throw new BadRequestException('Priority tidak ditemukan!');
-      const result = await this.projectService.updateByIdProject(
-        user.idUser,
-        priority,
-        updateProjectInput,
-      );
-      this.pubSub.publish(PROJECT_UPDATED_EVENT, { projectUpdated: result });
-      return result;
-    } catch (error) {
-      throw error;
+      if (!priority) throw new BadRequestException('Priority tidak ditemukan!');
     }
+    const result = await this.projectService.updateByIdProject(
+      user.idUser,
+      priority,
+      updateProjectInput,
+    );
+    this.pubSub.publish(PROJECT_UPDATED_EVENT, { projectUpdated: result });
+    return result;
   }
 
   @Roles(Role.User)
@@ -303,24 +266,21 @@ export class ProjectResolver {
     @CurrentUser() user: User,
     @Args('input') createProjectInput: CreateProjectInput,
   ) {
-    try {
+    if (createProjectInput?.idPriority) {
       const priority = await this.priorityService.findOneByIdPriority(
-        createProjectInput?.idPriority,
+        createProjectInput.idPriority,
       );
-
-      if (createProjectInput?.idPriority && !priority)
+      if (isEmpty(priority))
         throw new BadRequestException('Priority tidak ditemukan!');
-
-      const result = await this.projectService.create(
-        user.idUser,
-        createProjectInput,
-        createProjectInput?.idPriority,
-      );
-      this.pubSub.publish(PROJECT_ADDED_EVENT, { projectAdded: result });
-      return result;
-    } catch (error) {
-      throw error;
     }
+
+    const result = await this.projectService.create(
+      user.idUser,
+      createProjectInput,
+      createProjectInput?.idPriority,
+    );
+    this.pubSub.publish(PROJECT_ADDED_EVENT, { projectAdded: result });
+    return result;
   }
 
   // @UseInterceptors(GraphqlRedisCacheInterceptor)
@@ -338,15 +298,11 @@ export class ProjectResolver {
     @Args('options', { nullable: true, defaultValue: {} })
     getProjectsInput?: GetProjectsInput<Project>,
   ) {
-    try {
-      const result = await this.projectService.findAll(
-        user?.idUser,
-        getProjectsInput,
-      );
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.projectService.findAll(
+      user?.idUser,
+      getProjectsInput,
+    );
+    return result;
   }
 
   // @UseInterceptors(GraphqlRedisCacheInterceptor)
@@ -364,12 +320,8 @@ export class ProjectResolver {
     @Args('options', { nullable: true, defaultValue: {} })
     getProjectsInput?: GetProjectsInput<Project>,
   ) {
-    try {
-      const result = await this.projectService.findAll(null, getProjectsInput);
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.projectService.findAll(null, getProjectsInput);
+    return result;
   }
 
   @ResolveField((returns) => [DocumentEntity], {
