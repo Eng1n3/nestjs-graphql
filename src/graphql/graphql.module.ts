@@ -86,7 +86,10 @@ import { DirectiveTranform } from 'src/common/enums/directive.enum';
               },
             }
           : false,
-        context: ({ req, res, connection }) => ({ req, res }),
+        // persistedQueries: true,
+        context: ({ req, res, connection }) => {
+          return { req, res };
+        },
         csrfPrevention: false,
         validationRules: [depthLimit(3)],
         resolvers: { JSON: GraphQLJSON },

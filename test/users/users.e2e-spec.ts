@@ -13,6 +13,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import * as fs from 'fs';
 import { DocumentEntity } from 'src/document/entities/document.entity';
 import { Priority } from 'src/priority/entities/priority.entity';
+import { join } from 'path';
+import { graphqlUploadExpress } from 'graphql-upload';
 
 type MockType<T> = {
   [P in keyof T]?: jest.Mock;
@@ -61,6 +63,7 @@ describe('AppController (e2e)', () => {
       .useValue(projectRepositoryMock)
       .compile();
     app = moduleFixture.createNestApplication();
+    app.use(graphqlUploadExpress());
     await app.init();
   });
 
@@ -304,6 +307,144 @@ describe('AppController (e2e)', () => {
   });
 
   describe('e2e updateUser', () => {
+    describe('Error update dengan error mimetype', () => {
+      let query: string;
+      let user: User;
+      beforeEach(() => {
+        user = new User();
+        user.email = 'testuser@gmail.com';
+        user.birthDay = '2023-01-01' as unknown as Date;
+        user.pathImage = '';
+        query =
+          'mutation ($image: Upload!) { updateUser(input: { image: $image fullname: "testing update" password: "password_testing" }) { email fullname } }';
+        jest
+          .spyOn(jwt, 'verify')
+          .mockImplementationOnce((token, secretOrKey, options, callback) =>
+            callback(null, {
+              idUser: '2bb16d2e-a316-4ced-8f32-94263a3aa7a4',
+              email: 'testing@gmail.com',
+              role: 'user',
+            }),
+          );
+        jest
+          .spyOn(fs, 'readdirSync')
+          .mockReturnValueOnce(['ini'] as unknown as fs.Dirent[]);
+        jest
+          .spyOn(fs, 'rmSync')
+          .mockImplementationOnce(function (path, options) {
+            true;
+          });
+        userRepositoryMock.findOne.mockResolvedValue(user);
+        user.fullname = 'testing update';
+        userRepositoryMock.create.mockResolvedValueOnce(user);
+        userRepositoryMock.update.mockResolvedValueOnce(user);
+      });
+      it('mutation updateUser', async () => {
+        const pathImage = join(
+          process.cwd(),
+          'test',
+          'request-graphql-upload.xml',
+        );
+        const response = await request(app.getHttpServer())
+          .post(gql)
+          .set(
+            'Authorization',
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZFVzZXIiOiIyYmIxNmQyZS1hMzE2LTRjZWQtOGYzMi05NDI2M2EzYWE3YTQiLCJlbWFpbCI6ImFkYW1icmlsaWFuMDAzQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNjg1MDg0MTA1LCJleHAiOjE2ODUxMTQxMDV9.ZjvD3zPNTFP5v71hp1q4VKCHWo6jR2JDbNRfm0aOP2A',
+          )
+          .set('Content-Type', 'multipart/form-data')
+          .field(
+            'operations',
+            JSON.stringify({ query, variables: { image: null } }),
+          )
+          .field(
+            'map',
+            JSON.stringify({
+              image: ['variables.image'],
+            }),
+          )
+          .attach('image', pathImage, {
+            filename: 'request-graphql-upload.xml',
+          })
+          .expect(200);
+
+        expect(response.body.errors[0].message).toEqual('File tidak valid!');
+        expect(response.body.data).toBeNull();
+      });
+      afterEach(() => {
+        userRepositoryMock.findOne.mockReset();
+      });
+    });
+
+    describe('Success update dengan image', () => {
+      let query: string;
+      let user: User;
+      beforeEach(() => {
+        user = new User();
+        user.email = 'testuser@gmail.com';
+        user.birthDay = '2023-01-01' as unknown as Date;
+        user.pathImage = '';
+        query =
+          'mutation ($image: Upload!) { updateUser(input: { image: $image fullname: "testing update" password: "password_testing" }) { email fullname } }';
+        jest
+          .spyOn(jwt, 'verify')
+          .mockImplementationOnce((token, secretOrKey, options, callback) =>
+            callback(null, {
+              idUser: '2bb16d2e-a316-4ced-8f32-94263a3aa7a4',
+              email: 'testing@gmail.com',
+              role: 'user',
+            }),
+          );
+        jest
+          .spyOn(fs, 'readdirSync')
+          .mockReturnValueOnce(['ini'] as unknown as fs.Dirent[]);
+        jest
+          .spyOn(fs, 'rmSync')
+          .mockImplementationOnce(function (path, options) {
+            true;
+          });
+        userRepositoryMock.findOne.mockResolvedValue(user);
+        user.fullname = 'testing update';
+        userRepositoryMock.create.mockResolvedValueOnce(user);
+        userRepositoryMock.update.mockResolvedValueOnce(user);
+      });
+      it('mutation updateUser', async () => {
+        const pathImage = join(process.cwd(), 'test', 'entity-relations.png');
+        const response = await request(app.getHttpServer())
+          .post(gql)
+          .set(
+            'Authorization',
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZFVzZXIiOiIyYmIxNmQyZS1hMzE2LTRjZWQtOGYzMi05NDI2M2EzYWE3YTQiLCJlbWFpbCI6ImFkYW1icmlsaWFuMDAzQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNjg1MDg0MTA1LCJleHAiOjE2ODUxMTQxMDV9.ZjvD3zPNTFP5v71hp1q4VKCHWo6jR2JDbNRfm0aOP2A',
+          )
+          .set('Content-Type', 'multipart/form-data')
+          .field(
+            'operations',
+            JSON.stringify({ query, variables: { image: null } }),
+          )
+          .field(
+            'map',
+            JSON.stringify({
+              image: ['variables.image'],
+            }),
+          )
+          .attach('image', pathImage, {
+            filename: 'entity-relations.png',
+          })
+          .expect(200);
+
+        expect(response.body).toEqual({
+          data: {
+            updateUser: {
+              email: 'testuser@gmail.com',
+              fullname: 'testing update',
+            },
+          },
+        });
+      });
+      afterEach(() => {
+        userRepositoryMock.findOne.mockReset();
+      });
+    });
+
     describe('Success dengan tanpa update image', () => {
       let query: string;
       let user: User;
@@ -358,6 +499,7 @@ describe('AppController (e2e)', () => {
       });
       afterEach(() => {
         userRepositoryMock.findOne.mockReset();
+        userRepositoryMock.update.mockReset();
       });
     });
 
@@ -407,6 +549,7 @@ describe('AppController (e2e)', () => {
             query,
           })
           .expect(200);
+
         expect(response.body.errors[0].message).toEqual(
           'Email sudah digunakan!',
         );
@@ -514,7 +657,7 @@ describe('AppController (e2e)', () => {
         user.role = 'user';
         project.user = user;
         document.project = project;
-        query = `query { user { idUser email role project(options: { sort: {}, search: "" }) { projectName priority { name } document { documentName } } } }`;
+        query = `query { user { idUser email role project(options: { sort: {}, search: "" pagination: {take: 1 skip: 0}}) { projectName priority { name } document { documentName } } } }`;
         jest
           .spyOn(jwt, 'verify')
           .mockImplementationOnce((token, secretOrKey, options, callback) =>
@@ -584,7 +727,7 @@ describe('AppController (e2e)', () => {
         user.role = 'user';
         project.user = user;
         document.project = project;
-        query = `query { users { idUser email role project(options: { sort: {}, search: "" }) { projectName priority { name } document { documentName } } } }`;
+        query = `query { users(options: { sort: {email: "ASC"} pagination: {take: 1 skip: 1}}) { idUser email role project(options: { sort: {} search: "" pagination: {take: 1 skip: 0}}) { projectName priority { name } document { documentName } } } }`;
         jest
           .spyOn(jwt, 'verify')
           .mockImplementationOnce((token, secretOrKey, options, callback) =>
@@ -598,7 +741,7 @@ describe('AppController (e2e)', () => {
         userRepositoryMock.findOne.mockResolvedValue(user);
         projectRepositoryMock.find.mockResolvedValueOnce([project]);
       });
-      it('query countAccount', async () => {
+      it('query users', async () => {
         const response = await request(app.getHttpServer())
           .post(gql)
           .set(

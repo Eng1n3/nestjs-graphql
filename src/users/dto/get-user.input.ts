@@ -4,27 +4,6 @@ import { PaginationInput } from 'src/common/dto/pagination.input';
 import { FindOptionsOrder } from 'typeorm';
 import GraphQLJSON from 'graphql-type-json';
 
-// @InputType()
-// export class SearchUserInput {
-//   @Field({
-//     nullable: true,
-//     defaultValue: '',
-//     description: 'email user, contoh: "email@gmail.com"',
-//   })
-//   @IsString()
-//   @IsOptional()
-//   email?: string;
-
-//   @Field({
-//     nullable: true,
-//     defaultValue: '',
-//     description: 'fullname user, contoh: "fullname user"',
-//   })
-//   @IsString()
-//   @IsOptional()
-//   fullname?: string;
-// }
-
 @InputType()
 export class GetUserInput<T> {
   @Field((types) => PaginationInput, {

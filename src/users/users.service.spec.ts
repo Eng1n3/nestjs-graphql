@@ -68,18 +68,6 @@ describe('UsersService', () => {
     });
   });
 
-  describe('Mendapatkan user dari idUser', () => {
-    let user: User;
-    beforeEach(() => {
-      user = new User();
-      userRepositoryMock.findOne.mockReturnValue(Promise.resolve(user));
-    });
-    it('Kembalian success', async () => {
-      const fetchedUser = await usersService.findOneByIdUser('id-user');
-      expect(fetchedUser).toEqual(user);
-    });
-  });
-
   describe('Mendapatkan user dari email', () => {
     let user: User;
     beforeEach(() => {

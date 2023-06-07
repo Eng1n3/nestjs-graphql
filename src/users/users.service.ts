@@ -65,7 +65,6 @@ export class UsersService {
           this.getSalt,
         );
       }
-
       if (image) {
         const existImage = readdirSync(
           join(process.cwd(), '/uploads/profiles/', idUser),
@@ -128,19 +127,6 @@ export class UsersService {
 
   async updatePassword(idUser: string, password: string) {
     await this.userRepository.update(idUser, { password });
-  }
-
-  async findOneByIdUser(idUser: string): Promise<User> {
-    const result = await this.userRepository.findOne({
-      where: { idUser },
-      relations: {
-        project: {
-          priority: true,
-          document: true,
-        },
-      },
-    });
-    return result;
   }
 
   async findOneByEmail(email: string): Promise<User> {

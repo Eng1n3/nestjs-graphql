@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   Client: jest.fn(() => ({
     sendEmailWithTemplate: jest.fn(() => {
       return true;
