@@ -620,9 +620,9 @@ input ChangePasswordInput {
 }
 
 type Subscription {
-  userDeleted: User!
-  userUpdated: User!
-  userAdded: User!
+  userDeleted: User
+  userUpdated: User
+  userAdded: User
   projectDeleted: Project!
   projectUpdated: Project!
   projectAdded: Project!

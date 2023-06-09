@@ -52,15 +52,18 @@ export class UsersResolver {
   ) {}
 
   @Subscription((returns) => User, {
+    nullable: true,
     name: 'userDeleted',
     filter: (payload, variables) =>
       payload.userDeleted.title === variables.title,
   })
   wsUserDeleted() {
-    return this.pubSub.asyncIterator(USER_DELETED_EVENT);
+    const result = this.pubSub.asyncIterator(USER_DELETED_EVENT);
+    return result;
   }
 
   @Subscription((returns) => User, {
+    nullable: true,
     name: 'userUpdated',
     filter: (payload, variables) =>
       payload.userUpdated.title === variables.title,
@@ -69,12 +72,16 @@ export class UsersResolver {
     return this.pubSub.asyncIterator(USER_UPDATED_EVENT);
   }
 
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
   @Subscription((returns) => User, {
+    nullable: true,
     name: 'userAdded',
     filter: (payload, variables) => payload.userAdded.title === variables.title,
   })
   wsUserAdded() {
-    return this.pubSub.asyncIterator(USER_ADDED_EVENT);
+    const result = this.pubSub.asyncIterator(USER_ADDED_EVENT);
+    return result;
   }
 
   @Roles(Role.Admin)

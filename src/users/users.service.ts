@@ -193,12 +193,6 @@ export class UsersService {
           role: 'user',
         },
       ],
-      relations: {
-        // project: {
-        //   priority: true,
-        //   document: true,
-        // },
-      },
       skip,
       take,
       order,

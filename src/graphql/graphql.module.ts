@@ -57,18 +57,13 @@ import { DirectiveTranform } from 'src/common/enums/directive.enum';
           //   },
           'subscriptions-transport-ws': {
             onConnect: (connectionParams) => {
-              try {
-                const authToken =
-                  connectionParams?.Authorization?.split(' ')[1];
-                const user = jwtService.verify(authToken);
-                if (user?.role === 'user')
-                  throw new ForbiddenException('Forbidden resource');
-                return { user };
-              } catch (error) {
-                if (error.message !== 'Forbidden resource')
-                  throw new UnauthorizedException();
-                throw error;
-              }
+              const [type, token] =
+                connectionParams?.Authorization?.split(' ') ?? [];
+              const authToken = type === 'Bearer' ? token : null;
+              if (!authToken) return null;
+              const result = { req: { headers: { authorization: '' } } };
+              result.req.headers.authorization = `${type} ${authToken}`;
+              return result;
             },
             onDisconnect: () => {
               console.log('Disconnect!');
@@ -88,7 +83,7 @@ import { DirectiveTranform } from 'src/common/enums/directive.enum';
           : false,
         // persistedQueries: true,
         context: ({ req, res, connection }) => {
-          return { req, res };
+          return { req, res, connection };
         },
         csrfPrevention: false,
         validationRules: [depthLimit(3)],
