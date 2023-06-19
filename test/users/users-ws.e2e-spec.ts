@@ -10,7 +10,6 @@ import { PubSub } from 'graphql-subscriptions';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { PubsubModule } from 'src/pubsub/pubsub.module';
-import * as WebSocket from 'ws';
 
 type MockType<T> = {
   [P in keyof T]?: jest.Mock;
